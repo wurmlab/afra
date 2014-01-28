@@ -1,6 +1,7 @@
 require.config({
     paths: {
-        jquery:    'lib/jquery/jquery'
+        jquery:    'lib/jquery/jquery',
+        bionode:   'lib/bionode/lib/bionode'
     },
 
     packages:[{

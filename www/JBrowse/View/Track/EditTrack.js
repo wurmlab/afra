@@ -22,6 +22,7 @@ define([
             'JBrowse/Model/SimpleFeature',
             'JBrowse/Util',
             'JBrowse/View/GranularRectLayout',
+            'bionode'
         ],
         function(declare,
                  $,
@@ -44,7 +45,8 @@ define([
                  SequenceSearch,
                  SimpleFeature,
                  Util,
-                 Layout) {
+                 Layout,
+                 Bionode) {
 
 var creation_count = 0;
 var contextMenuItems;
@@ -201,8 +203,9 @@ var EditTrack = declare(DraggableFeatureTrack,
 
     addTranscript: function (transcript) {
         var new_transcript = this.newTranscript(transcript);
-        this.store.insert(new_transcript);
-        this.changed();
+        //this.store.insert(new_transcript);
+        //this.changed();
+        this.findNonCanonicalSpliceSites(new_transcript);
     },
 
     resizeExon: function (transcript, index, leftDelta, rightDelta) {
@@ -601,6 +604,45 @@ var EditTrack = declare(DraggableFeatureTrack,
     },
 
     getSequenceForSelectedFeatures: function(records) {
+    },
+
+    findNonCanonicalSpliceSites: function (feature) {
+        var track = this;
+        this.browser.getStore('refseqs', dojo.hitch(this, function(refSeqStore) {
+            if (refSeqStore) {
+                refSeqStore.getFeatures(
+                    {ref: this.refSeq.name, start: feature.get('start'), end: feature.get('end')},
+                    dojo.hitch(this, function (f) {
+                        var seq = f.get('seq');
+                        var subfeatures = feature.get('subfeatures');
+                        var cds_ranges  = [];
+                        for (var i = 0; i < subfeatures.length; i++) {
+                            var subfeature = subfeatures[i];
+                            if (subfeature.get('type') == 'CDS') {
+                                cds_ranges.push([subfeature.get('start'), subfeature.get('end')]);
+                            }
+                        }
+                        var nonCanonicalSpliceSites = Bionode.findNonCanonicalSplices(seq, cds_ranges);
+                        console.log(cds_ranges);
+                        console.log(nonCanonicalSpliceSites);
+                        for (var i = 0; i < nonCanonicalSpliceSites.length; i++) {
+                            var non_canonical_splice_site = nonCanonicalSpliceSites[i];
+                            subfeatures.push(new SimpleFeature({
+                                data: {
+                                    start: non_canonical_splice_site,
+                                    end:   non_canonical_splice_site + 1,
+                                    type:  'noncanonical-splice-site'
+                                },
+                                parent: feature
+                            }));
+                        }
+                        track.sortAnnotationsByLocation(subfeatures);
+                        track.store.insert(feature);
+                        track.changed();
+                        console.log(feature);
+                    }));
+            }
+        }));
     },
 
     searchSequence: function() {
