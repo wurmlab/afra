@@ -1,0 +1,268 @@
+<ng-include src="'templates/_nav-full.html'"></ng-include>
+<article class="curate">
+  <div class="row">
+    <div ng-class="{'col-md-9': sidebar_visible, 'col-md-12': !sidebar_visible}">
+      <div class="controls-top">
+        <div class="btn-group">
+          <button
+            ng-click="browser.view.zoomIn()"
+            class="btn btn-default">
+            <i class="fa fa-search-plus"></i>
+          </button>
+          <button
+            ng-click="browser.view.zoomOut()"
+            class="btn btn-default">
+            <i class="fa fa-search-minus"></i>
+          </button>
+        </div>
+        <div class="btn-group">
+          <button
+            type="button"
+            class="btn btn-default dropdown-toggle"
+            data-toggle="dropdown">
+            <i class="fa fa-gear"></i>
+          </button>
+          <ul class="dropdown-menu pull-right">
+            <li
+              ng-class="{disabled: browser.view.isZoomBaseLevel()}">
+              <a
+                href="#"
+                ng-click='browser.view.zoomToBaseLevel()'>
+                <i class="fa fa-expand"></i>
+                Zoom in to nucleotides
+              </a>
+            </li>
+            <li
+              ng-class="{disabled: !browser.view.isZoomBaseLevel()}">
+              <a
+                href="#"
+                ng-click='browser.view.zoomBackOut()'>
+                <i class="fa fa-compress"></i>
+                Zoom out to overview
+              </a>
+            </li>
+            <li class="divider"></li>
+            <li>
+              <a
+                href="#"
+                ng-click='browser.scrollToNextEdge()'>
+                <i class="fa fa-compress"></i>
+                Scroll to next edge
+              </a>
+            </li>
+            <li>
+              <a
+                href="#"
+                ng-click='browser.scrollToPreviousEdge()'>
+                <i class="fa fa-compress"></i>
+                Scroll to previous edge
+              </a>
+            </li>
+            <li class="divider"></li>
+            <li
+              class="disabled">
+              <a
+                href="#"
+                ng-click=''>
+                <i class="fa fa-exchange"></i>
+                Flip strand
+              </a>
+            </li>
+          </ul>
+        </div>
+        <button
+          ng-click="toggle_sidebar()"
+          class="btn btn-default">
+          <i class="fa" ng-class="{'fa-angle-double-right': sidebar_visible, 'fa-angle-double-left': !sidbar_visible}"></i>
+        </button>
+      </div>
+      <div id="genome"></div>
+      <div class="controls-bot">
+        <button
+          ng-click="done()"
+          class="btn btn-primary btn-lg btn-block pull-right">
+          <i class="fa fa-lg fa-check-square-o"></i>
+          Done
+        </button>
+      </div>
+    </div>
+
+    <div
+      ng-if="sidebar_visible"
+      class="col-md-3 sidebar">
+      <br>
+      <div id="checklist" class="panel-group">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h4 class="panel-title" data-toggle="collapse" data-parent="#checklist" data-target="#checklist-est">
+              Consistencey with available EST data
+            </h4>
+          </div>
+          <div id="checklist-est" class="panel-collapse collapse">
+            <div class="panel-body">
+              <ul class="fa-ul justified">
+                <li>
+                  <i class="fa-li fa fa-angle-right"></i>
+                  Scrolling along the length of the gene prediction, check the
+                  edges of the prediction don’t conflict with EST data.
+                </li>
+                <li>
+                  <i class="fa-li fa fa-angle-right"></i>
+                  Extend exons if EST data extends beyond consensus prediction.
+                </li>
+                <li>
+                  <i class="fa-li fa fa-angle-right"></i>
+                  Add exons if EST evidence includes additional exons; remove
+                  exons that are largely unsupported. 
+                </li>
+                <li>
+                  <i class="fa-li fa fa-angle-right"></i>
+                  Consider whether EST evidence is best explained by the
+                  existence of  alternative transcripts.
+                </li>
+                <li>
+                  <i class="fa-li fa fa-angle-right"></i>
+                  Check no introns are missing.
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h4 class="panel-title" data-toggle="collapse" data-parent="#checklist" data-target="#checklist-splice-sites">
+              Splice sites
+            </h4>
+          </div>
+          <div id="checklist-splice-sites" class="panel-collapse collapse">
+            <div class="panel-body">
+              <ul class="fa-ul justified">
+                <li>
+                  <i class="fa-li fa fa-angle-right"></i>
+                  Introns generally begin with GT and end in AG (read more on
+                  <a href=”http://en.wikipedia.org/wiki/RNA_splicing”
+                    _target=”_blank”>RNA splicing</a>).
+                </li>
+                <li>
+                  <i class="fa-li fa fa-angle-right"></i>
+                  You may need to shift the start and ends of introns to ensure
+                  exon reading frame stays appropriate.
+                </li>
+                <li>
+                  <i class="fa-li fa fa-angle-right"></i>
+                  If you conclude that the most likely splice donor is GC, flag
+                  the gene model with an appropriate justification.
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h4 class="panel-title" data-toggle="collapse" data-parent="#checklist" href="#checklist-translation-sites">
+              Translation sites
+            </h4>
+          </div>
+          <div id="checklist-translation-sites" class="panel-collapse collapse">
+            <div class="panel-body">
+              <ul class="fa-ul justified">
+                <li>
+                  <i class="fa-li fa fa-angle-right"></i>
+                  The translation start codon is generally ATG - in either the
+                  first or the second exon.
+                </li>
+                <li>
+                  <i class="fa-li fa fa-angle-right"></i>
+                  If the translation start is unclear, select an in-frame ATG
+                  upstream in the same exon or the next as translation start.
+                  Alternatively, an additional exon could be required.
+                </li>
+                <li>
+                  <i class="fa-li fa fa-angle-right"></i>
+                  If you conclude that a gene’s the most likely start codon is
+                  non-ATG, check if this is the case in homologs. Flag the gene
+                  model with an appropriate justification.
+                </li>
+                <li>
+                  <i class="fa-li fa fa-angle-right"></i>
+                  If the translation stop is not a stop codon (unlikely),
+                  resize exon to the first in-frame stop codon.
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel panel-default panel-inverse">
+          <div class="panel-heading">
+            <h4 class="panel-title" data-toggle="collapse" data-parent="#checklist" href="#checklist-homologs">
+              Consistency with homologs and transcriptomes
+            </h4>
+          </div>
+          <div id="checklist-homologs" class="panel-collapse collapse">
+            <div class="panel-body">
+              <ul class="fa-ul justified">
+                <li>
+                  <i class="fa-li fa fa-angle-right"></i>
+                  Check that the length of your gene prediction is similar to
+                  lengths of homologs (e.g. with <a
+                    href=”http://www.uniprot.org/blast/”
+                    target=”_blank”>Uniprot BLASTP</a> or <a
+                    href=”http://blast.ncbi.nlm.nih.gov/Blast.cgi?PROGRAM=blastp&PAGE_TYPE=BlastSearch&LINK_LOC=blasthome”>NCBI
+                    BLASTP</a>)
+                </li>
+                <li>
+                  <i class="fa-li fa fa-angle-right"></i>
+                  Check that individual exons have lengths similar to
+                  homologous exons.
+                </li>
+                <li>
+                  <i class="fa-li fa fa-angle-right"></i>
+                  Check that the overall gene structure is similar to structure
+                  of homologous genes (including same number of exons).
+                </li>
+                <li>
+                  <i class="fa-li fa fa-angle-right"></i>
+                  Check that a <a
+                    href=”http://www.ebi.ac.uk/Tools/psa/emboss_needle/nucleotide.html”
+                    target=”_blank”>pairwise alignment</a> of your prediction
+                  with assembled transcriptome includes no unexplained gaps. 
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="thanks">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 class="modal-title">Great job!</h4>
+        </div>
+        <div class="modal-body">
+          <p>
+            Would you like to contribute more?
+          </p>
+        </div>
+        <div class="modal-footer">
+          <a
+            href="#"
+            data-dismiss="modal"
+            class="btn btn-primary">
+            Contribute more
+          </a>
+          <a
+            href='/'
+            class="btn btn-primary">
+            Go back to Dashboard
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</article>

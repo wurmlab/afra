@@ -1,0 +1,2197 @@
+@import url("../lib/dijit/themes/tundra/tundra.css");
+@import url("../lib/jquery.ui/themes/base/jquery.ui.all.css");
+
+.curate {
+  height: 100%;
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+.curate .row {
+  height: 100%;
+}
+
+.curate .row [class*='col-'] {
+  height: 100%;
+}
+
+.curate .row .col-md-9 {
+  padding: 0px;
+}
+
+.controls-top {
+  top: 18px;
+  right: 0px;
+  z-index: 10;
+  position: absolute;
+  background: white;
+  opacity: 0.9;
+}
+
+#genome {
+  width: 100%;
+  height: 100%;
+  font-size: 12px;
+  font-family: Univers,Trebuchet MS,Helvetica,Arial,sans-serif;
+}
+
+.controls-bot {
+  bottom: 1px;
+  right: 0px;
+  z-index: 10;
+  position: absolute;
+  width: 157px;
+}
+
+.panel-title {
+  cursor: pointer;
+}
+
+.container {
+    height: 100%;
+}
+
+.tundra input {
+    outline: none;
+}
+
+.ghosted {
+    color: #aaa;
+}
+
+fieldset {
+    padding-left: 1em;
+    margin: 0.7em 0.5em;
+}
+fieldset > legend {
+    font-weight: bold;
+    margin-left: -1em;
+}
+
+div.container {
+    position: absolute;
+    z-index: 0;
+}
+
+div.dragWindow {
+    position:absolute;
+    overflow: hidden;
+    z-index: 1;
+}
+
+div.vertical_scrollbar {
+    display: none;
+    width: 6px;
+    background: #eee;
+    background: rgba(235, 235, 235, 0.62);
+    border-left: 1px solid #DDD9D9;
+}
+div.vertical_scrollbar .vertical_position_marker {
+    background: #555;
+    opacity: 0.8;
+    border-radius: 5px;
+    width: 100%;
+    border-right: 1px solid #ccc;
+}
+
+.draggable {
+    cursor: move;
+}
+
+.rubberBandAvailable {
+    cursor: crosshair;
+}
+
+div.locationTrap {
+    position: absolute;
+    z-index: -10;
+    height: 0;
+    top: 0;
+    left: 0;
+    border-color: transparent;
+    border-style: solid;
+    border-bottom-color: #A9C6EB;
+    border-top: 0px dotted transparent;
+}
+
+div.locationThumb {
+    position: absolute;
+    top: 0px;
+    /* if you change this border from 2px, change GenomeView.showTrap */
+    border: 2px solid red;
+    margin: 0px -2px 0px -2px;
+    height: 23px;
+    cursor: move;
+    background: rgba(0, 121, 245, 0.1);
+}
+
+div.locationThumb.dojoMoveItem {
+    cursor: move;
+}
+
+div.topLink {
+    position: absolute;
+    right: 0;
+    top: 0;
+    z-index: 50;
+    background: white;
+    border: 1px solid #888;
+    border-width: 0 0 1px 1px;
+}
+
+a.topLink {
+    padding: 0 0.5ex 0 0.5ex;
+    text-decoration: none;
+    color: blue;
+}
+
+div.overview {
+    position: relative;
+    width: 100%;
+    padding: 4px 0 0 0;
+    z-index: -5;
+    display: block;
+    height: 23px;
+
+    background: #FAFAFA url(../lib/dijit/themes/tundra/images/titleBar.png) repeat-x top left;
+
+    border-style: solid;
+    border-width: 1px 0px 1px 0px;
+    border-color: #555;
+
+    color:#aaa;
+    text-align: center;
+    cursor: crosshair;
+}
+
+div.block {
+    position: absolute;
+    overflow: visible;
+    top: 0px;
+    height: 100%;
+}
+
+div.block.timed_out {
+    background: #ddd;
+    background: rgba( 0,0,0, 0.1 );
+}
+
+div.track {
+    position: absolute;
+    left: 0px;
+    width: 100%;
+    z-index: 5;
+    padding: 0;
+    margin: 0;
+}
+
+.track.dojoDndItemOver {
+    cursor: inherit;
+    background: inherit;
+}
+.track.dojoDndItemAnchor {
+    background: inherit;
+}
+
+.track.dojoDndItemBefore {
+    border-top: 3px solid #999;
+    margin-top: -3px;
+}
+
+.track.dojoDndItemAfter {
+    border-bottom: 3px solid #999;
+    margin-bottom: -3px;
+}
+
+div#static_track {
+    top: 0px;
+    position: absolute;
+    z-index: 20;
+}
+
+div.gridline {
+    position: absolute;
+    left: 0px;
+    top: 0px
+    width: 0px;
+    height: 100%;
+    border-style: none none none solid;
+    border-width: 1px;
+    border-color: red;
+    z-index: 0;
+}
+
+div.gridline_major {
+    border-color: #bbb;
+}
+
+div.gridline_minor {
+    border-color: #eee;
+}
+
+div.pos-label {
+    position: absolute;
+    left: -0.35em;
+    top: 0px;
+    z-index: 100;
+    margin: 1px;
+    font-family: sans-serif;
+}
+
+div.overview-pos {
+    position: absolute;
+    left: 0px;
+    color: black;
+    padding-left: 4px;
+    font-family: sans-serif;
+    border: 0;
+}
+
+div.overview-pos:first-child {
+    margin-left: 1px;
+}
+
+div.blank-block {
+    font-family: sans-serif;
+    position: absolute;
+    overflow: visible;
+    top: 0px;
+    height: 100%;
+    background-color: white;
+    z-index: 19;
+}
+
+div.sequence {
+    position: absolute;
+    left: 0px;
+}
+div.sequence .highlighted {
+    background: #ff0;
+}
+div.sequence .revcom {
+    color: red;
+}
+div.sequence .base, div.sequence > div  {
+    height: 14px;
+    line-height: 14px;
+}
+div.sequence .base.big {
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    -ms-box-sizing: border-box;
+
+    border: 1px solid #ccc;
+    border-right-color: #333;
+    border-bottom-color: #333;
+    height: 16px;
+}
+
+div.sequence > div {
+    border-top: 1px solid #4d4d4d;
+    border-bottom: 1px solid black;
+    background: #C6C6C6;
+}
+div.sequence > div:first-child {
+    border-bottom-color: #4d4d4d;
+}
+
+span.base {
+    display: inline-block;
+    text-align: center;
+    z-index: 2000;
+}
+.base {
+    color: black;
+    font-family: Courier New,monospace;
+    font-weight: bold;
+    text-shadow: white 0px 0px 1px;
+}
+.base_n {
+    background-color: #C6C6C6;
+}
+.base_a {
+    background-color: #00BF00;
+    background-color: rgba( 0, 191, 0, 0.9 );
+}
+.base_c {
+    background-color: #4747ff;
+    background-color: rgba( 71, 71, 255, 0.9);
+}
+.base_t {
+    background-color: red;
+    background-color: rgba( 255, 0, 0, 0.9);
+}
+.base_g {
+    background-color: #d5bb04;
+    background-color: rgba( 213, 187, 4, 0.9);
+}
+.base_reference {
+    background-color: #999;
+}
+
+div.sequence_blur {
+    background: none;
+    height: 8px;
+    border-top: 2px solid #aaa;
+    border-bottom: 2px solid #f55;
+    border-left-width: 0;
+    border-right-width: 0;
+    margin-top: 5px;
+}
+
+div.track-label, div.tracklist-label {
+    z-index: 20;
+
+    padding: 1px 6px;
+    overflow: hidden;
+    cursor: pointer;
+
+    border-width: 1px;
+    border-style: solid;
+
+    border-top-color: #999;
+    border-left-color: #999;
+    border-bottom-color: #555;
+    border-right-color: #555;
+
+    border-radius: 6px;
+
+    color: #111;
+    font-weight: bold;
+
+    width: 110px;
+    text-align: center;
+}
+
+/* NOTE: browsers that don't support rgba colors will fall back to all
+   track labels being #bcbcbc */
+
+.notfound-dialog .message {
+    margin: 1em;
+    text-align: center;
+}
+
+.track .loading {
+    background: #fafafa;
+    color: #777;
+    margin: 0;
+    font-weight: bold;
+    height: 100%;
+    width: 100%;
+    z-index: 15;
+    position: absolute;
+}
+.track .loading .text {
+    display: inline;
+    line-height: 40px;
+    margin: 1em;
+}
+
+div.track-label {
+    color: black;
+    margin: 0px 0 0 0px;
+    overflow: show;
+    background: white;
+    padding: 0 5px;
+
+    height: 23px;
+    line-height: 23px;
+
+    z-index: 20;
+    border-color: #eee;
+    opacity: 1.0;
+
+    /* setting white-space to "nowrap" prevents Chrome-specific bug with
+       label text sometimes disappearing after zoom in Chrome was
+       wrapping track-label text to next line, which falls outside of
+       track-label fixed height and therefore not seen. see chromium
+       bug report for more details on underlying issue:
+       http://code.google.com/p/chromium/issues/detail?id=138918
+    */
+    white-space: nowrap;
+}
+
+div.track-label:hover {
+}
+
+div.track-label .track-label-text {
+    display: inline-block;
+    white-space: nowrap;
+}
+
+div.track-label .feature-density {
+    font-size: 90%;
+    font-weight: normal;
+}
+
+/* styles for feature labels */
+.feature-label {
+    position: absolute;
+    border: 0px;
+    margin: -2px 0px 0px 0px;
+    /* padding: 0px 0px 2px 0px; for more space below labels */
+    padding: 0px 0px 0px 0px;
+    /* font-size: 80%; */
+    white-space: nowrap;
+    z-index: 10;
+    cursor: pointer;
+}
+a.feature-label {
+    color: black;
+}
+.feature-description {
+    color: blue;
+    margin-top: -0.2em;
+}
+
+.rubber-highlight {
+    border: 1px solid black;
+    height: 100%;
+    border-color: rgba( 0, 0, 0, 0.6 );
+    background-color: #8087ff;
+    background-color: rgba( 128, 136, 255, 0.6 );
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
+    cursor: crosshair;
+}
+.rubber-highlight div {
+    color: white;
+    padding: 0;
+    margin-top: 30px;
+    font-size: 160%;
+    text-align: center;
+    font-weight: bold;
+    text-shadow: #6374AB 1px 1px 0;
+}
+div.overview .rubber-highlight {
+    font-size: 0;
+    height: 100%;
+    margin-top: -4px; /* corresponds to padding on div.overview */
+    border-top: none;
+    border-bottom: none;
+}
+div.overview .rubber-highlight * {
+    display: none;
+}
+
+.fatal_error {
+    font-size: 14px;
+    margin: 1em;
+}
+div.error, div.message {
+    margin: 1px 1em;
+    padding: 2px 6px;
+    border: 1px outset rgba( 0, 0, 0, 0.3 );
+}
+div.error {
+    background: #ff8888;
+}
+div.track > div.error {
+    width: 30em;
+    position: absolute;
+}
+div.error h2 {
+    margin-top: 0;
+}
+
+div.error .codecaption {
+    font-size: 90%;
+    font-weight: bold;
+    margin-top: 1em;
+    margin-left: 0.2em;
+}
+div.error code {
+    display: block;
+    font-size: 10px;
+    padding: 0.4em 1.2em;
+    margin: 0 0.3em 0.3em 0.3em;
+    overflow: auto;
+    max-height: 6em;
+}
+div.message {
+    background: #eee;
+}
+div.block > div.message {
+    margin-top: 1em;
+    position: absolute;
+}
+div.block:hover > div.message {
+    z-index: 30000;
+}
+
+.tundra .dijitDialogPaneContent {
+    border-top: 1px solid #acacac;
+}
+
+/* styles dealing with popups launched by clicking on features */
+.popup-dialog-iframe .dijitDialogPaneContent {
+    padding: 0;
+}
+
+.export-view-dialog .dijitDialogPaneContent {
+    background: #fafafa;
+}
+
+/* styles for popup dialogs */
+a.dialog-new-window {
+    padding-left: 1em;
+    font-size: 90%;
+}
+
+/* styles for popup feature detail dialogs from tracks */
+.feature-detail {
+    width: 50em;
+    color: #333;
+}
+.feature-detail .subfeature-detail {
+    background: #fafafa;
+    background: rgba( 0, 0, 0, 0.1 );
+    border: 1px outset #B9B9B9;
+    padding: 0.6em;
+}
+.feature-detail .fasta {
+    clear: both;
+    padding: 1em 1.5em;
+    margin: 0.2em 0;
+    border: 1px solid #aaa;
+    background: transparent;
+}
+.feature-detail div.core {
+    font-size: 110%;
+}
+
+.feature-detail div.core h2.sectiontitle {
+    margin-top: 0;
+}
+.feature-detail h2.sectiontitle {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    margin: 1em 0 0.7em 0;
+}
+
+.detail .value {
+    margin-left: 1em;
+    display: inline-block;
+    vertical-align: top;
+    font-family: sans-serif;
+}
+.detail .field {
+    margin: 0;
+    display: inline-block;
+    min-width: 90px;
+    vertical-align: top;
+}
+
+/*
+ force long sequences in feature and alignment detail dialogs to
+ wrap at 45em
+*/
+.detail .value.seq,
+ .detail .value.sequence {
+    word-wrap: break-word;
+    width: 45em;
+}
+
+.detail .field_container {
+    padding: 0 4em 0 1em;
+}
+
+.sharePane input {
+    padding: 1px 0 2px 1px;
+}
+.sharePane .copyReminder {
+    background-color:  #396494;
+    text-align: center;
+    width: 50%;
+    margin: 0 auto;
+    color: white;
+    padding: 2px;
+    font-weight: bold;
+}
+
+.tundra .sharePane input {
+    border: 1px solid #ccc;
+}
+
+/*styles for vertical line and BP label*/
+.basePairLabel {
+    color: black;
+    position: fixed;
+    font-weight: bold;
+    font-size: 9px;
+    display: none;
+    background: #fefefe;
+    padding: 0 0.7em;
+    z-index: 1000;
+    text-align: center;
+    cursor: crosshair;
+    border: 1px solid #888;
+}
+
+.basePairLabel.rubber {
+    z-index: 25;
+}
+
+.trackVerticalPositionIndicatorMain {
+    position: fixed;
+    display: none;
+    cursor: crosshair;
+    left: -2px;
+    height: 100%;
+    width: 1px;
+    background-color: #FF0000;
+    z-index: 15;
+    top: 0;
+}
+
+/* styles for per-base quality table in alignment detail pages */
+.baseQuality {
+    font-family: Courier New, monospace;
+}
+table.baseQuality {
+    margin-bottom: 1em;
+}
+table.baseQuality td {
+    padding: 0 0.2em;
+    line-height: 0.95;
+    text-align: center;
+}
+table.baseQuality tr.seq td {
+    padding-top: 0.8em;
+    font-weight: bold;
+}
+
+@import url("../lib/dojox/form/resources/UploaderFileList.css");
+.fileDialog {
+    color: #333;
+}
+
+.fileDialog label {
+    font-weight: bold;
+    padding: 0 0.5em;
+}
+.fileDialog th {
+    font-weight: bold;
+    border-bottom: 2px solid black;
+}
+.fileDialog .dijitDialogPaneContent > div.intro {
+    width: 27em;
+    text-align: justify;
+    position: relative;
+    left: 12%;
+    margin: 1.4em 0 2.4em 0;
+}
+
+.fileDialog .connector {
+    background: #333;
+    height: 6px;
+    width: 12px;
+    position: absolute;
+
+    bottom: -6px;
+    left: 50%;
+    margin-left: -6px;
+}
+
+.fileDialog h2, .fileDialog h3 {
+    margin: 0;
+    padding: 0;
+    font-size: 125%;
+}
+
+.fileDialog .dijitDialogPaneContent > div {
+    position: relative;
+
+    width: 40em;
+    padding: 0 0 0.75em 0;
+    margin: 6px 0;
+}
+.fileDialog div.aux {
+    text-align: center;
+    margin-bottom: 1em;
+}
+.fileDialog .resourceControls {
+    height: 10em;
+    position: relative;
+}
+.fileDialog .resourceControls > div {
+    width: 19.5em;
+    box-sizing: border-box;
+    height: 100%;
+}
+.fileDialog .resourceControls > div > h3 {
+    height: 19%;
+}
+
+.fileDialog .localFilesControl {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.fileDialog .dijitUploader {
+    position: absolute;
+    margin: 0;
+}
+
+.fileDialog .remoteURLsControl textarea,
+.fileDialog .localFilesControl .dragArea {
+    height: 81%;
+    position: relative;
+    border: 1px solid #b3b3b3;
+    width: 100%;
+    box-sizing: border-box;
+}
+.fileDialog .localFilesControl .dragArea:hover {
+    border: 1px dashed green;
+}
+
+.fileDialog .localFilesControl .dragArea .dragMessage {
+    height: 2em;
+    position: absolute;
+    top: 60%;
+    font-weight: bold;
+    margin-top: -1em;
+    text-align: center;
+    width: 100%;
+}
+.fileDialog .remoteURLsControl textarea {
+    font-size: 10px;
+    background: #f2f2f2;
+}
+.fileDialog .remoteURLsControl textarea:hover {
+    background: white;
+    border-color: #333;
+}
+
+.fileDialog .remoteURLsControl {
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+
+.fileDialog .resourceList {
+    background: #bcd3ef;
+}
+
+.fileDialog .dijitSelect td.dijitStretch {
+    width: 6em;
+}
+.fileDialog .resourceList > h3, .fileDialog .trackList > h3 {
+     padding: 0 0.6em;
+     line-height: 2.1;
+     margin-bottom: 0.5em;
+}
+
+.fileDialog .emptyMessage {
+    width: 100%;
+    font-size: 110%;
+    color: #686868;
+    font-weight: bold;
+    text-align: center;
+    line-height: 4;
+}
+
+.fileDialog .trackList {
+    background: #8cb1dd;
+}
+
+.fileDialog .resourceList > table, .fileDialog .trackList > table {
+    width: 95%;
+    padding: 0 0.75em 0.5em 0.75em;
+    margin: 0 auto;
+    border-collapse: collapse;
+}
+
+/* CSS styles for the various types of feature glyphs */
+/*
+  NOTES ON STYLING FEATURES:
+     - avoid using any margins in feature styles. Layout is done
+       by JBrowse.
+
+     - when possible, make all element heights an odd number of
+       pixels, so that vertical centering is possible with
+       pixel-perfect accuracy.
+*/
+
+.basic,
+.plus-basic,
+.minus-basic {
+    position: absolute;
+    cursor: pointer;
+    z-index: 10;
+    min-width: 1px;
+}
+
+div.hist {
+    position: absolute;
+    z-index: 10;
+
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    -ms-box-sizing: border-box;
+}
+
+.feature,
+.plus-feature,
+.minus-feature {
+    position:absolute;
+    height: 7px;
+    background-repeat: repeat-x;
+    cursor: pointer;
+    min-width: 1px;
+    z-index: 10;
+    background-color: #eee;
+
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    -ms-box-sizing: border-box;
+}
+
+.plus-feature { background-image: url('img/plus-chevron3.png'); }
+.minus-feature { background-image: url('img/minus-chevron3.png'); }
+
+.subfeature,
+.plus-subfeature,
+.minus-subfeature {
+    position:absolute;
+    background-color: #dadada;
+    height: 11px;
+    min-width: 1px;
+    z-index: 12;
+
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    -ms-box-sizing: border-box;
+}
+
+.alignment,
+.plus-alignment,
+.minus-alignment {
+    background-color: #ccc;
+
+    /* these should all 3 match */
+    height:      11px;
+    line-height: 11px;
+    font-size:   11px;
+}
+.plus-alignment {
+    background-color: #EC8B8B;
+}
+.minus-alignment {
+    background-color: #898FD8;
+}
+.alignment.missing_mate, .plus-alignment.missing_mate, .minus-alignment.missing_mate {
+    background-image: url('img/red_crosshatch_bg.png');
+}
+
+.alignment > .mismatch, .minus-alignment > .mismatch, .plus-alignment > .mismatch  {
+    height: 100%;
+}
+.alignment > .deletion, .minus-alignment > .deletion, .plus-alignment > .deletion {
+    background-color: black;
+    height: 100%;
+}
+.alignment > .deletion *, .plus-alignment > .deletion *, .minus-alignment > .deletion * {
+    color: white;
+}
+.alignment > .insertion, .plus-alignment > .insertion, .minus-alignment > .insertion {
+    background-color: white;
+    color: black;
+    height: 100%;
+}
+.alignment > .skip, .plus-alignment > .skip, .minus-alignment > .skip {
+    background: url('img/dark_20x2.png') repeat-x 0 50% white;
+    height: 100%;
+    opacity: 0.7;
+}
+
+div.feature-hist {
+    background-color: blue;
+    border-color: #5858C4;
+}
+
+.feature2, .plus-feature2, .minus-feature2 {
+    position:absolute;
+    height: 7px;
+    background-repeat: repeat-x;
+    cursor: pointer;
+    min-width: 1px;
+    z-index: 10;
+    background-color: #62d335;
+}
+
+div.feature2-hist {
+    background-color: #9f9;
+    border-color: #ada;
+}
+
+.feature3, .plus-feature3, .minus-feature3 {
+    position:absolute;
+    height: 7px;
+    background-repeat: repeat-x;
+    cursor: pointer;
+    min-width: 1px;
+    z-index: 10;
+    background-color: goldenrod;
+}
+
+div.feature3-hist {
+    background-color: yellow;
+    border-color: black;
+}
+
+.feature4, .plus-feature4, .minus-feature4 {
+    position:absolute;
+    height: 11px;
+    background-repeat: repeat-x;
+    cursor: pointer;
+    min-width: 1px;
+    z-index: 10;
+    background: yellow;
+}
+
+div.feature4-hist {
+    background-color: yellow;
+    border-color: black;
+}
+
+.feature5, .plus-feature5, .minus-feature5 {
+    position:absolute;
+    height: 7px;
+    background-repeat: repeat-x;
+    cursor: pointer;
+    min-width: 1px;
+    z-index: 10;
+    background-color: blue;
+}
+
+div.feature5-hist {
+    background-color: blue;
+    border-color: lightblue;
+}
+
+div.exon-hist {
+    background-color: #4B76E8;
+    border-color: #00f;
+}
+
+div.est-hist {
+    background-color: #ED9185;
+    border-color: #c33;
+}
+
+.est,
+.plus-est,
+.minus-est {
+    position: absolute;
+    height: 7px;
+    background-color: #ED9185;
+}
+
+.dblhelix,
+.plus-dblhelix,
+.minus-dblhelix {
+    position:absolute;
+    height: 11px;
+    background-image: url('img/dblhelix-red.png');
+    background-repeat: repeat-x;
+    min-width: 1px;
+    cursor: pointer;
+    z-index: 10;
+}
+
+div.dblhelix-hist {
+    background-color: #fcc;
+    border-color: #daa;
+}
+
+.plus-helix,
+.minus-helix {
+    position:absolute;
+    height: 11px;
+    background-image: url('img/helix3-green.png');
+    background-repeat: repeat-x;
+    min-width: 1px;
+    cursor: pointer;
+    z-index: 10;
+}
+
+div.helix-hist {
+    background-color: #cfc;
+    border-color: #ada;
+}
+
+.loops, .minus-loops, .plus-loops {
+    position:absolute;
+    height: 13px;
+    background-image: url('img/loops.png');
+    background-repeat: repeat-x;
+    cursor: pointer;
+}
+
+.plus-cds, .minus-cds {
+    position:absolute;
+    height: 13px;
+    background-repeat: repeat-x;
+    cursor: pointer;
+    min-width: 1px;
+}
+
+.plus-cds_phase0 { background-image: url('img/plus-cds0.png'); }
+.plus-cds_phase1 { background-image: url('img/plus-cds1.png'); }
+.plus-cds_phase2 { background-image: url('img/plus-cds2.png'); }
+.minus-cds_phase0 { background-image: url('img/minus-cds0.png'); }
+.minus-cds_phase1 { background-image: url('img/minus-cds1.png'); }
+.minus-cds_phase2 { background-image: url('img/minus-cds2.png'); }
+
+div.cds-hist {
+    background-color: #fcc;
+    border-color: #daa;
+}
+
+.topbracket {
+    position:absolute;
+    height: 8px;
+    border-style: solid solid none solid;
+    border-width: 2px;
+    border-color: orange;
+    cursor: pointer;
+}
+
+.bottombracket {
+    position:absolute;
+    height: 8px;
+    border-style: none solid solid solid;
+    border-width: 2px;
+    border-color: green;
+    cursor: pointer;
+}
+
+.hourglass, .plus-hourglass, .minus-hourglass {
+    position:absolute;
+    height: 0px;
+    border-style: solid;
+    border-width: 6px 3px 6px 3px;
+    cursor: pointer;
+}
+
+.triangle, .plus-triangle, .minus-triangle {
+    position:absolute;
+    height: 0px;
+    border-style: solid;
+    border-width: 6px 3px 0px 3px;
+    cursor: pointer;
+}
+
+.hgred {
+    border-color: #f99 white #f99 white;
+}
+div.hgred-hist {
+    background-color: #daa;
+    border-color: #d44;
+}
+
+.hgblue {
+    border-color: #99f white #99f white;
+}
+div.hgblue-hist {
+    background-color: #aad;
+    border-color: #99f;
+}
+
+.ibeam, .plus-ibeam, .minus-ibeam {
+    position:absolute;
+    height: 2px;
+    background-color: blue;
+    border-style: solid;
+    border-width: 8px 4px 8px 4px;
+    border-color: white blue white blue;
+    cursor: pointer;
+}
+
+div.transcript-hist {
+    background-color: #ddd;
+    border-color: #FF9185;
+}
+
+.transcript,
+.plus-transcript,
+.minus-transcript {
+    position: absolute;
+    height: 11px;
+    background: url('../img/jbrowse/dark_20x3.png') repeat-x 0 4px;
+    z-index: 6;
+    min-width: 1px;
+    cursor: pointer;
+}
+
+.plus-transcript-arrowhead,
+.plus-arrowhead {
+    position: absolute;
+    width: 12px;
+    height: 100%;
+    background-image: url('../img/jbrowse/plus-arrowhead.png');
+    background-repeat: no-repeat;
+    background-position: left center;  /* center image vertically */
+  }
+
+.minus-transcript-arrowhead,
+.minus-arrowhead {
+    position: absolute;
+    width: 12px;
+    height: 100%;
+    background-image: url('../img/jbrowse/minus-arrowhead.png');
+    background-repeat: no-repeat;
+    background-position: right center;  /* center image vertically */
+}
+
+/* introns are hidden by default */
+.plus-intron, .minus-intron {
+    display: none;
+}
+
+/* can also set a class of 'hidden' to hide something */
+.hidden, .plus-hidden, .minus-hidden {
+    display: none;
+}
+
+.plus-CDS,
+.plus-transcript-CDS,
+.minus-CDS,
+.minus-transcript-CDS {
+    position: absolute;
+    height: 11px;
+    background-color: #B66;
+    cursor: pointer;
+    z-index: 10;
+    min-width: 1px;
+}
+
+.plus-exon,
+.minus-exon,
+.plus-UTR,
+.minus-UTR,
+.plus-five_prime_UTR,
+.minus-five_prime_UTR,
+.plus-three_prime_UTR,
+.minus-three_prime_UTR {
+    position: absolute;
+    height: 11px;
+    background-color: #B66;
+    z-index: 8;
+    min-width: 1px;
+    cursor: pointer;
+}
+
+.generic_parent,
+.plus-generic_parent,
+.minus-generic_parent {
+    position: absolute;
+    height: 11px;
+    background: url('../img/jbrowse/dark_20x3.png') repeat-x 0 4px white;
+    z-index: 6;
+    min-width: 1px;
+    cursor: pointer;
+}
+
+div.generic_parent-hist {
+    background-color: #ddd;
+    border-color: #555;
+}
+
+.match_part,
+.plus-match_part,
+.minus-match_part {
+    position: absolute;
+    height: 11px;
+    background-color: #66B;
+    z-index: 8;
+    min-width: 1px;
+    cursor: pointer;
+}
+
+.generic_part_a,
+.plus-generic_part_a,
+.minus-generic_part_a {
+    position: absolute;
+    height: 4px;
+    background-color: #6B6;
+    border-style: solid;
+    border-color: #8D8;
+    border-width: 2px 0px 2px 0px;
+    z-index: 8;
+    min-width: 1px;
+    cursor: pointer;
+}
+
+
+/* floating score display for wiggle tracks */
+.wiggleValueDisplay {
+    background: #FFFEF0;
+    border: 1px solid #aaa;
+    padding: 2px;
+    font-family: Courier New, monospace;
+    font-weight: bold;
+    cursor: default;
+
+    -moz-box-shadow: 4px 4px 10px 2px rgba( 80, 80, 80, 0.3 );
+    -webkit-box-shadow: 4px 4px 10px 2px rgba( 80, 80, 80, 0.3 );
+    box-shadow: 4px 4px 10px 2px rgba( 80, 80, 80, 0.3 );
+}
+.wiggleValueDisplay table {
+    border-spacing: 0;
+}
+.wiggleValueDisplay td {
+    padding: 0.2em 0.4em;
+}
+.wiggleValueDisplay td.count, .wiggleValueDisplay td.pct  {
+    text-align: right;
+}
+.wiggleValueDisplay tr.total > td {
+    border-top: 1px solid #aaa;
+    font-weight: bold;
+}
+
+.wigglePositionIndicator {
+    background: #333;
+    border: none;
+    width: 1px;
+    cursor: default;
+}
+
+/* Dojo and Dijit stuff */
+
+@import url("../lib/dojox/grid/resources/tundraGrid.css");
+@import url("../lib/dijit/themes/tundra/layout/AccordionContainer.css");
+
+
+.dojoxGrid table {
+  margin: 0;
+}
+.dojoxGridRowSelectorStatusText {
+    display: none;
+}
+
+/* JBrowse stuff */
+
+#faceted_tracksel {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+}
+
+#faceted_tracksel.active {
+    -moz-box-shadow: 4px 4px 10px 3px rgba( 30, 30, 50, 0.3 );
+    -webkit-box-shadow: 4px 4px 10px 3px rgba( 30, 30, 50, 0.3 );
+    box-shadow: 4px 4px 10px 3px rgba( 30, 30, 50, 0.3 );
+}
+
+#faceted_tracksel button, #faceted_tracksel input {
+    font-size: 12px;
+}
+
+#faceted_tracksel div.mainContainer {
+    height: 100%;
+    width: 100%;
+}
+.tundra #faceted_tracksel div.mainContainer {
+    border-right: 2px solid #555;
+    background: #e9e9e9;
+}
+
+/* Track grid */
+
+#faceted_tracksel .dojoxGridCellFocus {
+    border-color: transparent;
+    border-color: transparent !important;
+}
+#faceted_tracksel .gridPane .gridControls {
+    padding: 2px 3px;
+    font-size: 110%;
+}
+.tundra #faceted_tracksel .gridPane .gridControls {
+    background: #e9e9e9;
+    border: 1px solid #aaa;
+    border-right: none;
+}
+
+#faceted_tracksel .gridPane .gridControls > * {
+    margin: 2px 3px;
+    display: inline-block;
+    vertical-align: middle;
+}
+#faceted_tracksel .gridPane .gridControls button {
+    height: 2.2em;
+    margin: 4px;
+    white-space: nowrap;
+}
+#faceted_tracksel .gridPane .gridControls button > * {
+    display: inline-block;
+    vertical-align: middle;
+}
+#faceted_tracksel .gridPane .gridControls button img {
+    padding: 0 0.4em 0 0;
+}
+#faceted_tracksel.busy .gridControls .busy_indicator {
+    visibility: visible;
+}
+#faceted_tracksel .gridControls .busy_indicator {
+    z-index: 20;
+    visibility: hidden;
+}
+
+
+#faceted_tracksel label.textFilterControl img.text_filter_clear {
+    display: none;
+}
+#faceted_tracksel label.textFilterControl.selected img.text_filter_clear {
+    display: block;
+}
+#faceted_tracksel label.textFilterControl input {
+    border-top: 3px solid transparent;
+    font-weight: bold;
+    padding: 0.2em;
+}
+#faceted_tracksel label.textFilterControl.selected input {
+    border-top: 3px solid #396494;
+    background: #D2E1F1;
+}
+
+/* Track selector title bar */
+#faceted_tracksel_top {
+    border-bottom: 1px solid #ccc;
+    padding: 5px;
+}
+.tundra #faceted_tracksel_top {
+    background: #396494;
+}
+.tundra #faceted_tracksel_top .topLink {
+    color: white;
+}
+
+#faceted_tracksel_top > * {
+    display: inline-block;
+    vertical-align: middle;
+    margin-left: 5px;
+}
+#faceted_tracksel_top .title {
+    padding: 0;
+    width: 185px;
+
+    font-weight: bold;
+    color: white;
+    font-size: 180%;
+}
+
+#faceted_tracksel .faceted_tracksel_on_off.tab {
+    position: absolute;
+    top: 1.8em;
+    left: 100%;
+    z-index: 5;
+
+    padding: 5px 0px;
+    white-space: nowrap;
+
+    cursor: pointer;
+
+    -moz-box-shadow: 4px 4px 10px 2px rgba( 80, 80, 80, 0.3 );
+    -webkit-box-shadow: 4px 4px 10px 2px rgba( 80, 80, 80, 0.3 );
+    box-shadow: 4px 4px 10px 2px rgba( 80, 80, 80, 0.3 );
+}
+#faceted_tracksel div.faceted_tracksel_on_off.tab > * {
+    display: inline-block;
+    vertical-align: middle;
+    padding: 0 6px;
+}
+.tundra #faceted_tracksel .faceted_tracksel_on_off.tab {
+    background: #e9e9e9 url("../lib/dijit/themes/tundra/images/titleBar.png") top repeat-x;
+    border: 2px solid #666;
+
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+
+#faceted_tracksel_top div.topLink {
+    position: absolute;
+    top: 0;
+    right: 0;
+
+    background: none;
+    border: none;
+    color: white;
+    padding: 3px 0.6em;
+
+    font-weight: bold;
+}
+
+
+/* Facet selection controls */
+
+#faceted_tracksel .facetSelect {
+    width: 100%;
+    border-spacing: 0;
+}
+#faceted_tracksel .facetSelect .facetValue {
+    padding: 0.1em 0.4em;
+    cursor: pointer;
+}
+#faceted_tracksel .facetSelect .facetValue > * {
+    vertical-align: top;
+}
+#faceted_tracksel .facetSelect .disabled {
+    color: gray;
+}
+
+#faceted_tracksel .facetSelect .facetValue.disabled {
+    display: none;
+}
+#faceted_tracksel .facetSelect .facetValue.disabled.selected {
+    display: block;
+}
+
+.tundra #faceted_tracksel .facetSelect .facetValue:hover {
+    background: #D2E1F1;
+}
+
+#faceted_tracksel .facetSelect .facetValue .count {
+    padding: 0 0.7em 0 0.4em;
+    color: #333;
+    text-align: right;
+}
+#faceted_tracksel .facetSelect .facetValue .value {
+    width: 80%;
+}
+
+#faceted_tracksel .facetSelect .selected {
+    background: #b1d3f6;
+}
+.tundra #faceted_tracksel .facetSelect .facetValue.selected,
+.tundra #faceted_tracksel .facetSelect .facetValue.selected:hover {
+    background: #AEC7E3;
+}
+
+
+#faceted_tracksel .dijitAccordionContainer-dijitContentPane {
+    padding: 0;
+}
+#faceted_tracksel .dijitAccordionContainer .dijitAccordionTitle {
+    padding: 0;
+}
+#faceted_tracksel .dijitAccordionTitleFocus {
+    position: relative;
+}
+.tundra #faceted_tracksel .dijitAccordionTitleFocus {
+    border-top: 3px solid transparent;
+    padding: 2px 2px 2px 0.6em;
+    color: #1B3047
+}
+.tundra #faceted_tracksel .dijitAccordionTitleSelected {
+    background: white;
+}
+#faceted_tracksel .dijitAccordionTitleSelected .facetTitle {
+    color: black;
+}
+
+#faceted_tracksel .activeFacet .facetTitle {
+    font-weight: bold;
+    color: black;
+}
+.tundra #faceted_tracksel .activeFacet {
+    border-top: 3px solid #396494;
+    background-color: #AEC7E3;
+}
+
+#faceted_tracksel .facetTitle a {
+    position: absolute;
+    top: 2px;
+    right: -4px;
+    visibility: hidden;
+}
+#faceted_tracksel .activeFacet a.clearFacet {
+    visibility: visible;
+    padding: 1px 6px;
+}
+
+
+/* styling specifically for the title of the first facet title, which is 'My Tracks' */
+.tundra #faceted_tracksel .dijitAccordionInnerContainer:first-child .facetTitle:after {
+    content: url("../lib/dijit/themes/tundra/images/circleIcon.png");
+    margin-left: 7px;
+}
+#faceted_tracksel .dijitAccordionInnerContainer:first-child .facetTitle {
+    color: black;
+    font-weight: bold;
+    padding-bottom: 6px;
+}
+
+/* style the 'empty' and similar messages that show up in the grid master pane */
+#faceted_tracksel .dojoxGridMasterMessages {
+    font-size: 16px;
+}
+
+/* for WA */
+.feature-render  {
+    position: absolute;
+    min-width: 1px;
+    width: 100%;
+    /* feature render div may be added to feature div _after_ subfeature divs, so 
+       if want subfeature divs in front of feature render div, make sure feature render div has lower 
+       z-index than subfeature divs */
+    z-index: 2;
+}
+
+.track .global_highlight {
+    background: rgba( 255, 255, 0, 0.5 );
+}
+
+.CDS {
+    background-color: transparent;
+}
+
+.mRNA,
+.plus-mRNA,
+.minus-mRNA  {
+    height: 14px;
+    /* outline: 2px dashed green; */
+    background-color: transparent;
+}
+
+div.track_edit {
+    background-color: #FFFFDD !important;
+}
+
+/*
+   To support WebApollo with sequence alteration features shown on SequenceTrack, 
+   sequence style MUST NOT have a z-index specified 
+*/
+div.wa-sequence {
+    position: absolute;
+    left: 0px;
+    /* Courier New is preferred by JBrowse, but it looks too light in Firefox,
+     * and jagged in Chrome */
+    /* font-family: Courier New,monospace; */
+    font-family: monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    padding-left: 2px;
+    cursor: pointer; 
+    -moz-user-select: none;
+    -khtml-user-select: none;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+/* 
+   block_seq_container are SequenceTrack divs that are child of .block and parent of .dna-residues
+   need to break this out from div.sequence because .sequence is also used for determining 
+        font character width and height in GenomeView.calculateSequenceCharacterSize(), 
+	and for that don't want a specified width
+*/
+div.block-seq-container {
+    top: 15px;
+    width: 100%;
+    /* outline: 1px solid #00FF00; */
+}
+
+div.wa-sequence .dna-container  {
+    position: absolute;
+    width: 100%;
+}
+
+div.wa-sequence .dna-residues.forward-strand {
+    color: black;
+    z-index: 5;
+    /* outline: 1px solid pink; */
+}
+
+div.wa-sequence .dna-residues.reverse-strand {
+    color: gray;
+    border-top: 1px solid lightgray;
+    z-index: 5;
+    /* outline: 1px solid pink; */
+}
+
+div.wa-sequence .aa-residues  {
+    color: black;
+    z-index: 5;
+/*
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    -ms-box-sizing: border-box;
+*/
+/*    outline: 1px solid orange; */
+}
+
+div.wa-sequence .aa-residues.frame0 {
+    background-color: #999999; 
+    z-index: 5;
+}
+
+div.wa-sequence .aa-residues.frame1 {
+    background-color: #BBBBBB; 
+    z-index: 5;
+}
+
+div.wa-sequence .aa-residues.frame2 {
+    background-color: #DDDDDD; 
+    z-index: 5;
+}
+
+/* highlighting of dna residues in DNA track on mouseover */
+div.wa-sequence .dna-highlighted {
+    background: #F9BF3A
+}
+
+/* don't think this is currently (April 2012) being used */
+div.wa-sequence .highlighted {
+    background: #ff0;
+}
+
+div.annot-sequence  {
+    position: absolute;
+    left: 0px;
+    font-family: monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    padding-left: 2px;
+    z-index: 15;
+    /*  
+	need pointer-events:none so that any events pass through annot-sequence overlay
+	and onto the block or feature div underneath
+    */ 
+    pointer-events: none;
+
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -o-user-select: none;
+    user-select: none;
+}
+
+/*
+div.basic-hist {
+    position: absolute;
+    z-index: 10;
+}
+*/
+
+/********************************************************
+*   invisible containers, 
+*   for features that also have a renderClass that gets centered, 
+*      and for subfeatures that have rendered children 
+*      (currently only subfeatures like this are exons, which have CDS and UTR child divs)
+********************************************************/
+.container-16px, 
+.plus-container-16px, 
+.minus-container-16px  {
+    height: 16px;
+    background-color: transparent;
+}
+
+.container-14px, 
+.plus-container-14px, 
+.minus-container-14px  {
+    height: 14px;
+    background-color: transparent;
+}
+
+.container-12px, 
+.plus-container-12px, 
+.minus-container-12px  {
+    height: 12px;
+    background-color: transparent;
+}
+
+.container-10px, 
+.plus-container-10px, 
+.minus-container-10px  {
+    height: 10px;
+    background-color: transparent;
+}
+
+.container-8px, 
+.plus-container-8px, 
+.minus-container-8px {
+    height: 8px;
+    background-color: transparent;
+}
+
+/* intended for subfeatures that have rendered children, 
+*  want to size subfeature container to same height as parent feature
+*      (currently only subfeatures like this are exons, which have CDS and UTR child divs)
+*/
+.container-100pct, 
+.plus-container-100pct, 
+.minus-container-100pct {
+    height: 100%;
+    background-color: transparent;
+}
+
+.feature-render  {
+    position: absolute;
+    min-width: 1px;
+    width: 100%;
+    /* feature render div may be added to feature div _after_ subfeature divs, so 
+       if want subfeature divs in front of feature render div, make sure feature render div has lower 
+       z-index than subfeature divs */
+    z-index: 2;  
+}
+
+/**
+ *   Basic boxes for subfeatures (and for "render-*" rendering div for features with container divs)
+ *   height is % of parent feature, top % determined based on height to ensure vertically centered
+ */
+.gray-center-30pct  {
+    background-color: gray;
+    height: 30%;
+    top: 35%;
+}
+
+
+.gray-center-50pct  {
+    background-color: lightgray;
+    height: 50%;
+    top: 25%;
+}
+
+
+.gray-center-20pct  {
+    position:absolute;
+    background-color: gray;
+    min-width: 1px;
+    width: 100%;
+    height: 20%;
+    top: 40%;
+    /* annotline div may be added to annot div _after_ child feature divs, so 
+       if want child divs in front of annotline, make sure has lower 
+       z-index than child divs */
+    z-index: 2;  
+}
+
+.gray-center-10pct  {
+    position:absolute;
+    background-color: gray;
+    min-width: 1px;
+    width: 100%;
+    height: 10%;
+    top: 45%;
+    /* annotline div may be added to annot div _after_ child feature divs, so 
+       if want child divs in front of annotline, make sure has lower 
+       z-index than child divs */
+    z-index: 2;  
+}
+
+
+
+
+.pink-90pct, 
+.plus-pink-90pct, 
+.minus-pink-90pct  {
+    height: 90%;
+    top: 5%;
+    background-color: #D8BDEB;
+    border: 1px solid #01F;
+/*    border-style: solid;
+    border-color: #01F;
+    border-width: 1px;
+*/
+}
+
+.pink-12px, 
+.plus-pink-12px, 
+.minus-pink-12px {
+    background-color: #D8BDEB;
+    border: 1px solid #01F;
+    height: 12px;
+    /*    margin-top: 2px; */  /* rely on centering in code instead? */
+}
+
+.pink-16px, 
+.plus-pink-16px, 
+.minus-pink-16px {
+    background-color: #D8BDEB;
+    border: 1px solid #01F;
+    height: 16px;
+    /*    margin-top: 2px; */  /* rely on centering in code instead? */
+}
+
+.purple-60pct, 
+.plus-purple-60pct, 
+.minus-purple-60pct  {
+    background-color: #8F408F;
+    height: 60%;
+    top: 20%;
+}
+
+.purple-8px, 
+.plus-purple-8px, 
+.minus-purple-8px {
+    background-color: #8F408F;
+    height: 8px; 
+    /*   margin-top: 4px; */  /* rely on centering in code instead? */
+}
+
+.darkblue-80pct, 
+.plus-darkblue-80pct, 
+.minus-darkblue-80pct  {
+    background-color: #1F3DDE;
+    height: 80%;
+    top: 10%;
+}
+
+.bluegreen-80pct, 
+.plus-bluegreen-80pct, 
+.minus-bluegreen-80pct  {
+    background-color: #3BA08E;
+    height: 80%;
+    top: 10%;
+}
+
+
+.brightgreen-80pct, 
+.plus-brightgreen-80pct, 
+.minus-brightgreen-80pct  {
+    background-color: #21D61F;
+    border: 1px solid #555;
+    height: 80%;
+    top: 10%;
+}
+
+.darkgreen-60pct, 
+.plus-darkgreen-60pct, 
+.minus-darkgreen-60pct {
+    height: 60%;
+    top: 20%;
+    background-color: #8DB890;
+}
+
+.trellis-CDS, 
+.plus-trellis-CDS, 
+.minus-trellis-CDS {
+    background-color: gold;
+    border: 1px solid gray;
+    height: 80%;
+    top: 10%;
+}
+
+.trellis-UTR, 
+.plus-trellis-UTR, 
+.minus-trellis-UTR  {
+    background-color: #B39700;
+    height: 60%;
+    top: 20%;
+}
+
+.trellis-match-part, 
+.plus-trellis-match-part, 
+.minus-trellis-match-part  {
+    background-color: #1F3DDE;
+    height: 60%;
+    top: 10%;
+}
+
+/* defaults for rendering aligned read from BAM files */
+.bam-read, 
+.plus-bam-read, 
+.minus-bam-read {
+    height: 5px; 
+    background-color: #AACDDC;
+    z-index: 8;
+}
+
+/* testing different coloration of BAM alignments on minus strand
+.minus-bam {
+    height: 5px; 
+    background-color: #AA00AA;
+    z-index: 8;
+}
+*/
+
+/* CIGAR string "M" subfeature, indicating "alignment match" (can be a sequence match or mismatch) of aligned sequence relative to viewed sequence */
+.cigarM, 
+.plus-cigarM, 
+.minus-cigarM  {
+    height: 100%; 
+    background-color: #1B8A99;
+    z-index: 8;   /* rendered below most other subfeatures */
+    min-width: 1px;
+}
+
+/* CIGAR string "D" subfeature, indicating deletion in aligned sequence relative to viewed sequence */
+/* setting z-index higher than "cigarM" (and default "subfeature") to ensure not hidden by neighboring match regions when zoomed out */
+/* deletions are rendered above matches/mismatches, but below insertion */
+/* turned off, deletion rendering in DraggableAlignments tracks is being handled as non-features by _drawMismatches() now */
+/*
+.cigarD, 
+.plus-cigarD, 
+.minus-cigarD  {
+    height: 100%;
+    background-color: #FF0000;
+    z-index: 12;   
+    min-width: 3px;
+}
+*/
+
+/* CIGAR string "I" subfeature, indicating insertion in aligned sequence relative to viewed sequence */
+/* rendered above sibling subfeature types to increase visibility, since will always be a zero-width feature (?) */
+/* turned off, insertion rendering in DraggableAlignments tracks is being handled as non-features by _drawMismatches() now */
+/*
+.cigarI, 
+.plus-cigarI, 
+.minus-cigarI  {
+    height: 100%;
+    background-color: #00FF00;
+    z-index: 13;  
+    min-width: 3px;
+}
+*/
+
+
+/* CIGAR string "=" (or "E") subfeature, indicating exact sequence match of aligned sequence relative to viewed sequence */
+.cigarEQ, 
+.plus-cigarEQ, 
+.minus-cigarEQ  {
+    height: 100%; 
+    background-color: #1B8A99;
+    z-index: 10; /* rendered above more generic "M" type */
+    min-width: 1px;
+}
+
+/* CIGAR string "X" subfeature, indicating mismatch of aligned sequence relative to viewed sequence */
+.cigarX, 
+.plus-cigarX, 
+.minus-cigarX  {
+    height: 100%; 
+    background-color: rgb(182, 167, 0);  
+    z-index: 11;  /* rendered above matches, but below deletions and insertions */
+    min-width: 3px;
+}
+
+
+/*  don't render skips, just let parent bam show through (similar to not rendering intron but letting transcript show through)
+.cigarN, 
+.plus-cigarN, 
+.minus-cigarN  {
+    position: absolute;
+    height: 2px; 
+    margin-top: 0px;
+    background-color: #AACDDC;
+    z-index: 8;
+    min-width: 1px;
+}
+*/
+
+/* align_insertion, align_deletion, align_skip, align_mismatch are assigned to 
+   non-feature child divs of bam-read features in DraggableAlignments._drawMismatches()
+*/
+.align_insertion {
+    background-color: #00FF00;
+    height: 100%;
+    min-width: 2px;
+    z-index: 20;  // render on top of mismatches etc.
+}
+
+.align_deletion {
+    background-color: #FF0000;
+    height: 100%;
+    min-width: 2px;
+    z-index: 20;  // render on top of mismatches etc.
+}
+
+.align_skip {
+}
+
+.align_mismatch {
+    background-color: #D8C046;
+    height: 100%;
+    min-width: 2px;
+    z-index: 12;
+}
+
+.noncanonical-splice-site,
+.plus-noncanonical-splice-site,
+.minus-noncanonical-splice-site  {
+    margin-left: -8px;
+    /* margin-top: -11px;  */
+    /*  moved noncanonical icon to bottom of annotation, prefer top of annotation but 
+    need to have a some padding at top of track before that works */
+    margin-top: 9px;
+    padding-left: 8px;
+    padding-right: 8px;
+    position: absolute;
+    height: 16px;
+    z-index: 100;
+    background-color: transparent;
+    background-image: url('img/exclamation_circle_orange.png');
+    background-repeat: no-repeat;
+    pointer-events: none;   /*  attempting to route around issue with centered non-canon splice sites preventing edge-drag */
+}
+
+
+/* 
+   for styles of features that are on SequenceTrack, 
+   z-index MUST be > z-index of 
+       (div.sequence .dna-residues.forward-strand) and 
+       (div.sequence .dna-residues.reverse-strand) styles
+*/
+.sequence-alteration.deletion, 
+.sequence-alteration.plus-deletion,
+.sequence-alteration.minus-deletion {
+    border-style: solid;
+    border-color: blue;
+    border-width: 1px;
+    height: 100%;
+    background-color: rgba(150,0,0,0.3);
+    z-index: 20;  
+}
+
+.sequence-alteration.insertion, 
+.sequence-alteration.plus-insertion,
+.sequence-alteration.minus-insertion {
+    border-style: solid;
+    border-color: green;
+    border-width: 1px;
+    height: 100%;
+    background-color: rgba(0,150,0,0.3);
+    z-index: 20;  
+}
+
+.sequence-alteration.substitution, 
+.sequence-alteration.plus-substitution,
+.sequence-alteration.minus-substitution {
+    border-style: solid;
+    border-color: blue;
+    border-width: 1px;
+    height: 100%;
+    background-color: rgba(250,250,0,0.3);
+    z-index: 20;  
+}
+
+.cds-frame0 {
+    background-color: #FF8080 !important;
+}
+
+.cds-frame1 {
+    background-color: #80FF80 !important;
+}
+
+.cds-frame2 {
+    background-color: #8080FF !important;
+}
+
+/**
+*   appearance of resizing box when dragging annotation edges
+*   if case browser doesn't support transparency via "rgba", fall back on solid background?
+*/
+.ui-resizable-helper  {
+    border: 2px dotted red;
+    background: rgb(100, 150, 255);
+    background: rgba(100, 150, 255, 0.5);
+    
+}
+
+/**
+*  By default, no styling associated with custom multifeature draggable helper
+*  But leaving here for easing toggling of diagnostic rendering
+*/
+.custom-multifeature-draggable-helper  {
+/*  
+    outline-style: dotted; 
+    outline-color: red;
+    outline-width: 4px; 
+*/
+}
+
+/**
+ * Appearance of annotations (features in AnnoTracks)  when they are drop
+ * targets and are hovered over.
+*/
+.annot-drop-hover  {
+    outline-style: solid; 
+    outline-color: green;
+    outline-width: 4px; 
+}
+
+/* 
+*  overriding JQueryUI .ui-resizable style, which changes anything getting resized to "position:absolute"
+*  for this to work this CSS _must_ come after jquery-ui.css in load order
+*/
+.ui-resizable  {
+    position: absolute;
+}
+
+/**
+ * Style to highlight left feature edges that match selected feature(s) edges.
+ * Setting box-sizing to border-box keeps the border _inside_ the element
+ * rather than outside.
+*/
+.left-edge-match  {
+    border-left: solid black 2px;
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    -ms-box-sizing: border-box;
+}
+
+.right-edge-match  {
+    border-right: solid black 2px;
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    -ms-box-sizing: border-box;
+}
+
+.selected-feature {
+    outline-style: solid;
+    outline-color: black;
+    outline-width: 4px;
+}
+
+.selected-annotation  {
+    outline-style: solid;
+    outline-color: black;
+    outline-width: 4px;
+}
+
+.shadow  {
+    -moz-box-shadow: 5px 5px 5px #444;
+    -webkit-box-shadow: 5px 5px 5px #444;
+    box-shadow: 5px 5px 5px #444;
+}
+
+/* maker    background-color: rgb(255,204,204); */
+/* blastn   background-color: rgb(102,204,102); */
+/* blastx     background-color: rgb(0,200,204); */
+/* tblastx    background-color: rgb(0,200,104); */
+/* snap       background-color: rgb(153,100,204); */
+/* est2genome     background-color: rgb(100,100,210); */
+/* protein2genome   background-color: rgb(117,150,255); */
+/* repeatmasker     background-color: red; */
+/* repeatrunner     background-color: rgb(255,152,255); */
+/* default-alignment-block    background-color: #C87C8E; */
+/* nvit-alignment    background-color: #848DBF; */
+
+.stop_codon_read_through, 
+.plus-stop_codon_read_through,
+.minus-stop_codon_read_through {
+    position: absolute;
+    height: 16px;
+    background-color: purple;
+    border-style: solid;
+    border-color: #01F;
+    border-width: 1px;
+    cursor: pointer;
+    z-index: 15;
+    min-width: 1px;
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+}

@@ -1,0 +1,16 @@
+{
+   "tracks" : [
+      {
+         "storeClass" : "JBrowse/Store/SeqFeature/SimpleTrack",
+         "label" : "simple_feature",
+         "key" : "Simple feature",
+         "type" : "FeatureTrack",
+         "style" : {
+            "className" : "generic_parent",
+            "subfeatureClasses" : {
+               "match_part" : "match_part"
+            }
+         }
+      }
+   ]
+}

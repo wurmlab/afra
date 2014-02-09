@@ -1,0 +1,7 @@
+Gemfile.lock
+node_modules
+www/lib
+MYMETA.yml
+MYMETA.json
+Makefile
+data

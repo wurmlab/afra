@@ -1,0 +1,35 @@
+{
+  "name": "afra",
+  "version": "0.0.0",
+  "dependencies": {
+    "requirejs":      "~2.1.8",
+    "requirejs-text": "~2.0.8",
+    "require-less":   "guybedford/require-less#master",
+
+    "jquery":          "~2.0.3",
+    "bootstrap":       "~3.0.0",
+    "font-awesome":    "~4.0.3",
+    "animate.css":     "~3.0.0",
+
+    "underscore-amd":  "~1.5.2",
+
+    "angular":         "~1.2.3",
+    "angular-cookies": "~1.2.3",
+    "angular-animate": "~1.2.3",
+    "angular-moment":  "~0.5.2",
+
+    "dojo":            "~1.9.1",
+    "dojox":           "~1.9.1",
+    "util":            "dojo/util#1.9.1",
+    "dijit":           "~1.9.1",
+    "put-selector":    "~0.3.4",
+    "dgrid":           "~0.3.9",
+    "xstyle":          "~0.2.0",
+    "json-schema":     "kriszyp/json-schema#0.2.1",
+    "dbind":           "rbuels/dbind",
+    "jDataView":       "rbuels/jDataView",
+    "jszlib":          "rbuels/jszlib",
+    "FileSaver":       "dkasenberg/FileSaver.js",
+    "jquery.ui":       "~1.10.3"
+  }
+}

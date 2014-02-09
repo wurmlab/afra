@@ -1,0 +1,207 @@
+<ng-include src="'templates/_nav.html'"></ng-include>
+<article class="container">
+  <section class="problem">
+    <h3>Gene Annotation for the Masses</h3>
+    <p>
+      Why don't naked mole rats ever get cancer?  How can ant queens live
+      for up to 30 years while workers live for a few months and males for
+      only a few weeks?  What makes dog breeds so different?
+    </p>
+
+    <p>
+      Answering such questions requires understanding the relevant genomes.
+      The genome of an organism – stored in the form of DNA in each cell –
+      is represented as a long sequence of the letters ‘A’, ‘G’, ‘C’, and
+      ‘T’.  Parts of this sequence represent genes – instructions which
+      define the shape, size, behavior, lifespan and disease susceptibility
+      of the organism.
+    </p>
+
+    <p>
+      Obtaining a genome sequence is easy. But computers and biologists are
+      having hard time correctly identifying the genes it contains.
+    </p>
+  </section>
+
+  <div class="row">
+    <div class="col-md-6">
+      <section class="contributor">
+        <h3>Biologists Need Your Help.</h3>
+        <ul class="fa-ul the-deal">
+          <!-- the what -->
+          <li>
+            <i class="fa fa-li fa-lg fa-search"></i>Analyze and
+            correct gene models guided by our smart interface.
+          </li>
+
+          <!-- social network -->
+          <li>
+            <i class="fa fa-li fa-lg fa-facebook-square"></i>Share your
+            contribution to science with your peers.
+          </li>
+
+          <!-- learn in the process -->
+          <li>
+            <i class="fa fa-li fa-lg fa-book"></i>Learn about genes
+            and genomes.
+          </li>
+
+          <!-- good karma :) -->
+          <li>
+            <i class="fa fa-li fa-lg fa-certificate"></i>Earn
+            recognition and make the world a better place.
+          </li>
+        </ul>
+      </section>
+
+      <br>
+      <br>
+
+      <section class="biologist">
+        <h3>Are You a Biologist?</h3>
+        <ul class="fa-ul the-deal">
+          <li>
+            <i class="fa fa-li fa-lg fa-group"></i>Sequenced a genome
+            <em>de novo</em> but stuck with bad gene predictions? Our
+            community can manually inspect and refine them for you.
+          </li>
+
+          <li>
+            <i class="fa fa-li fa-lg fa-eye"></i>Performing
+            research on a gene family but uncertain of the quality of gene
+            models you have? Our community can verify and improve their
+            quality for you.
+          </li>
+        </ul>
+      </section>
+    </div>
+
+    <div class="col-md-4 col-md-offset-2">
+      <div class="auth" ng-switch on="location.hash()">
+        <div ng-switch-default>
+          <a
+            href="#signup"
+            class="btn btn-lg btn-primary col-sm-12">
+            <i class="fa fa-lg fa-user"></i>
+            Sign up for Beta
+          </a>
+          <!--<a-->
+            <!--href="#signin"-->
+            <!--class="btn btn-lg btn-primary col-sm-12">-->
+            <!--<i class="fa fa-lg fa-sign-in"></i>-->
+            <!--Sign in-->
+          <!--</a>-->
+        </div>
+
+        <div ng-switch-when="signup">
+          <div ng-switch on="response">
+            <h3>Sign up</h3>
+            <br>
+            <form
+              ng-switch-default
+              ng-submit="signup()"
+              class="form-horizontal" role="form">
+              <div class="form-group col-sm-12">
+                <input
+                type="name"
+                name="name"
+                placeholder="Name"
+                class="form-control">
+              </div>
+              <div class="form-group col-sm-12">
+                <input
+                type="email"
+                name="email"
+                placeholder="Email"
+                class="form-control">
+              </div>
+              <!--<div class="form-group">-->
+                <!--<input-->
+                <!--type="password"-->
+                <!--name="password"-->
+                <!--placeholder="Password"-->
+                <!--class="form-control col-sm-12">-->
+              <!--</div>-->
+              <div class="form-group col-sm-12">
+                <button
+                  type="submit"
+                  class="btn btn-default">
+                  <i class="fa fa-lg fa-user"></i>
+                  Sign up
+                </button>
+              </div>
+            </form>
+            <div ng-switch-when="200">
+              <p>
+                Thanks! We will get in touch with you soon.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div ng-switch-when="signin">
+          <div class="alert alert-warning" style="width: 330px;">
+            <p class="justified">
+              We are in a super alpha stage and support only <strong>Google
+                Chrome</strong> at the moment.
+            </p>
+          </div>
+          <h3>Sign in</h3>
+          <br>
+          <form
+            ng-submit="signin()"
+            class="form-horizontal" role="form">
+            <div class="form-group col-sm-12">
+              <input
+              type="email"
+              name="email"
+              placeholder="Email"
+              class="form-control">
+            </div>
+            <div class="form-group col-sm-12">
+              <input
+              type="password"
+              name="password"
+              placeholder="Password"
+              class="form-control">
+            </div>
+            <div class="form-group col-sm-12">
+              <button
+                type="submit"
+                class="btn btn-default">
+                <i class="fa fa-lg fa-sign-in"></i>
+                Sign in
+              </button>
+            </div>
+
+            <div class="form-group col-sm-12">
+              <hr>
+              <a
+                class="btn btn-default btn-lg"
+                ng-click="signin_fb()">
+                <i class="fa fa-lg fa-facebook-square"></i>
+                Login with Facebook
+              </a>
+              <div id="fb-root"></div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <br>
+  <hr class="soften">
+
+  <footer>
+    <p>Developed by <a href="http://github.com/yeban">Anurag Priyam</a> at
+      <a href="http://yannick.poulet.org">Wurm Lab</a>, 
+      <a href="http://sbcs.qmul.ac.uk">Queen Mary, University of London</a>.
+      Funded by <a href="http://www.bbsrc.ac.uk/home/home.aspx">BBSRC</a>.
+    </p>
+    <p>
+      <a href="http://www.bbsrc.ac.uk/home/home.aspx"><img src="img/nostrap-bbsrc-colour.png" width="90px"></a>
+      <a href="http://sbcs.qmul.ac.uk"><img src="img/qmul-logo.png" width="90px"></a>
+    </p>
+  </footer>
+</article>

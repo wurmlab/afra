@@ -1,0 +1,22 @@
+{
+  "name": "afra",
+  "description": "Crowdsourcing genome annotation.",
+  "version": "0.0.1",
+  "homepage": "https://github.com/yeban/afra",
+  "repository": "https://github.com/yeban/afra",
+  "author": {
+    "name": "Anurag Priyam",
+    "email": "anurag08priyam@gmail.com"
+  },
+  "dependencies": {
+      "bower":        "~ 1.2.8",
+      "jqueryui-amd": "~ 0.0.2"
+  },
+  "devDependencies": {
+  },
+  "scripts": {
+    "bower":         "bower install",
+    "amdify-jquery": "jqueryui-amd www/lib/jquery.ui"
+  },
+  "license": "Apache Public License 2.0"
+}

@@ -1,0 +1,25 @@
+{
+   "tracks" : [
+      {
+         "height"   : 64,
+         "compress" : 0,
+         "key" : "Edit",
+         "phase" : 0,
+         "autocomplete" : "none",
+         "label" : "Edit",
+         "type" : "JBrowse/View/Track/EditTrack",
+         "storeClass" : "JBrowse/Store/SeqFeature/ScratchPad",
+         "style" : {
+             "className" : "transcript",
+             "subfeatureClasses" : {
+                 "three_prime_UTR" : "three_prime_UTR",
+                 "five_prime_UTR"  : "five_prime_UTR",
+                 "exon" : "exon",
+                 "CDS"  : "CDS"
+             }
+         },
+         "subfeatures" : 1,
+         "pinned" : true
+      }
+   ]
+}

@@ -1,0 +1,102 @@
+<ng-include src="'templates/_nav.html'"></ng-include>
+<article class="container dashboard">
+  <div class="row">
+    <!-- left sidebar -->
+    <div class="col-md-3">
+      <a
+        href='#'
+        class="thumbnail">
+        <img
+        ng-src="{{user.picture}}"
+        height="220" width="260">
+      </a>
+      <h3>
+        {{user.name}}
+        <br>
+        <small>
+          beginner
+        </small>
+      </h3>
+      <p>
+        <i class="fa fa-clock-o"></i>
+        Started {{user.joined_on | amDateFormat: 'MMMM Do, YYYY'}}
+      </p>
+    </div>
+
+    <!-- content pane -->
+    <div class="col-md-9 details">
+      <h3>Challenges</h3>
+      <div class="panel panel-default">
+        <div class="panel-body">
+          <div class="media">
+            <a class="pull-left" href="#">
+              <img
+              class="media-object"
+              src="img/S_invicta.jpg"
+              height="96" width="128"
+              alt="Solenopsis invicta">
+            </a>
+            <div class="media-body">
+              <p class="justified">
+                <strong>Fire ant</strong> (<em>Solenopsis invicta</em>) is a
+                very aggressive eusocial species, with a painful, persitently
+                irritating sting.  Fire ant is a major pest causing annual loss
+                of over $5000 million in the United States.
+              </p>
+              <p class="justified">
+                A group lead by Dr. Yannick Wurm sequenced and studied the
+                genome of fire ant. They found several unique aspects of the
+                fire ant genome possibly linked to the complex social behavior
+                of this species.
+              </p>
+              <a
+                href="curate"
+                class="btn btn-default pull-right">
+                Curate
+                <i class="fa fa-lg fa-angle-right"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <h3>Contribution Activity</h3>
+      <div
+        ng-repeat="(task_type, contributions) in contributions">
+        <h3 class="contribution-activity">
+          <div class="inner">
+            <strong>
+              <i
+                ng-if="task_type == 'Curation'"
+                class="fa fa-lg fa-edit"></i>
+              <i
+                ng-if="task_type == 'Review'"
+                class="fa fa-lg fa-search"></i>
+              {{contributions.length}}
+            </strong>
+            {{task_type}}
+          </div>
+        </h3>
+        <ul class="list-group">
+          <li
+            ng-repeat="contribution in contributions | orderBy:'-attempted_at'"
+            class="list-group-item">
+            <p class="list-group-item-text">
+              <span
+                class="label label-primary">
+                {{contribution.status}}
+              </span>
+              &nbsp;&nbsp;
+              {{contribution.description}}
+              <span
+                am-time-ago="contribution.attempted_at"
+                class="time pull-right">
+              </span>
+            </p>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</article>
+

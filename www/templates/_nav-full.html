@@ -1,0 +1,30 @@
+<div class="navbar navbar-inverse navbar-fixed-top">
+  <section class="container-full">
+    <div class="row">
+      <div class="col-md-9">
+        <a href="about" class="navbar-brand">Afra</a>
+      </div>
+      <div class="col-md-3">
+        <ul
+          id="user-links"
+          ng-show="user.name"
+          class="nav navbar-nav">
+          <li>
+            <a
+              href="/">
+              <span ng-bind="user.name"></span>
+            </a>
+          </li>
+          <li>
+            <a
+              href="#"
+              ng-click="signout()"
+              title="Logout">
+              <i class="fa fa-lg fa-sign-out"></i>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</div>

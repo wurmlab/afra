@@ -1,0 +1,17 @@
+## crowdsourcing platform for gene annotation
+
+### ... is under construction
+
+![at work](http://www.highdefdiscnews.com/screenshots/a_bugs_life_1.png)
+
+### ... development notes
+
+https://github.com/yeban/afra/wiki
+
+---
+
+<p align="center">
+Photo courtesy: http://www.highdefdiscnews.com/
+<br/>
+Afra is copyright (©) 2013 Queen Mary, University of London. All rights reserved.
+</p>
