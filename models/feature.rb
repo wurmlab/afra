@@ -1,6 +1,6 @@
 class Feature < Sequel::Model
 
-  one_to_many :tasks
+  many_to_many  :tasks
 
   plugin        :class_table_inheritance,
     key:         :type

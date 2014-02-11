@@ -6,7 +6,7 @@ class Tasks < App::Routes
   get '/data/tasks/next' do
     user = AccessToken.user(request.session[:token])
     task = Task.give to: user
-    task.feature.to_json only: [:id, :ref, :start, :end, :tracks]
+    task.to_json only: [:id, :ref, :start, :end, :tracks]
   end
 
   post '/data/tasks/:id' do

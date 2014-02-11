@@ -6,14 +6,20 @@ Sequel.migration do
 
       primary_key :id
 
-      foreign_key :feature_id, :features,
-        on_delete: :cascade
-
       String      :type,
         null:      false
       validate do
         includes %w|CurationTask|, :type
       end
+
+      String      :ref,
+        null:      false
+
+      Integer     :start,
+        null:      false
+
+      Integer     :end,
+        null:      false
 
       Integer     :priority,
         null:      false,

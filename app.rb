@@ -143,8 +143,38 @@ module App
     init_config **options
     init_db
     load_models
-    Feature.each do |feature|
-      CurationTask.create(feature: feature)
+
+    # Select feature id, start and end coordinates grouped by ref.
+    features =
+      Feature.order(Sequel.asc(:start)).
+      select(Sequel.function(:array_agg, :id).as(:id),
+             Sequel.function(:array_agg, :start).as(:start),
+             Sequel.function(:array_agg, :end).as(:end),
+             :ref).
+             group(:ref)
+
+    features.each do |f|
+      ref = f.ref
+      f.id.zip(f.start, f.end).each_cons(2) do |f1, f2|
+        if f2[1] <= f1[2] # features overlap
+          start = f1[1]
+          stop  = [f1[2], f2[2]].max # in case f2 is contained in f1
+          t = CurationTask.create(ref: ref, start: start, end: stop)
+          t.add_feature Feature.with_pk(f1[0])
+          t.add_feature Feature.with_pk(f2[0])
+          t.save
+          puts "#{t.id} #{f.ref}:#{start}..#{stop}"
+        else
+          start = f1[1]
+          stop  = f1[2]
+          t = CurationTask.create(ref: ref, start: start, end: stop)
+          t.add_feature Feature.with_pk(f1[0])
+          t.save
+        end
+        # FIXME: last feature of each ref seq gets ignored.
+        # FIXME: this approach assumes only two genes will overlap, however,
+        # that need not be the case.
+      end
     end
   end
 

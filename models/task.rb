@@ -1,11 +1,15 @@
 class Task < Sequel::Model
 
-  many_to_one   :feature
+  many_to_many  :features
 
   one_to_many   :contributions
 
   plugin        :class_table_inheritance,
     key:         :type
+
+  def tracks
+    features.first.tracks
+  end
 
   class << self
     def give(to: nil)
