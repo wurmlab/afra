@@ -548,22 +548,22 @@ function( declare, StaticChunked, ScratchPad, DraggableFeatureTrack, JSONUtils, 
     		    },
                     function() {}
     	        );
-    	    }
-    	    else  {
-    	        blockHeight = 20;  // default dna track height if not zoomed to base level
-    	        seqNode.style.height = "20px";
+            }
+            else  {
+                blockHeight = 20;  // default dna track height if not zoomed to base level
+                seqNode.style.height = "20px";
 
-    	        // DraggableFeatureTrack.prototype.fillBlock.apply(track, arguments);
-		track.inherited("fillBlock", arguments);
-		// this.inherited("fillBlock", arguments);
+                // DraggableFeatureTrack.prototype.fillBlock.apply(track, arguments);
+                track.inherited("fillBlock", arguments);
+                // this.inherited("fillBlock", arguments);
 
-    	        // this.blockHeights[blockIndex] = blockHeight;  // shouldn't be necessary, done in track.heightUpdate();
-    	        track.heightUpdate(blockHeight, blockIndex);
-    	    }
+                // this.blockHeights[blockIndex] = blockHeight;  // shouldn't be necessary, done in track.heightUpdate();
+                track.heightUpdate(blockHeight, blockIndex);
+            }
         } else {
             this.heightUpdate(0, blockIndex);
         }
-                         },
+    },
 
     // heightUpdate: function(height, blockIndex)  {
     //     // console.log("SequenceTrack.heightUpdate: height = " + height + ", bindex = " + blockIndex);

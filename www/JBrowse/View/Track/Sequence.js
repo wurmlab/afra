@@ -2,9 +2,10 @@ define( [
             'dojo/_base/declare',
             'JBrowse/View/Track/BlockBased',
             'JBrowse/View/Track/ExportMixin',
-            'JBrowse/Util'
+            'JBrowse/Util',
+            'JBrowse/CodonTable'
         ],
-        function( declare, BlockBased, ExportMixin, Util ) {
+        function(declare, BlockBased, ExportMixin, Util, CodonTable) {
 
 return declare( [BlockBased, ExportMixin],
  /**
@@ -22,8 +23,10 @@ return declare( [BlockBased, ExportMixin],
 
     _defaultConfig: function() {
         return {
+            trackPadding: 10,
             maxExportSpan: 500000,
-            showReverseStrand: true
+            showReverseStrand: true,
+            showProteinTranslation: true
         };
     },
     _exportFormats: function() {
@@ -53,30 +56,24 @@ return declare( [BlockBased, ExportMixin],
         var charSize = this.getCharacterMeasurements();
 
         // if we are zoomed in far enough to draw bases, then draw them
-        if ( scale >= 1 ) {
+        if (scale >= charSize.w) {
+            this.show();
             this.store.getFeatures(
                 {
                     ref: this.refSeq.name,
-                    seqChunkSize: this.refSeq.seqChunkSize,
-                    start: leftBase,
-                    end: rightBase
+                    start: leftBase - 2,
+                    end: rightBase + 2
                 },
                 dojo.hitch( this, '_fillSequenceBlock', block, scale ),
                 function() {}
             );
-            this.heightUpdate( charSize.h*2, blockIndex );
+            this.heightUpdate( charSize.h*8, blockIndex );
         }
-        // otherwise, just draw a sort of line (possibly dotted) that
-        // suggests there are bases there if you zoom in far enough
+        // otherwise, hide the track
         else {
-            var borderWidth = Math.max(1,Math.round(4*scale/charSize.w));
-            var blur = dojo.create( 'div', {
-                             className: 'sequence_blur',
-                             style: { borderStyle: 'solid', borderTopWidth: borderWidth+'px', borderBottomWidth: borderWidth+'px' }
-                         }, block.domNode );
-            this.heightUpdate( blur.offsetHeight+2*blur.offsetTop, blockIndex );
+            this.hide();
+            this.heightUpdate(0);
         }
-
         args.finishCallback();
     },
 
@@ -85,21 +82,20 @@ return declare( [BlockBased, ExportMixin],
         var start = feature.get('start');
         var end = feature.get('end');
 
-        // fill with leading blanks if the
-        // sequence does not extend all the way
-        // pad with blanks if the sequence does not extend all the way
-        // across our range
-        if( start < this.refSeq.start )
+        // Pad with blanks if the sequence does not extend all the way across
+        // our range.
+        if (start < this.refSeq.start) {
             while( seq.length < (end-start) ) {
                 //nbsp is an "&nbsp;" entity
                 seq = this.nbsp+seq;
             }
-        else if( end > this.refSeq.end )
+        }
+        else if (end > this.refSeq.end) {
             while( seq.length < (end-start) ) {
                 //nbsp is an "&nbsp;" entity
                 seq += this.nbsp;
             }
-
+        }
 
         // make a div to contain the sequences
         var seqNode = document.createElement("div");
@@ -107,15 +103,63 @@ return declare( [BlockBased, ExportMixin],
         seqNode.style.width = "100%";
         block.domNode.appendChild(seqNode);
 
-        // add a div for the forward strand
-        seqNode.appendChild( this._renderSeqDiv( start, end, seq, scale ));
+        var blockStart = start + 2;
+        var blockEnd = end - 2;
+        var blockResidues = seq.substring(2, seq.length-2);
+        var blockLength = blockResidues.length;
+        var extendedStart = start;
+        var extendedEnd = end;
+        var extendedStartResidues = seq.substring(0, seq.length-2);
+        var extendedEndResidues = seq.substring(2);
 
-        // and one for the reverse strand
+        // show translation for forward strand
+        if (this.config.showProteinTranslation) {
+            var framedivs = [];
+            for (var i=0; i<3; i++) {
+                // var tstart = start + i;
+                var tstart = blockStart + i;
+                var frame = tstart % 3;
+                var transProtein = this.renderTranslation(extendedEndResidues, i, blockLength);
+                $(transProtein).addClass("frame" + frame);
+                framedivs[frame] = transProtein;
+            }
+            for (var i=2; i>=0; i--) {
+                var transProtein = framedivs[i];
+                seqNode.appendChild(transProtein);
+                //$(transProtein).bind("mousedown", this.residuesMouseDown);
+                //blockHeight += proteinHeight;
+            }
+        }
 
-        if( this.config.showReverseStrand ) {
-            var comp = this._renderSeqDiv( start, end, Util.complement(seq), scale );
+        // show forward strand
+        seqNode.appendChild(this._renderSeqDiv(blockResidues));
+
+        // and the reverse strand
+        if (this.config.showReverseStrand) {
+            var comp = this._renderSeqDiv(Util.complement(blockResidues), scale);
             comp.className = 'revcom';
             seqNode.appendChild( comp );
+        }
+
+        // show translation for reverse strand
+        if (this.config.showProteinTranslation && this.config.showReverseStrand) {
+            var extendedReverseComp = Util.reverseComplement(extendedStartResidues);
+            var framedivs = [];
+            for (var i=0; i<3; i++) {
+                var tstart = blockStart + i;
+                var frame = (this.refSeq.length - blockEnd + i) % 3;
+                frame = (Math.abs(frame - 2) + (this.refSeq.length % 3)) % 3;
+                var transProtein = this.renderTranslation(extendedStartResidues, i, blockLength, true);
+                $(transProtein).addClass("frame" + frame);
+                framedivs[frame] = transProtein;
+            }
+            // for (var i=2; i>=0; i--) {
+            for (var i=0; i<3; i++) {
+                var transProtein = framedivs[i];
+                seqNode.appendChild(transProtein);
+                //$(transProtein).bind("mousedown", track.residuesMouseDown);
+                //blockHeight += proteinHeight;
+            }
         }
     },
 
@@ -124,23 +168,62 @@ return declare( [BlockBased, ExportMixin],
      * makes a div containing the sequence.
      * @private
      */
-    _renderSeqDiv: function ( start, end, seq, scale ) {
-
-        var charSize = this.getCharacterMeasurements();
-
-        var container  = document.createElement('div');
-        var charWidth = 100/(end-start)+"%";
-        var drawChars = scale >= charSize.w;
-        var bigTiles = scale > charSize.w + 4; // whether to add .big styles to the base tiles
-        for( var i=0; i<seq.length; i++ ) {
+    _renderSeqDiv: function (seq) {
+        var container = document.createElement('div');
+        var charWidth = 100/seq.length+"%";
+        for( var i=0; i < seq.length; i++ ) {
             var base = document.createElement('span');
             base.className = 'base base_'+seq.charAt([i]).toLowerCase();
             base.style.width = charWidth;
-            if( drawChars ) {
-                if( bigTiles )
-                    base.className = base.className + ' big';
-                base.innerHTML = seq.charAt(i);
+            base.innerHTML = seq.charAt(i);
+            container.appendChild(base);
+        }
+        return container;
+    },
+
+    renderTranslation: function (input_seq, offset, blockLength, reverse) {
+        var seq;
+        if (reverse) {
+            seq = Util.reverseComplement(input_seq);
+        }
+        else  {
+            seq = input_seq;
+        }
+        var container  = document.createElement("div");
+        $(container).addClass("aa-residues");
+        //$(container).addClass("offset" + offset);
+        var prefix = "";
+        var suffix = "";
+        for (var i=0; i<offset; i++) { prefix += this.nbsp; }
+        for (var i=0; i<(2-offset); i++) { suffix += this.nbsp; }
+
+        var extra_bases = (seq.length - offset) % 3;
+        var dnaRes = seq.substring(offset, seq.length - extra_bases);
+        var aaResidues = dnaRes.replace(/(...)/gi,  function(codon) {
+            var aa = CodonTable[codon];
+            // if no mapping and blank in codon, return blank
+            // if no mapping and no blank in codon,  return "?"
+            if (!aa) {
+                if (codon.indexOf(this.nbsp) >= 0) { aa = this.nbsp; }
+                else  { aa = "?"; }
             }
+            return prefix + aa + suffix;
+        });
+        var trimmedAaResidues = aaResidues.substring(0, blockLength);
+        aaResidues = trimmedAaResidues;
+        if (reverse) {
+            var revAaResidues = Util.reverse(aaResidues);
+            aaResidues = revAaResidues;
+            while (aaResidues.length < blockLength)  {
+                aaResidues = this.nbsp + aaResidues;
+            }
+        }
+        var charWidth = 100/blockLength+"%";
+        for (var i=0; i < aaResidues.length; i++) {
+            var base = document.createElement('span');
+            base.className = 'acid';
+            base.style.width = charWidth;
+            base.innerHTML = aaResidues.charAt(i);
             container.appendChild(base);
         }
         return container;
@@ -174,6 +257,5 @@ return declare( [BlockBased, ExportMixin],
         containerElement.removeChild(widthTest);
         return result;
   }
-
 });
 });

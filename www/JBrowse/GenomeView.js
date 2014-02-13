@@ -2353,8 +2353,8 @@ layoutTracks: function() {
     var pinnedHeight = 0;
     var lastWasPinned = false;
     array.forEach( this.tracks, function( track, i ) {
-        if (i > 1)
-            nextTop = nextTop + this.trackSpacing;
+        //if (i > 1)
+        nextTop = nextTop + this.trackSpacing;
         this.trackTops[i] = nextTop;
         lastTop = nextTop;
 

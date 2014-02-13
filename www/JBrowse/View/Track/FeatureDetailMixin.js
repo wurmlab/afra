@@ -171,7 +171,7 @@ return declare( FeatureDescriptionMixin, {
                                                       strand: f.get('strand'),
                                                       type: f.get('type')
                                                     },
-                                                    f.get('strand') == -1 ? Util.revcom(seq) : seq,
+                                                    f.get('strand') == -1 ? Util.reverseComplement(seq) : seq,
                                                     valueContainer
                                                 );
                        }),

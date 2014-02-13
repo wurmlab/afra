@@ -327,6 +327,15 @@ Util = {
     },
 
     /**
+     * Reverse a sequence.
+     * @param {String} seq sequence
+     * @returns {String} reversed sequence
+     */
+    reverse: function(seq) {
+        return seq.split("").reverse().join("");
+    },
+
+    /**
      * Complement a sequence (without reversing).
      * @param {String} seqString sequence
      * @returns {String} complemented sequence
@@ -351,8 +360,8 @@ Util = {
      * @param {String} seqString
      * @returns {String} reverse-complemented sequence
      */
-    revcom: function( seqString ) {
-        return Util.complement( seqString ).split('').reverse().join('');
+    reverseComplement: function (seqString) {
+        return this.reverse(this.complement(seqString));
     },
 
     assembleLocStringWithLength: function( def ) {
