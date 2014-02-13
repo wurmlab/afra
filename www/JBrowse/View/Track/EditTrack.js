@@ -15,6 +15,7 @@ define([
             'dojox/grid/DataGrid',
             'dojo/data/ItemFileWriteStore',
             'JBrowse/View/Track/DraggableHTMLFeatures',
+            'JBrowse/View/Track/Sequence',
             'JBrowse/FeatureSelectionManager',
             'JBrowse/JSONUtils',
             'JBrowse/BioFeatureUtils',
@@ -39,6 +40,7 @@ define([
                  dojoxDataGrid,
                  dojoItemFileWriteStore,
                  DraggableFeatureTrack,
+                 SequenceTrack,
                  FeatureSelectionManager,
                  JSONUtils,
                  BioFeatureUtils,
@@ -55,7 +57,6 @@ var context_path = "..";
 var EditTrack = declare(DraggableFeatureTrack,
 {
     constructor: function( args ) {
-        this.is_edit_track = true;
         this.has_custom_context_menu = true;
         this.exportAdapters = [];
 
@@ -77,6 +78,8 @@ var EditTrack = declare(DraggableFeatureTrack,
                 }
             }
         }));
+
+        this.sequenceStore = this.browser.getSequenceTrack().store;
     },
 
     _defaultConfig: function() {
@@ -126,7 +129,7 @@ var EditTrack = declare(DraggableFeatureTrack,
 
                 // if zoomed int to showing sequence residues, then make edge-dragging snap to interbase pixels
                 var gridvals;
-                var charSize = track.browser.getSequenceCharacterSize();
+                var charSize = track.getCharacterMeasurements();
                 if (scale === charSize.width) { gridvals = [track.gview.charWidth, 1]; }
                 else  { gridvals = false; }
 
@@ -623,8 +626,8 @@ var EditTrack = declare(DraggableFeatureTrack,
                             }
                         }
                         var nonCanonicalSpliceSites = Bionode.findNonCanonicalSplices(seq, cds_ranges);
-                        console.log(cds_ranges);
-                        console.log(nonCanonicalSpliceSites);
+                        //console.log(cds_ranges);
+                        //console.log(nonCanonicalSpliceSites);
                         for (var i = 0; i < nonCanonicalSpliceSites.length; i++) {
                             var non_canonical_splice_site = nonCanonicalSpliceSites[i];
                             subfeatures.push(new SimpleFeature({
@@ -639,7 +642,7 @@ var EditTrack = declare(DraggableFeatureTrack,
                         track.sortAnnotationsByLocation(subfeatures);
                         track.store.insert(feature);
                         track.changed();
-                        console.log(feature);
+                        //console.log(feature);
                     }));
             }
         }));
@@ -892,113 +895,49 @@ var EditTrack = declare(DraggableFeatureTrack,
                            });
     },
 
-    /**
-     * handles adding overlay of sequence residues to "row" of selected feature
-     *   (also handled in similar manner in fillBlock());
-     * WARNING:
-     *    this _requires_ browser support for pointer-events CSS property,
-     *    (currently supported by Firefox 3.6+, Chrome 4.0+, Safari 4.0+)
-     *    (Exploring possible workarounds for IE, for example see:
-     *        http://www.vinylfox.com/forwarding-mouse-events-through-layers/
-     *        http://stackoverflow.com/questions/3680429/click-through-a-div-to-underlying-elements
-     *            [ see section on CSS conditional statement workaround for IE ]
-     *    )
-     *    and must set "pointer-events: none" in CSS rule for div.annot-sequence
-     *    otherwise, since sequence overlay is rendered on top of selected features
-     *        (and is a sibling of feature divs), events intended for feature divs will
-     *        get caught by overlay and not make it to the feature divs
-     */
+    executeUpdateOperation: function(postData, loadCallback) {
+    },
+
     selectionAdded: function( rec, smanager)  {
         var feat = rec.feature;
         this.inherited( arguments );
 
         var track = this;
 
-	// switched to only have most recent selected annot have residues overlay if zoomed to base level, 
-	//    rather than all selected annots
-	// therefore want to revove all prior residues overlay divs
-        if (rec.track === track)  {
-            // remove sequence text nodes
-            $("div.annot-sequence", track.div).remove();
-        }
-
-        // want to get child of block, since want position relative to block
-        // so get top-level feature div (assumes top level feature is always rendered...)
         var topfeat = EditTrack.getTopLevelAnnotation(feat);
         var featdiv = track.getFeatDiv(topfeat);
-	if (featdiv)  {
-	    var strand = topfeat.get('strand');
+        if (featdiv)  {
+            var strand = topfeat.get('strand');
             var selectionYPosition = $(featdiv).position().top;
             var scale = track.gview.bpToPx(1);
-            var charSize = track.browser.getSequenceCharacterSize();
-            if (scale === charSize.width && track.useResiduesOverlay)  {
-                var seqTrack = this.getSequenceTrack();
+            var charSize = this.getCharacterMeasurements();
+            console.log(scale);
+            console.log(charSize);
+            if (scale >= charSize.w && track.useResiduesOverlay)  {
+                var seqTrack = this.browser.getSequenceTrack();
                 for (var bindex = this.firstAttached; bindex <= this.lastAttached; bindex++)  {
                     var block = this.blocks[bindex];
-		    // seqTrack.getRange(block.startBase, block.endBase,
-                    //  seqTrack.sequenceStore.getRange(this.refSeq, block.startBase, block.endBase,
-		    seqTrack.sequenceStore.getFeatures({ ref: this.refSeq.name, start: block.startBase, end: block.endBase },
-	                    function(feat) {
-				var start = feat.get('start');
-				var end   = feat.get('end');
-				var seq   = feat.get('seq');
-			    
-                            // var ypos = $(topfeat).position().top;
-                            // +2 hardwired adjustment to center (should be calc'd based on feature div dims?
-                            var ypos = selectionYPosition + 2;
-                            // checking to see if residues for this "row" of the block are already present
-                            //    ( either from another selection in same row, or previous rendering
-                            //        of same selection [which often happens when scrolling] )
-                            // trying to avoid duplication both for efficiency and because re-rendering of text can
-                            //    be slighly off from previous rendering, leading to bold / blurry text when overlaid
-
-                            var $seqdivs = $("div.annot-sequence", block);
-                            var sindex = $seqdivs.length;
-                            var add_residues = true;
-                            if ($seqdivs && sindex > 0)  {
-                                for (var i=0; i<sindex; i++) {
-                                    var sdiv = $seqdivs[i];
-                                    if ($(sdiv).position().top === ypos)  {
-                                        // console.log("residues already present in block: " + bindex);
-                                        add_residues = false;
-                                    }
-                                }
-                            }
-                            if (add_residues)  {
-                                var seqNode = document.createElement("div");
-                                seqNode.className = "annot-sequence";
-				if (strand == '-' || strand == -1)  {
-				    // seq = track.reverseComplement(seq);
-				    seq = track.getSequenceTrack().complement(seq);
-				}
-                                seqNode.appendChild(document.createTextNode(seq));
-                                // console.log("ypos: " + ypos);
-                                seqNode.style.cssText = "top: " + ypos + "px;";
-                                block.appendChild(seqNode);
-                                if (track.FADEIN_RESIDUES)  {
-                                    $(seqNode).hide();
-                                    $(seqNode).fadeIn(1500);
-                                }
-                            }
-                        } );
+                    //console.log(bindex, block.startBase, block.endBase);
+                    seqTrack.store.getFeatures(
+                        {ref: this.refSeq.name, start: block.startBase, end: block.endBase},
+                        function(feat) {
+                            track._fillSequenceBlock(block, scale, feat);
+                        });
 
                 }
             }
         }
-
     },
 
     selectionRemoved: function(selected_record, smanager)  {
-	this.inherited( arguments );
-	var track = this;
-	if (selected_record.track === track)  {
-	    var feat = selected_record.feature;
-	    var featdiv = this.getFeatDiv(feat);
-	    // remove sequence text nodes
-	    // console.log("removing base residued text from selected annot");
-	    $("div.annot-sequence", track.div).remove();
-	}
-    }, 
+        this.inherited( arguments );
+        var track = this;
+        if (selected_record.track === track)  {
+            var feat = selected_record.feature;
+            var featdiv = this.getFeatDiv(feat);
+            $("div.sequence", track.div).remove();
+        }
+    },
 
     startZoom: function(destScale, destStart, destEnd) {
         // would prefer to only try and hide dna residues on zoom if previous scale was at base pair resolution
@@ -1008,16 +947,108 @@ var EditTrack = declare(DraggableFeatureTrack,
 
         this.inherited( arguments );
 
+        // console.log("AnnotTrack.startZoom() called");
         var selected = this.selectionManager.getSelection();
         if( selected.length > 0 ) {
             // if selected annotations, then hide residues overlay
             //     (in case zoomed in to base pair resolution and the residues overlay is being displayed)
-            $(".annot-sequence", this.div).css('display', 'none');
+            $("div.sequence", this.div).css('display', 'none');
         }
     },
 
-    executeUpdateOperation: function(postData, loadCallback) {
-    }
+    _fillSequenceBlock: function( block, scale, feature ) {
+        var seq = feature.get('seq');
+        var start = feature.get('start');
+        var end = feature.get('end');
+
+        // fill with leading blanks if the
+        // sequence does not extend all the way
+        // pad with blanks if the sequence does not extend all the way
+        // across our range
+        if( start < this.refSeq.start )
+            while( seq.length < (end-start) ) {
+                //nbsp is an "&nbsp;" entity
+                seq = this.nbsp+seq;
+            }
+        else if( end > this.refSeq.end )
+            while( seq.length < (end-start) ) {
+                //nbsp is an "&nbsp;" entity
+                seq += this.nbsp;
+            }
+
+
+        // make a div to contain the sequences
+        var seqNode = document.createElement("div");
+        seqNode.className = "annot-sequence";
+        seqNode.style.width = "100%";
+        block.domNode.appendChild(seqNode);
+
+        // add a div for the forward strand
+        seqNode.appendChild( this._renderSeqDiv( start, end, seq, scale ));
+
+        // and one for the reverse strand
+        if( this.config.showReverseStrand ) {
+            var comp = this._renderSeqDiv( start, end, Util.complement(seq), scale );
+            comp.className = 'revcom';
+            seqNode.appendChild( comp );
+        }
+    },
+
+    /**
+     * Given the start and end coordinates, and the sequence bases,
+     * makes a div containing the sequence.
+     * @private
+     */
+    _renderSeqDiv: function ( start, end, seq, scale ) {
+
+        var charSize = this.getCharacterMeasurements();
+
+        var container  = document.createElement('div');
+        var charWidth = 100/(end-start)+"%";
+        var drawChars = scale >= charSize.w;
+        var bigTiles = scale > charSize.w + 4; // whether to add .big styles to the base tiles
+        for( var i=0; i<seq.length; i++ ) {
+            var base = document.createElement('span');
+            base.className = 'base';// base_'+seq.charAt([i]).toLowerCase();
+            base.style.width = charWidth;
+            if( drawChars ) {
+                if( bigTiles )
+                    base.className = base.className + ' big';
+                base.innerHTML = seq.charAt(i);
+            }
+            container.appendChild(base);
+        }
+        return container;
+    },
+
+    /**
+     * @returns {Object} containing <code>h</code> and <code>w</code>,
+     *      in pixels, of the characters being used for sequences
+     */
+    getCharacterMeasurements: function() {
+        if( !this._measurements )
+            this._measurements = this._measureSequenceCharacterSize( this.div );
+        return this._measurements;
+    },
+
+    /**
+     * Conducts a test with DOM elements to measure sequence text width
+     * and height.
+     */
+    _measureSequenceCharacterSize: function( containerElement ) {
+        var widthTest = document.createElement("div");
+        widthTest.className = "sequence";
+        widthTest.style.visibility = "hidden";
+        var widthText = "12345678901234567890123456789012345678901234567890";
+        widthTest.appendChild(document.createTextNode(widthText));
+        containerElement.appendChild(widthTest);
+        var result = {
+            w:  widthTest.clientWidth / widthText.length,
+            h: widthTest.clientHeight
+        };
+        containerElement.removeChild(widthTest);
+        return result;
+  }
 });
 
 EditTrack.getTopLevelAnnotation = function(annotation) {

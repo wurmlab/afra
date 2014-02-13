@@ -111,6 +111,7 @@ return declare( [BlockBased, ExportMixin],
         seqNode.appendChild( this._renderSeqDiv( start, end, seq, scale ));
 
         // and one for the reverse strand
+
         if( this.config.showReverseStrand ) {
             var comp = this._renderSeqDiv( start, end, Util.complement(seq), scale );
             comp.className = 'revcom';

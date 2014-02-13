@@ -30,6 +30,8 @@ define( [
             'JBrowse/View/LocationChoiceDialog',
             'JBrowse/View/Dialog/SetHighlight',
             'JBrowse/View/Dialog/QuickHelp',
+            'JBrowse/View/Track/Sequence',
+            'JBrowse/View/Track/EditTrack',
             'JBrowse/FeatureEdgeMatchManager',
             'JBrowse/FeatureSelectionManager'
         ],
@@ -63,6 +65,8 @@ define( [
             LocationChoiceDialog,
             SetHighlightDialog,
             HelpDialog,
+            SequenceTrack,
+            EditTrack,
             FeatureEdgeMatchManager,
             FeatureSelectionManager
         ) {
@@ -1665,8 +1669,7 @@ getEditTrack: function()  {
     if (this && this.view && this.view.tracks)  {
         var tracks = this.view.tracks;
         for (var i = 0; i < tracks.length; i++)  {
-            // should be doing instanceof here, but class setup is not being cooperative
-            if (tracks[i].is_edit_track)  {
+            if (tracks[i] instanceof EditTrack)  {
                 return tracks[i];
             }
         }
@@ -1680,55 +1683,15 @@ getEditTrack: function()  {
     *  found iterating through tracks list.
     */
 getSequenceTrack: function()  {
-    if (this.seqTrack)  {
-        return this.seqTrack;
-    }
-    else  {
+    if (this && this.view && this.view.tracks)  {
         var tracks = this.view.tracks;
         for (var i = 0; i < tracks.length; i++)  {
-            if (tracks[i].isWebApolloSequenceTrack)  {
-                this.seqTrack = tracks[i];
-                break;
+            if (tracks[i] instanceof SequenceTrack)  {
+                return tracks[i];
             }
         }
     }
-    return this.seqTrack;
-},
-
-/**
-    * Returns char height/width on GenomeView.
-    */
-getSequenceCharacterSize: function(recalc)  {
-    var container = this.container;
-    if (this.view && this.view.elem)  {
-        container = this.view.elem;
-    }
-    if (recalc || (! this._charSize))  {
-        //	    this._charSize = this.calculateSequenceCharacterSize(this.view.elem);
-        this._charSize = this.calculateSequenceCharacterSize(container);
-    }
-    return this._charSize;
-},
-
-/**
-    * Conducts a test with DOM elements to measure sequence text width
-    * and height.
-    */
-calculateSequenceCharacterSize: function( containerElement ) {
-    var widthTest = document.createElement("div");
-    widthTest.className = "wa-sequence";
-    widthTest.style.visibility = "hidden";
-    var widthText = "12345678901234567890123456789012345678901234567890";
-    widthTest.appendChild(document.createTextNode(widthText));
-    containerElement.appendChild(widthTest);
-
-    var result = {
-        width:  widthTest.clientWidth / widthText.length,
-        height: widthTest.clientHeight
-    };
-
-    containerElement.removeChild(widthTest);
-    return result;
+    return null;
 },
 
 /** utility function, given an array with objects that have label props, 
