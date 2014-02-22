@@ -15,7 +15,6 @@ define([
             'dojox/grid/DataGrid',
             'dojo/data/ItemFileWriteStore',
             'JBrowse/View/Track/DraggableHTMLFeatures',
-            'JBrowse/View/Track/Sequence',
             'JBrowse/FeatureSelectionManager',
             'JBrowse/JSONUtils',
             'JBrowse/BioFeatureUtils',
@@ -40,7 +39,6 @@ define([
                  dojoxDataGrid,
                  dojoItemFileWriteStore,
                  DraggableFeatureTrack,
-                 SequenceTrack,
                  FeatureSelectionManager,
                  JSONUtils,
                  BioFeatureUtils,
@@ -79,7 +77,7 @@ var EditTrack = declare(DraggableFeatureTrack,
             }
         }));
 
-        this.sequenceStore = this.browser.getSequenceTrack().store;
+        this.sequenceTrack = this.browser.getSequenceTrack();
     },
 
     _defaultConfig: function() {
@@ -129,7 +127,7 @@ var EditTrack = declare(DraggableFeatureTrack,
 
                 // if zoomed int to showing sequence residues, then make edge-dragging snap to interbase pixels
                 var gridvals;
-                var charSize = track.getCharacterMeasurements();
+                var charSize = this.sequenceTrack.getCharacterMeasurements();
                 if (scale === charSize.width) { gridvals = [track.gview.charWidth, 1]; }
                 else  { gridvals = false; }
 
@@ -910,7 +908,7 @@ var EditTrack = declare(DraggableFeatureTrack,
             var strand = topfeat.get('strand');
             var selectionYPosition = $(featdiv).position().top;
             var scale = track.gview.bpToPx(1);
-            var charSize = this.getCharacterMeasurements();
+            var charSize = this.sequenceTrack.getCharacterMeasurements();
             console.log(scale);
             console.log(charSize);
             if (scale >= charSize.w && track.useResiduesOverlay)  {
@@ -1001,7 +999,7 @@ var EditTrack = declare(DraggableFeatureTrack,
      */
     _renderSeqDiv: function ( start, end, seq, scale ) {
 
-        var charSize = this.getCharacterMeasurements();
+        var charSize = this.sequenceTrack.getCharacterMeasurements();
 
         var container  = document.createElement('div');
         var charWidth = 100/(end-start)+"%";
@@ -1019,36 +1017,7 @@ var EditTrack = declare(DraggableFeatureTrack,
             container.appendChild(base);
         }
         return container;
-    },
-
-    /**
-     * @returns {Object} containing <code>h</code> and <code>w</code>,
-     *      in pixels, of the characters being used for sequences
-     */
-    getCharacterMeasurements: function() {
-        if( !this._measurements )
-            this._measurements = this._measureSequenceCharacterSize( this.div );
-        return this._measurements;
-    },
-
-    /**
-     * Conducts a test with DOM elements to measure sequence text width
-     * and height.
-     */
-    _measureSequenceCharacterSize: function( containerElement ) {
-        var widthTest = document.createElement("div");
-        widthTest.className = "sequence";
-        widthTest.style.visibility = "hidden";
-        var widthText = "12345678901234567890123456789012345678901234567890";
-        widthTest.appendChild(document.createTextNode(widthText));
-        containerElement.appendChild(widthTest);
-        var result = {
-            w:  widthTest.clientWidth / widthText.length,
-            h: widthTest.clientHeight
-        };
-        containerElement.removeChild(widthTest);
-        return result;
-  }
+    }
 });
 
 EditTrack.getTopLevelAnnotation = function(annotation) {

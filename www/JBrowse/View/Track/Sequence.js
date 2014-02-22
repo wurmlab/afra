@@ -86,13 +86,11 @@ return declare( [BlockBased, ExportMixin],
         // our range.
         if (start < this.refSeq.start) {
             while( seq.length < (end-start) ) {
-                //nbsp is an "&nbsp;" entity
                 seq = this.nbsp+seq;
             }
         }
         else if (end > this.refSeq.end) {
             while( seq.length < (end-start) ) {
-                //nbsp is an "&nbsp;" entity
                 seq += this.nbsp;
             }
         }
@@ -153,7 +151,6 @@ return declare( [BlockBased, ExportMixin],
                 $(transProtein).addClass("frame" + frame);
                 framedivs[frame] = transProtein;
             }
-            // for (var i=2; i>=0; i--) {
             for (var i=0; i<3; i++) {
                 var transProtein = framedivs[i];
                 seqNode.appendChild(transProtein);
@@ -234,8 +231,8 @@ return declare( [BlockBased, ExportMixin],
      *      in pixels, of the characters being used for sequences
      */
     getCharacterMeasurements: function() {
-        if( !this._measurements )
-            this._measurements = this._measureSequenceCharacterSize( this.div );
+        if (!this._measurements)
+            this._measurements = this._measureSequenceCharacterSize(this.div);
         return this._measurements;
     },
 
@@ -243,7 +240,7 @@ return declare( [BlockBased, ExportMixin],
      * Conducts a test with DOM elements to measure sequence text width
      * and height.
      */
-    _measureSequenceCharacterSize: function( containerElement ) {
+    _measureSequenceCharacterSize: function (containerElement) {
         var widthTest = document.createElement("div");
         widthTest.className = "sequence";
         widthTest.style.visibility = "hidden";
