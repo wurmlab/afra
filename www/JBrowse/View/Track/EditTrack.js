@@ -16,7 +16,6 @@ define([
             'dojo/data/ItemFileWriteStore',
             'JBrowse/View/Track/DraggableHTMLFeatures',
             'JBrowse/FeatureSelectionManager',
-            'JBrowse/JSONUtils',
             'JBrowse/BioFeatureUtils',
             'JBrowse/SequenceSearch',
             'JBrowse/Model/SimpleFeature',
@@ -40,7 +39,6 @@ define([
                  dojoItemFileWriteStore,
                  DraggableFeatureTrack,
                  FeatureSelectionManager,
-                 JSONUtils,
                  BioFeatureUtils,
                  SequenceSearch,
                  SimpleFeature,
@@ -308,7 +306,7 @@ var EditTrack = declare(DraggableFeatureTrack,
                             subfeaturesToAdd.push(feat);
                     }
                     else {
-                            featuresToAdd.push( JSONUtils.createApolloFeature( feat, "transcript") );
+                            //featuresToAdd.push( JSONUtils.createApolloFeature( feat, "transcript") );
                     }
             }
             if (subfeaturesToAdd.length > 0) {
@@ -334,7 +332,7 @@ var EditTrack = declare(DraggableFeatureTrack,
                     feature.set('start', fmin );
                     feature.set('end', fmax );
                     feature.set('strand', strand );
-                    featuresToAdd.push( JSONUtils.createApolloFeature( feature, "transcript") );
+                    //featuresToAdd.push( JSONUtils.createApolloFeature( feature, "transcript") );
             }
             var postData = '{ "track": "' + track.getUniqueTrackName() + '", "features": ' + JSON.stringify(featuresToAdd) + ', "operation": "add_transcript" }';
             track.executeUpdateOperation(postData);
