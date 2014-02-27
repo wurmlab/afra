@@ -623,8 +623,6 @@ var EditTrack = declare(DraggableFeatureTrack,
                             }
                         }
                         var strand = feature.get('strand')
-                        console.log(feature.get('strand'));
-                        console.log(feature.get('start'));
                         var nonCanonicalSpliceSites;
                         if (strand === 1) {
                             nonCanonicalSpliceSites = Bionode.findNonCanonicalSplices(seq, cds_ranges);
@@ -632,8 +630,6 @@ var EditTrack = declare(DraggableFeatureTrack,
                         else if (strand === -1) {
                             nonCanonicalSpliceSites = Bionode.findNonCanonicalSplices(Util.reverseComplement(seq), Bionode.reverseExons(cds_ranges, seq.length));
                         }
-                        console.log(cds_ranges);
-                        //console.log(nonCanonicalSpliceSites);
                         for (var i = 0; i < nonCanonicalSpliceSites.length; i++) {
                             var non_canonical_splice_site = nonCanonicalSpliceSites[i];
                             subfeatures.push(new SimpleFeature({
@@ -648,7 +644,6 @@ var EditTrack = declare(DraggableFeatureTrack,
                         track.sortAnnotationsByLocation(subfeatures);
                         track.store.insert(feature);
                         track.changed();
-                        //console.log(feature);
                     }));
             }
         }));
