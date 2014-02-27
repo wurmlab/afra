@@ -238,7 +238,7 @@ var EditTrack = declare(DraggableFeatureTrack,
         var feature = new SimpleFeature({
             data: {
                 name:   from.get('name'),
-                ref:    from.get('seq_id'),
+                ref:    from.get('seq_id') || from.get('ref'),
                 start:  from.get('start'),
                 end:    from.get('end'),
                 strand: from.get('strand')
