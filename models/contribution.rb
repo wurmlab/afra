@@ -9,6 +9,6 @@ class Contribution < Sequel::Model
   end
 
   def description
-    "Curated #{task.feature.ref}:#{task.feature.start}..#{task.feature.end}."
+    "Curated #{task.ref}:#{task.start}..#{task.end}."
   end
 end
