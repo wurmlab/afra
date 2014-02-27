@@ -127,8 +127,8 @@ define(['JBrowse/Browser']
         this.done = function () {
             var task = cookie.get('task');
             put(task.id, jbrowse.edits())
-            //put(task.id, {})
             .then(function () {
+                cookie.remove('task');
                 $('#thanks').modal();
             });
         }
