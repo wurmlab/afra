@@ -234,7 +234,7 @@ var EditTrack = declare(DraggableFeatureTrack,
         $(featdiv).trigger('mousedown');
     },
 
-    newTranscript: function(from)  {
+    newTranscript: function (from)  {
         var feature = new SimpleFeature({
             data: {
                 name:   from.get('name'),
@@ -613,23 +613,33 @@ var EditTrack = declare(DraggableFeatureTrack,
                     {ref: this.refSeq.name, start: feature.get('start'), end: feature.get('end')},
                     dojo.hitch(this, function (f) {
                         var seq = f.get('seq');
+                        var start = f.get('start')
                         var subfeatures = feature.get('subfeatures');
                         var cds_ranges  = [];
                         for (var i = 0; i < subfeatures.length; i++) {
                             var subfeature = subfeatures[i];
                             if (subfeature.get('type') == 'CDS') {
-                                cds_ranges.push([subfeature.get('start'), subfeature.get('end')]);
+                                cds_ranges.push([subfeature.get('start') - start, subfeature.get('end') - start]);
                             }
                         }
-                        var nonCanonicalSpliceSites = Bionode.findNonCanonicalSplices(seq, cds_ranges);
-                        //console.log(cds_ranges);
+                        var strand = feature.get('strand')
+                        console.log(feature.get('strand'));
+                        console.log(feature.get('start'));
+                        var nonCanonicalSpliceSites;
+                        if (strand === 1) {
+                            nonCanonicalSpliceSites = Bionode.findNonCanonicalSplices(seq, cds_ranges);
+                        }
+                        else if (strand === -1) {
+                            nonCanonicalSpliceSites = Bionode.findNonCanonicalSplices(Util.reverseComplement(seq), Bionode.reverseExons(cds_ranges, seq.length));
+                        }
+                        console.log(cds_ranges);
                         //console.log(nonCanonicalSpliceSites);
                         for (var i = 0; i < nonCanonicalSpliceSites.length; i++) {
                             var non_canonical_splice_site = nonCanonicalSpliceSites[i];
                             subfeatures.push(new SimpleFeature({
                                 data: {
-                                    start: non_canonical_splice_site,
-                                    end:   non_canonical_splice_site + 1,
+                                    start: non_canonical_splice_site + start,
+                                    end:   non_canonical_splice_site + start + 1,
                                     type:  'noncanonical-splice-site'
                                 },
                                 parent: feature
@@ -907,8 +917,8 @@ var EditTrack = declare(DraggableFeatureTrack,
             var selectionYPosition = $(featdiv).position().top;
             var scale = track.gview.bpToPx(1);
             var charSize = this.sequenceTrack.getCharacterMeasurements();
-            console.log(scale);
-            console.log(charSize);
+            //console.log(scale);
+            //console.log(charSize);
             if (scale >= charSize.w && track.useResiduesOverlay)  {
                 var seqTrack = this.browser.getSequenceTrack();
                 for (var bindex = this.firstAttached; bindex <= this.lastAttached; bindex++)  {

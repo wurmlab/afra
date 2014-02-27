@@ -83,11 +83,11 @@ define(['JBrowse/Browser']
         };
 
         this.edits = function () {
-            return this.browser.getAnnotTrack().store.features;
+            return this.browser.getEditTrack().store.features;
         };
 
         this.clear_edits = function () {
-            this.browser.getAnnotTrack().store.features = {};
+            this.browser.getEditTrack().store.features = {};
         };
 
         var browser = this.browser;
