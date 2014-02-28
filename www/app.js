@@ -7,7 +7,8 @@ require.config({
         angular:    'lib/angular/angular',
         ngCookies:  'lib/angular-cookies/angular-cookies',
         ngAnimate:  'lib/angular-animate/angular-animate',
-        ngMoment:   'lib/angular-moment/angular-moment'
+        ngMoment:   'lib/angular-moment/angular-moment',
+        bionode:    'lib/bionode/lib/bionode'
     },
     shim: {
         underscore: {
@@ -36,6 +37,47 @@ require.config({
             deps:    ['angular', 'moment']
         }
     },
+    packages:[{
+        name:     'dojo',
+        location: 'lib/dojo'
+    },
+    {
+        name:     'dijit',
+        location: 'lib/dijit'
+    },
+    {
+        name:     'dojox',
+        location: 'lib/dojox'
+    },
+    {
+        name:     'jszlib',
+        location: 'lib/jszlib'
+    },
+    {
+        name:     'dgrid',
+        location: 'lib/dgrid'
+    },
+    {
+        name:     'xstyle',
+        location: 'lib/xstyle'
+    },
+    {
+        name:     'put-selector',
+        location: 'lib/put-selector'
+    },
+    {
+        name:     'FileSaver',
+        location: 'lib/FileSaver'
+    },
+    {
+        name:     'jDataView',
+        location: 'lib/jDataView/src',
+        main:     'jdataview'
+    },
+    {
+        name:     'jqueryui',
+        location: 'lib/jquery.ui/jqueryui'
+    }],
     map: {
         '*': {
             'less': 'lib/require-less/less',
