@@ -86,8 +86,8 @@ require.config({
     }
 });
 
-require(['underscore', 'jquery', 'angular', 'bootstrap', 'ngCookies', 'ngAnimate', 'ngMoment']
-, function (_, $, angular) {
+require(['underscore', 'jquery', 'angular', 'dojo/has', 'dojo/_base/sniff', 'bootstrap', 'ngCookies', 'ngAnimate', 'ngMoment']
+, function (_, $, angular, has) {
 
     'use strict';
 
@@ -131,6 +131,10 @@ require(['underscore', 'jquery', 'angular', 'bootstrap', 'ngCookies', 'ngAnimate
 
     app.run(['$http', '$location', '$cookieStore', '$rootScope', '$injector', '$compile'
     , function (http, location, cookie, root_scope, injector, compile) {
+
+        if (!has('chrome')) {
+            root_scope.not_chrome = true;
+        }
 
         root_scope.view = function (path) {
             var view  = $('body');

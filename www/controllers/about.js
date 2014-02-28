@@ -1,14 +1,9 @@
-define(['bootstrap', 'dojo/has', 'dojo/_base/sniff'],
-function (__, has) {
+define(['bootstrap'],
+function () {
 
     return ['$http', '$location', function (http, location) {
         var scope = this;
         scope.location = location;
-
-        if (!has('chrome')) {
-            console.log('not chrome');
-            this.not_chrome = true;
-        }
 
         scope.signup = function () {
             var form = $('form');
