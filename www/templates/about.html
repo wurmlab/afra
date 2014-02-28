@@ -1,5 +1,20 @@
 <ng-include src="'templates/_nav.html'"></ng-include>
 <article class="container">
+
+  <div
+    ng-if="not_chrome"
+    class="incompatible-browser-alert">
+    <br>
+    <div
+      class="alert alert-warning">
+      <p>
+        Hi, we are in a pre-alpha stage and support only <strong>Google
+          Chrome</strong> at the moment. It will help if you drop us a line
+        about your experience with Afra in your browser.
+      </p>
+    </div>
+  </div>
+
   <section class="problem">
     <h3>Gene Annotation for the Masses</h3>
     <p>
@@ -140,12 +155,6 @@
         </div>
 
         <div ng-switch-when="signin">
-          <div class="alert alert-warning" style="width: 330px;">
-            <p class="justified">
-              We are in a super alpha stage and support only <strong>Google
-                Chrome</strong> at the moment.
-            </p>
-          </div>
           <h3>Sign in</h3>
           <br>
           <form
