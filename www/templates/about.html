@@ -115,13 +115,13 @@
                 placeholder="Email"
                 class="form-control">
               </div>
-              <!--<div class="form-group">-->
-                <!--<input-->
-                <!--type="password"-->
-                <!--name="password"-->
-                <!--placeholder="Password"-->
-                <!--class="form-control col-sm-12">-->
-              <!--</div>-->
+              <div class="form-group col-sm-12">
+                <input
+                type="password"
+                name="password"
+                placeholder="Password"
+                class="form-control">
+              </div>
               <div class="form-group col-sm-12">
                 <button
                   type="submit"
@@ -182,11 +182,28 @@
                 <i class="fa fa-lg fa-facebook-square"></i>
                 Login with Facebook
               </a>
-              <div id="fb-root"></div>
             </div>
           </form>
         </div>
       </div>
+      <div id="fb-root"></div>
+      <script type="text/javascript">
+        window.fbAsyncInit = function() {
+          FB.init({
+            appId  : '623337891034160',
+            status : true, // check login status
+            cookie : true, // enable cookies to allow the server to access the session
+            xfbml  : true  // parse XFBML
+          });
+        };
+
+        (function(d) {
+          var js, id = 'facebook-jssdk'; if (d.getElementById(id)) {return;}
+          js = d.createElement('script'); js.id = id; js.async = true;
+          js.src = "//connect.facebook.net/en_US/all.js";
+          d.getElementsByTagName('head')[0].appendChild(js);
+        }(document));
+      </script>
     </div>
   </div>
 
