@@ -923,7 +923,7 @@ var EditTrack = declare(DraggableFeatureTrack,
                             var start = feat.get('start');
                             var end = feat.get('end');
 
-                            // +2 hardwired adjustment to center
+                            // -2 hardwired adjustment to center
                             var ypos = selectionYPosition - 2;
 
                             // make a div to contain the sequences
