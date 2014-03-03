@@ -8,7 +8,6 @@ define([
             'JBrowse/View/Track/DraggableHTMLFeatures',
             'JBrowse/FeatureSelectionManager',
             'JBrowse/BioFeatureUtils',
-            'JBrowse/SequenceSearch',
             'JBrowse/Model/SimpleFeature',
             'JBrowse/Util',
             'JBrowse/View/GranularRectLayout',
@@ -23,15 +22,10 @@ define([
                  DraggableFeatureTrack,
                  FeatureSelectionManager,
                  BioFeatureUtils,
-                 SequenceSearch,
                  SimpleFeature,
                  Util,
                  Layout,
                  Bionode) {
-
-var creation_count = 0;
-var contextMenuItems;
-var context_path = "..";
 
 var EditTrack = declare(DraggableFeatureTrack,
 {
@@ -642,35 +636,6 @@ var EditTrack = declare(DraggableFeatureTrack,
                     }));
             }
         }));
-    },
-
-    searchSequence: function() {
-        var track = this;
-        var starts = new Object();
-        var browser = track.gview.browser;
-        for (i in browser.allRefs) {
-            var refSeq = browser.allRefs[i];
-            starts[refSeq.name] = refSeq.start;
-        }
-        var search = new SequenceSearch(context_path);
-        search.setRedirectCallback(function(id, fmin, fmax) {
-            var loc = id + ":" + fmin + "-" + fmax;
-            if (id == track.refSeq.name) {
-                track.gview.browser.navigateTo(loc);
-                track.popupDialog.hide();
-            }
-            else {
-                var url = window.location.toString().replace(/loc=.+/, "loc=" + loc);
-                window.location.replace(url);
-            }
-        });
-        search.setErrorCallback(function(response) {
-            track.handleError(response);
-        });
-        var content = search.searchSequence(track.getUniqueTrackName(), track.refSeq.name, starts);
-        if (content) {
-            this.openDialog("Search sequence", content);
-        }
     },
 
     zoomToBaseLevel: function(event) {
