@@ -19,15 +19,15 @@ function () {
             });
         };
 
+        var facebook_auth_callback = function (response) {
+            var auth = response.authResponse;
+            if (auth) {
+                var uid = auth.id;
+            }
+        };
+
         scope.signin_fb = function () {
-            FB.login(function(response) {
-                if (response.authResponse) {
-                    $.getJSON('/auth/facebook/callback', function(json) {
-                        scope.user = json;
-                        scope.view_current();
-                    });
-                }
-            }, { scope: 'email' });
+            FB.login(facebook_auth_callback, { scope: 'email' });
         };
     }];
 });

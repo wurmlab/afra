@@ -187,7 +187,7 @@ require(['underscore', 'jquery', 'angular', 'dojo/has', 'dojo/_base/sniff', 'boo
 
         root_scope.signout = function () {
             http.post('signout').
-            then(function () {
+                then(function () {
                 root_scope.user = undefined;
                 root_scope.view_login();
             });

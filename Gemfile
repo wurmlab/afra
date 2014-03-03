@@ -8,8 +8,6 @@ gem 'bcrypt-ruby',          '~> 3.1.2'
 
 gem 'puma',                 '~> 2.6.0'
 gem 'sinatra',              '~> 1.4.2'
-gem 'omniauth',             '~> 1.2.1'
-gem 'omniauth-facebook',    '1.4.0'
 
 gem 'minitest',             '~> 4.3.3'
 gem 'rake',                 '~> 10.1.0'

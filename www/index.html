@@ -9,6 +9,22 @@
         }
     </script>
     <script data-main="app" src="lib/requirejs/require.js"></script>
+    <script type="text/javascript">
+      window.fbAsyncInit = function() {
+        FB.init({
+          appId  : '623337891034160',
+          status : true, // check login status
+          xfbml  : true  // parse XFBML
+        });
+      };
+
+      (function(d) {
+        var js, id = 'facebook-jssdk'; if (d.getElementById(id)) {return;}
+        js = d.createElement('script'); js.id = id; js.async = true;
+        js.src = "//connect.facebook.net/en_US/all.js";
+        d.getElementsByTagName('head')[0].appendChild(js);
+      }(document));
+    </script>
   </head>
   <body></body>
 </html>

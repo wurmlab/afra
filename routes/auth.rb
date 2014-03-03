@@ -1,6 +1,3 @@
-require 'omniauth'
-require 'omniauth-facebook'
-
 class Auth < App::Routes
 
   use Rack::Session::Cookie,
@@ -35,50 +32,6 @@ class Auth < App::Routes
     end
     401
   end
-
-  ## 3rd party authentication
-
-  # get '/auth/facebook' do
-  # end
-  use OmniAuth::Strategies::Facebook,
-    Setting.get('facebook_app_id'),
-    Setting.get('facebook_app_secret'),
-    scope: 'email', # https://developers.facebook.com/docs/reference/api/permissions/
-    display: 'popup'
-
-  get '/auth/:provider/callback' do
-    content_type 'application/json'
-    auth  = request.env['omniauth.auth']
-    email = auth.info.email
-    user  = User.first(email: email)
-    if user # FIXME: and not user.identity['provider'] == 'facebook'
-      user.identity = {
-        provider: auth.provider,
-        uid:      auth.uid,
-        token:    auth.credentials.token
-      }
-      user.save
-    else
-      user = User.create(
-        name:      "#{auth.info.first_name} #{auth.info.last_name}",
-        email:     email,
-        joined_on: DateTime.now,
-        identity:  {
-          provider: auth.provider,
-          uid:      auth.uid,
-          token:    auth.credentials.token
-        })
-    end
-    token = AccessToken.generate(user)
-    request.session[:token] = token
-    user.to_json only: [:id, :name, :picture, :joined_on]
-  end
-
-  get '/auth/failure' do
-    params[:message]
-  end
-
-  ## /3rd party authentication
 
   post '/signout' do
     token = request.session.delete(:token)

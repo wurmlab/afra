@@ -92,127 +92,16 @@
     </div>
 
     <div class="col-md-4 col-md-offset-2">
-      <div class="auth" ng-switch on="location.hash()">
-        <div ng-switch-default>
+      <div class="auth">
+        <div>
           <a
-            href="#signup"
-            class="btn btn-lg btn-primary col-sm-12">
-            <i class="fa fa-lg fa-user"></i>
-            Sign up for Beta
+            class="btn btn-primary btn-lg btn-block"
+            ng-click="signin_fb()">
+            <i class="fa fa-lg fa-facebook-square"></i>
+            Login with Facebook
           </a>
-          <!--<a-->
-            <!--href="#signin"-->
-            <!--class="btn btn-lg btn-primary col-sm-12">-->
-            <!--<i class="fa fa-lg fa-sign-in"></i>-->
-            <!--Sign in-->
-          <!--</a>-->
-        </div>
-
-        <div ng-switch-when="signup">
-          <div ng-switch on="response">
-            <h3>Sign up</h3>
-            <br>
-            <form
-              ng-switch-default
-              ng-submit="signup()"
-              class="form-horizontal" role="form">
-              <div class="form-group col-sm-12">
-                <input
-                type="name"
-                name="name"
-                placeholder="Name"
-                class="form-control">
-              </div>
-              <div class="form-group col-sm-12">
-                <input
-                type="email"
-                name="email"
-                placeholder="Email"
-                class="form-control">
-              </div>
-              <div class="form-group col-sm-12">
-                <input
-                type="password"
-                name="password"
-                placeholder="Password"
-                class="form-control">
-              </div>
-              <div class="form-group col-sm-12">
-                <button
-                  type="submit"
-                  class="btn btn-default">
-                  <i class="fa fa-lg fa-user"></i>
-                  Sign up
-                </button>
-              </div>
-            </form>
-            <div ng-switch-when="200">
-              <p>
-                Thanks! We will get in touch with you soon.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div ng-switch-when="signin">
-          <h3>Sign in</h3>
-          <br>
-          <form
-            ng-submit="signin()"
-            class="form-horizontal" role="form">
-            <div class="form-group col-sm-12">
-              <input
-              type="email"
-              name="email"
-              placeholder="Email"
-              class="form-control">
-            </div>
-            <div class="form-group col-sm-12">
-              <input
-              type="password"
-              name="password"
-              placeholder="Password"
-              class="form-control">
-            </div>
-            <div class="form-group col-sm-12">
-              <button
-                type="submit"
-                class="btn btn-default">
-                <i class="fa fa-lg fa-sign-in"></i>
-                Sign in
-              </button>
-            </div>
-
-            <div class="form-group col-sm-12">
-              <hr>
-              <a
-                class="btn btn-default btn-lg"
-                ng-click="signin_fb()">
-                <i class="fa fa-lg fa-facebook-square"></i>
-                Login with Facebook
-              </a>
-            </div>
-          </form>
         </div>
       </div>
-      <div id="fb-root"></div>
-      <script type="text/javascript">
-        window.fbAsyncInit = function() {
-          FB.init({
-            appId  : '623337891034160',
-            status : true, // check login status
-            cookie : true, // enable cookies to allow the server to access the session
-            xfbml  : true  // parse XFBML
-          });
-        };
-
-        (function(d) {
-          var js, id = 'facebook-jssdk'; if (d.getElementById(id)) {return;}
-          js = d.createElement('script'); js.id = id; js.async = true;
-          js.src = "//connect.facebook.net/en_US/all.js";
-          d.getElementsByTagName('head')[0].appendChild(js);
-        }(document));
-      </script>
     </div>
   </div>
 
