@@ -226,8 +226,7 @@ var EditTrack = declare(DraggableFeatureTrack,
             new_transcript.set('end', fmax);
         }
 
-        this.store.deleteFeatureById(transcript.id());
-        this.store.insert(new_transcript);
+        this.store.replace(new_transcript);
         this.changed();
 
         var featdiv = this.getFeatDiv(exon);
@@ -236,6 +235,7 @@ var EditTrack = declare(DraggableFeatureTrack,
 
     newTranscript: function (from)  {
         var feature = new SimpleFeature({
+            id:   from.id(),
             data: {
                 name:   from.get('name'),
                 ref:    from.get('seq_id') || from.get('ref'),
