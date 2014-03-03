@@ -41,12 +41,6 @@ define(['JBrowse/Browser']
             this.browser.getEditTrack().store.features = {};
         };
 
-        var browser = this.browser;
-        browser.afterMilestone('completely initialized', function () {
-            //browser.showRegion({start: 50, end: 6000, tracks: ['simple_feature']});
-            browser.showTracks(['simple_feature']);
-        });
-
         var jbrowse = this;
 
         var get = function () {
