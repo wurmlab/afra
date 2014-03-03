@@ -18,6 +18,8 @@
     "angular-animate": "~1.2.3",
     "angular-moment":  "~0.5.2",
 
+    "bootstrap-contextmenu": "sydcanem/bootstrap-contextmenu",
+
     "dojo":            "~1.9.1",
     "dojox":           "~1.9.1",
     "util":            "dojo/util#1.9.1",

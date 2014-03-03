@@ -3,6 +3,7 @@ define([
             'jquery',
             'jqueryui/droppable',
             'jqueryui/resizable',
+            'contextmenu',
             'dijit/Menu',
             'dijit/MenuItem',
             'dijit/MenuSeparator',
@@ -27,6 +28,7 @@ define([
                  $,
                  droppable,
                  resizable,
+                 contextmenu,
                  dijitMenu,
                  dijitMenuItem,
                  dijitMenuSeparator,
@@ -91,6 +93,18 @@ var EditTrack = declare(DraggableFeatureTrack,
         this.makeTrackDroppable();
         this.hide();
         this.show();
+    },
+
+    /**
+     *  overriding renderFeature to add event handling right-click context menu
+     */
+    renderFeature:  function (feature, uniqueId, block, scale, labelScale, descriptionScale, containerStart, containerEnd) {
+        var featDiv = this.inherited( arguments );
+
+        if (featDiv && featDiv != null)  {
+            $(featDiv).contextmenu({target: '#contextmenu'})
+        }
+        return featDiv;
     },
 
     renderSubfeature: function( feature, featDiv, subfeature,

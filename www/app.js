@@ -3,6 +3,7 @@ require.config({
         underscore: 'lib/underscore-amd/underscore',
         jquery:     'lib/jquery/jquery',
         bootstrap:  'lib/bootstrap/dist/js/bootstrap',
+        contextmenu:'lib/bootstrap-contextmenu/bootstrap-contextmenu',
         moment:     'lib/moment/moment',
         angular:    'lib/angular/angular',
         ngCookies:  'lib/angular-cookies/angular-cookies',
@@ -19,6 +20,9 @@ require.config({
         },
         bootstrap:  {
             deps:    ['jquery']
+        },
+        contextmenu: {
+            deps:    ['bootstrap']
         },
         moment:     {
             exports: 'moment'
