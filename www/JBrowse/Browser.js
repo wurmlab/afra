@@ -1716,6 +1716,9 @@ scrollToNextEdge: function(event)  {
     var vregion = this.view.visibleRegion();
     var coordinate = (vregion.start + vregion.end)/2;
     var selected = this.featSelectionManager.getSelection();
+    if (selected.length == 0) {
+        selected = this.annotSelectionManager.getSelection();
+    }
     if (selected && (selected.length > 0)) {
         var selfeat = selected[0].feature;
         // find current center genome coord, compare to subfeatures, figure out
@@ -1759,6 +1762,9 @@ scrollToPreviousEdge: function(event) {
     var vregion = this.view.visibleRegion();
     var coordinate = (vregion.start + vregion.end)/2;
     var selected = this.featSelectionManager.getSelection();
+    if (selected.length == 0) {
+        selected = this.annotSelectionManager.getSelection();
+    }
     if (selected && (selected.length > 0)) {
 
         var selfeat = selected[0].feature;
