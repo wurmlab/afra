@@ -899,7 +899,7 @@ var EditTrack = declare(DraggableFeatureTrack,
     executeUpdateOperation: function(postData, loadCallback) {
     },
 
-    selectionAdded: function( rec, smanager)  {
+    selectionAdded: function (rec, smanager) {
         var feat = rec.feature;
         this.inherited( arguments );
 
@@ -912,19 +912,34 @@ var EditTrack = declare(DraggableFeatureTrack,
             var selectionYPosition = $(featdiv).position().top;
             var scale = track.gview.bpToPx(1);
             var charSize = this.sequenceTrack.getCharacterMeasurements();
-            //console.log(scale);
-            //console.log(charSize);
             if (scale >= charSize.w && track.useResiduesOverlay)  {
                 var seqTrack = this.browser.getSequenceTrack();
                 for (var bindex = this.firstAttached; bindex <= this.lastAttached; bindex++)  {
                     var block = this.blocks[bindex];
-                    //console.log(bindex, block.startBase, block.endBase);
                     seqTrack.store.getFeatures(
                         {ref: this.refSeq.name, start: block.startBase, end: block.endBase},
                         function(feat) {
-                            track._fillSequenceBlock(block, scale, feat);
-                        });
+                            var seq = feat.get('seq');
+                            var start = feat.get('start');
+                            var end = feat.get('end');
 
+                            // +2 hardwired adjustment to center
+                            var ypos = selectionYPosition - 2;
+
+                            // make a div to contain the sequences
+                            var seqNode = document.createElement("div");
+                            seqNode.className = "sequence";
+                            seqNode.style.width = "100%";
+                            seqNode.style.top = ypos + "px";
+
+                            if (strand == '-' || strand == -1)  {
+                                seq = Util.complement(seq);
+                            }
+
+                            seqNode.appendChild(track._renderSeqDiv(seq));
+                            block.domNode.appendChild(seqNode);
+
+                        });
                 }
             }
         }
@@ -957,66 +972,19 @@ var EditTrack = declare(DraggableFeatureTrack,
         }
     },
 
-    _fillSequenceBlock: function( block, scale, feature ) {
-        var seq = feature.get('seq');
-        var start = feature.get('start');
-        var end = feature.get('end');
-
-        // fill with leading blanks if the
-        // sequence does not extend all the way
-        // pad with blanks if the sequence does not extend all the way
-        // across our range
-        if( start < this.refSeq.start )
-            while( seq.length < (end-start) ) {
-                //nbsp is an "&nbsp;" entity
-                seq = this.nbsp+seq;
-            }
-        else if( end > this.refSeq.end )
-            while( seq.length < (end-start) ) {
-                //nbsp is an "&nbsp;" entity
-                seq += this.nbsp;
-            }
-
-
-        // make a div to contain the sequences
-        var seqNode = document.createElement("div");
-        seqNode.className = "annot-sequence";
-        seqNode.style.width = "100%";
-        block.domNode.appendChild(seqNode);
-
-        // add a div for the forward strand
-        seqNode.appendChild( this._renderSeqDiv( start, end, seq, scale ));
-
-        // and one for the reverse strand
-        if( this.config.showReverseStrand ) {
-            var comp = this._renderSeqDiv( start, end, Util.complement(seq), scale );
-            comp.className = 'revcom';
-            seqNode.appendChild( comp );
-        }
-    },
-
     /**
      * Given the start and end coordinates, and the sequence bases,
      * makes a div containing the sequence.
      * @private
      */
-    _renderSeqDiv: function ( start, end, seq, scale ) {
-
-        var charSize = this.sequenceTrack.getCharacterMeasurements();
-
-        var container  = document.createElement('div');
-        var charWidth = 100/(end-start)+"%";
-        var drawChars = scale >= charSize.w;
-        var bigTiles = scale > charSize.w + 4; // whether to add .big styles to the base tiles
-        for( var i=0; i<seq.length; i++ ) {
+    _renderSeqDiv: function (seq) {
+        var container = document.createElement('div');
+        var charWidth = 100/seq.length+"%";
+        for( var i=0; i < seq.length; i++ ) {
             var base = document.createElement('span');
-            base.className = 'base';// base_'+seq.charAt([i]).toLowerCase();
+            base.className = 'base base_'+seq.charAt([i]).toLowerCase();
             base.style.width = charWidth;
-            if( drawChars ) {
-                if( bigTiles )
-                    base.className = base.className + ' big';
-                base.innerHTML = seq.charAt(i);
-            }
+            base.innerHTML = seq.charAt(i);
             container.appendChild(base);
         }
         return container;

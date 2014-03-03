@@ -269,6 +269,7 @@ div.blank-block {
 div.sequence {
     position: absolute;
     left: 0px;
+    z-index: 7;
 }
 div.sequence .revcom {
     color: red;
@@ -1634,63 +1635,42 @@ div.sequence .dna-highlighted {
     background: #F9BF3A
 }
 
-div.annot-sequence  {
-    position: absolute;
-    left: 0px;
-    font-family: monospace;
-    font-size: 10px;
-    letter-spacing: 2px;
-    padding-left: 2px;
-    z-index: 15;
-    /*  
-	need pointer-events:none so that any events pass through annot-sequence overlay
-	and onto the block or feature div underneath
-    */ 
-    pointer-events: none;
-
-    -webkit-user-select: none;
-    -khtml-user-select: none;
-    -moz-user-select: none;
-    -o-user-select: none;
-    user-select: none;
-}
-
 /********************************************************
 *   invisible containers, 
 *   for features that also have a renderClass that gets centered, 
 *      and for subfeatures that have rendered children 
 *      (currently only subfeatures like this are exons, which have CDS and UTR child divs)
 ********************************************************/
-.container-16px, 
-.plus-container-16px, 
+.container-16px,
+.plus-container-16px,
 .minus-container-16px  {
     height: 16px;
     background-color: transparent;
 }
 
-.container-14px, 
-.plus-container-14px, 
+.container-14px,
+.plus-container-14px,
 .minus-container-14px  {
     height: 14px;
     background-color: transparent;
 }
 
-.container-12px, 
-.plus-container-12px, 
+.container-12px,
+.plus-container-12px,
 .minus-container-12px  {
     height: 12px;
     background-color: transparent;
 }
 
-.container-10px, 
-.plus-container-10px, 
+.container-10px,
+.plus-container-10px,
 .minus-container-10px  {
     height: 10px;
     background-color: transparent;
 }
 
-.container-8px, 
-.plus-container-8px, 
+.container-8px,
+.plus-container-8px,
 .minus-container-8px {
     height: 8px;
     background-color: transparent;
