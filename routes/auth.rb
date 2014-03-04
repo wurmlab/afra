@@ -16,8 +16,9 @@ class Auth < App::Routes
     email = params.fetch 'email'
     user  = User.first(email: email)
     unless user
-      name = params.fetch 'name'
-      User.create(name: name, email: email)
+      name    = params.fetch 'name'
+      picture = params.fetch 'picture'
+      user = User.create(name: name, email: email, picture: picture)
     end
     if user
       token = AccessToken.generate(user)

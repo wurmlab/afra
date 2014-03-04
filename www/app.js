@@ -184,10 +184,9 @@ require(['underscore', 'jquery', 'angular', 'dojo/has', 'dojo/_base/sniff', 'boo
                     FB.api('/' + uid, function (response) {
                         // post to our server who accessed
                         http.post('/signin', JSON.stringify({
-                            provider: 'facebook',
-                            name:     response.name,
-                            email:    response.email,
-                            bio:      response.bio,
+                            name:          response.name,
+                            email:         response.email,
+                            picture:       "http://graph.facebook.com/" + uid + "/picture?type=large",
                             authorization: signedRequest
                         }))
                         .then(function (response) {
