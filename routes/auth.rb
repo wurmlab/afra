@@ -1,34 +1,22 @@
 class Auth < App::Routes
 
-  use Rack::Session::Cookie,
-    key:          'afra.session',
-    secret:       Setting.get('session_secret'),
-    expire_after: 2592000 # 1 month
-
-  post '/signup' do
-    email = params.fetch 'email'
-    if email =~ /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}\b/i
-      user  = User.first(email: email)
-      unless user
-        name = params.fetch 'name'
-        User.create(name: name, email: email)
-      end
-    end
-    200
+  def authorization_correct?(authorization)
+    authorization = authorization.split
   end
 
   post '/signin' do
+    params = JSON.parse request.body.read
+    halt 401 unless authorization_correct? params['authorization']
     email = params.fetch 'email'
-    if email =~ /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}\b/i
-      user = User.where(password: nil).invert.first(email: email)
-      if user
-        password = params.fetch 'password'
-        if user.authenticate(password)
-          token = AccessToken.generate(user)
-          request.session[:token] = token
-          halt user.to_json only: [:id, :name, :picture, :joined_on]
-        end
-      end
+    user  = User.first(email: email)
+    unless user
+      name = params.fetch 'name'
+      User.create(name: name, email: email)
+    end
+    if user
+      token = AccessToken.generate(user)
+      request.session[:token] = token
+      halt user.to_json only: [:id, :name, :picture, :joined_on]
     end
     401
   end

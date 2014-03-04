@@ -1,4 +1,3 @@
-require 'yaml'
 require 'logger'
 require 'sequel'
 require 'sinatra/base'

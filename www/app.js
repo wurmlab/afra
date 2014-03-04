@@ -141,7 +141,7 @@ require(['underscore', 'jquery', 'angular', 'dojo/has', 'dojo/_base/sniff', 'boo
         }
 
         root_scope.view = function (path) {
-            var view  = $('body');
+            var view  = $('.content');
             var scope = view.scope();
             var files = [
                 'html!templates/' + path + '.html',
@@ -174,19 +174,28 @@ require(['underscore', 'jquery', 'angular', 'dojo/has', 'dojo/_base/sniff', 'boo
             root_scope.view('about');
         };
 
-        root_scope.signin = function () {
-            var form = $('form');
-            var form_data = form.serialize();
-            http.post('signin', form_data,
-                      {
-                          headers: {
-                              'Content-Type': 'application/x-www-form-urlencoded'
-                          }
-                      })
-            .then(function (response) {
-                root_scope.user = response.data;
-                root_scope.view_current();
-            })
+        root_scope.signin_fb = function () {
+            FB.login(function (response) {
+                if (response.status === 'connected') {
+                    var uid = response.authResponse.userID;
+                    var signedRequest = response.authResponse.signedRequest;
+
+                    // get user details
+                    FB.api('/' + uid, function (response) {
+                        // post to our server who accessed
+                        http.post('/signin', JSON.stringify({
+                            provider: 'facebook',
+                            name:     response.name,
+                            email:    response.email,
+                            bio:      response.bio,
+                            authorization: signedRequest
+                        }))
+                        .then(function () {
+                            root_scope.view_current();
+                        });
+                    });
+                }
+            }, { scope: 'email' });
         };
 
         root_scope.signout = function () {
