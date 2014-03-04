@@ -190,7 +190,8 @@ require(['underscore', 'jquery', 'angular', 'dojo/has', 'dojo/_base/sniff', 'boo
                             bio:      response.bio,
                             authorization: signedRequest
                         }))
-                        .then(function () {
+                        .then(function (response) {
+                            root_scope.user = response.data;
                             root_scope.view_current();
                         });
                     });
@@ -216,7 +217,6 @@ require(['underscore', 'jquery', 'angular', 'dojo/has', 'dojo/_base/sniff', 'boo
             .then(function (response) {
                 var user = response.data;
                 if (!user) {
-                    resolve_user();
                     return;
                 }
                 root_scope.user = user;

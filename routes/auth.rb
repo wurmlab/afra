@@ -1,7 +1,13 @@
 class Auth < App::Routes
 
+  use Rack::Session::Cookie,
+    key:          'afra.session',
+    secret:       Setting.get('session_secret'),
+    expire_after: 2592000 # 1 month
+
   def authorization_correct?(authorization)
     authorization = authorization.split
+    # TODO
   end
 
   post '/signin' do
