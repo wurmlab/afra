@@ -75,9 +75,18 @@ var EditTrack = declare(DraggableFeatureTrack,
      */
     renderFeature:  function (feature, uniqueId, block, scale, labelScale, descriptionScale, containerStart, containerEnd) {
         var featDiv = this.inherited( arguments );
+        var track = this;
 
         if (featDiv && featDiv != null)  {
-            $(featDiv).contextmenu({target: '#contextmenu'})
+            $(featDiv).contextmenu({
+                target: '#contextmenu',
+                onItem: function (event, element) {
+                    var selection = track.selectionManager.getSelectedFeatures();
+                    var action = element.data('action');
+                    track[action].call(track, selection);
+                    track.selectionManager.clearSelection();
+                }
+            })
         }
         return featDiv;
     },
@@ -327,42 +336,32 @@ var EditTrack = declare(DraggableFeatureTrack,
             track.executeUpdateOperation(postData);
     },
 
-    /**
-     *  If there are multiple EditTracks, each has a separate FeatureSelectionManager
-     *    (contrasted with DraggableFeatureTracks, which all share the same selection and selection manager
-     */
-    deleteSelectedFeatures: function()  {
-        var selected = this.selectionManager.getSelection();
-        this.selectionManager.clearSelection();
-        this.deleteAnnotations(selected);
-    },
+    deleteFeatures: function(selection)  {
+        for (var i in selection) {
+            var feature = selection[i];
+            var parent = feature.parent();
+            console.log(feature);
+            console.log(parent);
 
-    deleteAnnotations: function(records) {
-        var track = this;
-        var features = '"features": [';
-        var uniqueNames = [];
-        for (var i in records)  {
-	    var record = records[i];
-	    var selfeat = record.feature;
-	    var seltrack = record.track;
-            var uniqueName = selfeat.id();
-            // just checking to ensure that all features in selection are from this track --
-            //   if not, then don't try and delete them
-            if (seltrack === track)  {
-                var trackdiv = track.div;
-                var trackName = track.getUniqueTrackName();
-
-                if (i > 0) {
-                    features += ',';
-                }
-                features += ' { "uniquename": "' + uniqueName + '" } ';
-                uniqueNames.push(uniqueName);
+            if (parent) {
+                // delete selected exon from parent
+                var subfeatures = parent.get('subfeatures');
+                var index;
+                for (var j in subfeatures) {
+                    if (subfeatures[j].id() == feature.id()) {
+                        index = j;
+                        break;
+                    }
+                };
+                console.log(index);
+            }
+            else {
+                // delete transcript
+                this.store.deleteFeatureById(feature.id());
+                this.changed();
             }
         }
-        features += ']';
-        var postData = '{ "track": "' + trackName + '", ' + features + ', "operation": "delete_feature" }';
-        track.executeUpdateOperation(postData);
-    }, 
+    },
 
     mergeSelectedFeatures: function()  {
         var selected = this.selectionManager.getSelection();
