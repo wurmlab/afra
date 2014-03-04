@@ -22,7 +22,8 @@ Sequel.migration do
         null:    false,
         unique:  true
 
-      DateTime :joined_on
+      DateTime :joined_on,
+        default: Sequel.function(:now)
     end
   end
 
