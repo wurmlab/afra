@@ -780,9 +780,20 @@ var draggableTrack = declare( HTMLFeatureTrack,
         if (selected)  {
             var $featdiv = $(featdiv);
             if (! $featdiv.hasClass("ui-draggable"))  {
+
+                var atrack = ftrack.browser.getEditTrack();
+                if (! atrack) { atrack = ftrack.browser.getSequenceTrack();  }
+                var fblock = ftrack.getBlock(featdiv);
+
+                // append drag ghost to featdiv block's equivalent block in annotation track if present, 
+                //     else  append to equivalent block in sequence track if present, 
+                //     else append to featdiv's block 
+                var ablock = ( atrack ? atrack.getEquivalentBlock(fblock) : fblock);
+
                 $featdiv.draggable({ // draggable() adds "ui-draggable" class to div
                         zIndex:  200,
                         helper:  'clone',
+                        appendTo:ablock.domNode,
                         opacity: 0.5,
                         axis:    'y',
                         revert:  function (valid) {

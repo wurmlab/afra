@@ -1547,8 +1547,23 @@ div.generic_parent-hist {
     background-color: transparent;
 }
 
+.pin_underlay {
+  width: 100%;
+  position: absolute;
+  background: white;
+  z-index: 6;
+
+  -moz-box-shadow: 0 0 10px 0 rgba( 30, 30, 50, 0.9 );
+  -webkit-box-shadow: 0 0 10px 0 rgba( 30, 30, 50, 0.9 );
+  box-shadow: 0 0 10px 0 rgba( 30, 30, 50, 0.9 );
+}
+
+div.track.pinned {
+  z-index: 20;
+}
+
 div.track_edit {
-    background-color: #FFFFDD !important;
+  background-color: #FFFFDD !important;
 }
 
 /*
