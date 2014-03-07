@@ -73,9 +73,8 @@ constructor: function( args ) {
     this.elem = elem;
 
     this.posHeight = this.calculatePositionLabelHeight( elem );
-    // Add an arbitrary 50% padding between the position labels and the
-    // topmost track
-    this.topSpace = this.posHeight*1.5;
+
+    this.topSpace  = this.posHeight;
 
     // WebApollo needs max zoom level to be sequence residues char width
     this.maxPxPerBp = this.config.maxPxPerBp;
@@ -148,12 +147,8 @@ constructor: function( args ) {
     //smallest value for the sum of this.offset and this.getX()
     //this prevents us from scrolling off the left end of the ref seq
     this.minLeft = this.bpToPx(this.ref.start);
-    //distance, in pixels, between each track (FIXME: seems to affect
-    //height of the tracks and not padding / spacing b/w them)
-    this.trackPadding = 8;
-    // spacing, in pixels, between each track  (Afra specific addition. See
-    // FIXME above.)
-    this.trackSpacing = 32;
+    //distance, in pixels, between each track
+    this.trackPadding = 20;
     //extra margin to draw around the visible area, in multiples of the visible area
     //0: draw only the visible area; 0.1: draw an extra 10% around the visible area, etc.
     this.drawMargin = 0.2;
@@ -1103,7 +1098,6 @@ setLocation: function(refseq, startbp, endbp) {
         }));
         this.sizeInit();
         this.setY(0);
-        //this.containerHeight = this.topSpace;
 
         this.behaviorManager.initialize();
     }
@@ -2379,8 +2373,6 @@ layoutTracks: function() {
     var pinnedHeight = 0;
     var lastWasPinned = false;
     array.forEach( this.tracks, function( track, i ) {
-        //if (i > 1)
-        nextTop = nextTop + this.trackSpacing;
         this.trackTops[i] = nextTop;
         lastTop = nextTop;
 
@@ -2389,7 +2381,9 @@ layoutTracks: function() {
             lastWasPinned = true;
         }
         else {
-            track.div.style.top = nextTop - this.y + ( lastWasPinned ? 15 : 0 ) + "px";
+            track.div.style.top = nextTop - this.y + ( lastWasPinned ? 35 : 0 ) + "px";
+            if (lastWasPinned)
+                nextTop += 35
             lastWasPinned = false;
         }
 
