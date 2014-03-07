@@ -1883,7 +1883,7 @@ zoomBackOut: function(e) {
     // to me, although if the zooms were smoother they could probably
     // get faster without becoming off-putting. -MS
     new Zoomer(scale, this,
-	       function() {thisObj.setLocation(thisObj.ref, min, max); thisObj.zoomUpdate(zoomLoc, fixedBp); },
+	       function() {thisObj.zoomUpdate(zoomLoc, fixedBp); thisObj.setLocation(thisObj.ref, min, max);},
 	       700, zoomLoc);
 },
 
