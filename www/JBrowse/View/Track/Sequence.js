@@ -19,11 +19,13 @@ return declare( [BlockBased, ExportMixin],
      * @constructs
      * @extends JBrowse.View.Track.BlockBased
      */
-    constructor: function( args ) {},
+    constructor: function( args ) {
+        this.trackPadding = 0;
+    },
 
     _defaultConfig: function() {
         return {
-            trackPadding: 10,
+            trackPadding: 0,
             maxExportSpan: 500000,
             showReverseStrand: true,
             showProteinTranslation: true
@@ -58,16 +60,14 @@ return declare( [BlockBased, ExportMixin],
         // if we are zoomed in far enough to draw bases, then draw them
         if (scale >= charSize.w) {
             this.show();
-            this.store.getFeatures(
-                {
-                    ref: this.refSeq.name,
-                    start: leftBase - 2,
-                    end: rightBase + 2
-                },
-                dojo.hitch( this, '_fillSequenceBlock', block, scale ),
-                function() {}
-            );
-            this.heightUpdate( charSize.h*8, blockIndex );
+            this.store.getFeatures({
+                ref: this.refSeq.name,
+                start: leftBase - 2,
+                end: rightBase + 2
+            },
+            dojo.hitch(this, '_fillBlock', block),
+            function() {});
+            this.heightUpdate(charSize.h * 8, blockIndex);
         }
         // otherwise, hide the track
         else {
@@ -77,7 +77,7 @@ return declare( [BlockBased, ExportMixin],
         args.finishCallback();
     },
 
-    _fillSequenceBlock: function( block, scale, feature ) {
+    _fillBlock: function(block, feature) {
         var seq = feature.get('seq');
         var start = feature.get('start');
         var end = feature.get('end');
@@ -134,7 +134,7 @@ return declare( [BlockBased, ExportMixin],
 
         // and the reverse strand
         if (this.config.showReverseStrand) {
-            var comp = this._renderSeqDiv(Util.complement(blockResidues), scale);
+            var comp = this._renderSeqDiv(Util.complement(blockResidues));
             comp.className = 'revcom';
             seqNode.appendChild( comp );
         }

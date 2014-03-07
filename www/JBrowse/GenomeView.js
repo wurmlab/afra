@@ -2376,7 +2376,7 @@ layoutTracks: function() {
         this.trackTops[i] = nextTop;
         lastTop = nextTop;
 
-        if( track.isPinned() ) {
+        if (track.isPinned()) {
             track.div.style.top = nextTop + "px";
             lastWasPinned = true;
         }
@@ -2387,9 +2387,9 @@ layoutTracks: function() {
             lastWasPinned = false;
         }
 
-        if ( track.shown ) {
+        if (track.shown) {
             nextTop += this.trackHeights[i] + this.trackPadding;
-            if( track.isPinned() )
+            if (track.isPinned())
                 pinnedHeight = nextTop;
         }
 
