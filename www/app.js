@@ -202,6 +202,7 @@ require(['underscore', 'jquery', 'angular', 'dojo/has', 'dojo/_base/sniff', 'boo
             http.post('signout').
                 then(function () {
                 root_scope.user = undefined;
+                $('#logout').modal('hide');
                 root_scope.view_login();
             });
         };
