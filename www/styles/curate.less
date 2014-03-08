@@ -283,25 +283,6 @@ div.sequence .revcom {
     font-family: monospace;
     font-size: 10px;
 }
-/*.base_n {*/
-    /*background-color: #C6C6C6;*/
-/*}*/
-/*.base_a {*/
-    /*background-color: #00BF00;*/
-    /*background-color: rgba( 0, 191, 0, 0.9 );*/
-/*}*/
-/*.base_c {*/
-    /*background-color: #4747ff;*/
-    /*background-color: rgba( 71, 71, 255, 0.9);*/
-/*}*/
-/*.base_t {*/
-    /*background-color: red;*/
-    /*background-color: rgba( 255, 0, 0, 0.9);*/
-/*}*/
-/*.base_g {*/
-    /*background-color: #d5bb04;*/
-    /*background-color: rgba( 213, 187, 4, 0.9);*/
-/*}*/
 .base_reference {
     background-color: #999;
 }
@@ -1516,19 +1497,15 @@ div.generic_parent-hist {
     font-size: 16px;
 }
 
-/* for WA */
 .feature-render  {
     position: absolute;
     min-width: 1px;
     width: 100%;
-    /* feature render div may be added to feature div _after_ subfeature divs, so 
-       if want subfeature divs in front of feature render div, make sure feature render div has lower 
-       z-index than subfeature divs */
+    /* feature render div may be added to feature div _after_ subfeature divs,
+     * so if want subfeature divs in front of feature render div, make sure
+     * feature render div has lower z-index than subfeature divs
+     */
     z-index: 2;
-}
-
-.track .global_highlight {
-    background: rgba( 255, 255, 0, 0.5 );
 }
 
 .CDS {
@@ -1583,16 +1560,9 @@ div.wa-sequence {
     user-select: none;
 }
 
-/* 
-   block_seq_container are SequenceTrack divs that are child of .block and parent of .dna-residues
-   need to break this out from div.sequence because .sequence is also used for determining 
-        font character width and height in GenomeView.calculateSequenceCharacterSize(), 
-	and for that don't want a specified width
-*/
 div.block-seq-container {
     top: 15px;
     width: 100%;
-    /* outline: 1px solid #00FF00; */
 }
 
 div.wa-sequence .dna-container  {
@@ -1603,27 +1573,18 @@ div.wa-sequence .dna-container  {
 div.wa-sequence .dna-residues.forward-strand {
     color: black;
     z-index: 5;
-    /* outline: 1px solid pink; */
 }
 
 div.wa-sequence .dna-residues.reverse-strand {
     color: gray;
     border-top: 1px solid lightgray;
     z-index: 5;
-    /* outline: 1px solid pink; */
 }
 
 div.sequence .aa-residues  {
     color: black;
     z-index: 5;
     white-space: nowrap;
-/*
-    box-sizing: border-box;
-    -moz-box-sizing: border-box;
-    -webkit-box-sizing: border-box;
-    -ms-box-sizing: border-box;
-*/
-/*    outline: 1px solid orange; */
 }
 
 div.sequence .aa-residues.frame0 {
@@ -1644,339 +1605,6 @@ div.sequence .aa-residues.frame2 {
 /* highlighting of dna residues in DNA track on mouseover */
 div.sequence .dna-highlighted {
     background: #F9BF3A
-}
-
-/********************************************************
-*   invisible containers, 
-*   for features that also have a renderClass that gets centered, 
-*      and for subfeatures that have rendered children 
-*      (currently only subfeatures like this are exons, which have CDS and UTR child divs)
-********************************************************/
-.container-16px,
-.plus-container-16px,
-.minus-container-16px  {
-    height: 16px;
-    background-color: transparent;
-}
-
-.container-14px,
-.plus-container-14px,
-.minus-container-14px  {
-    height: 14px;
-    background-color: transparent;
-}
-
-.container-12px,
-.plus-container-12px,
-.minus-container-12px  {
-    height: 12px;
-    background-color: transparent;
-}
-
-.container-10px,
-.plus-container-10px,
-.minus-container-10px  {
-    height: 10px;
-    background-color: transparent;
-}
-
-.container-8px,
-.plus-container-8px,
-.minus-container-8px {
-    height: 8px;
-    background-color: transparent;
-}
-
-/* intended for subfeatures that have rendered children, 
-*  want to size subfeature container to same height as parent feature
-*      (currently only subfeatures like this are exons, which have CDS and UTR child divs)
-*/
-.container-100pct, 
-.plus-container-100pct, 
-.minus-container-100pct {
-    height: 100%;
-    background-color: transparent;
-}
-
-.feature-render  {
-    position: absolute;
-    min-width: 1px;
-    width: 100%;
-    /* feature render div may be added to feature div _after_ subfeature divs, so 
-       if want subfeature divs in front of feature render div, make sure feature render div has lower 
-       z-index than subfeature divs */
-    z-index: 2;  
-}
-
-/**
- *   Basic boxes for subfeatures (and for "render-*" rendering div for features with container divs)
- *   height is % of parent feature, top % determined based on height to ensure vertically centered
- */
-.gray-center-30pct  {
-    background-color: gray;
-    height: 30%;
-    top: 35%;
-}
-
-
-.gray-center-50pct  {
-    background-color: lightgray;
-    height: 50%;
-    top: 25%;
-}
-
-
-.gray-center-20pct  {
-    position:absolute;
-    background-color: gray;
-    min-width: 1px;
-    width: 100%;
-    height: 20%;
-    top: 40%;
-    /* annotline div may be added to annot div _after_ child feature divs, so 
-       if want child divs in front of annotline, make sure has lower 
-       z-index than child divs */
-    z-index: 2;  
-}
-
-.gray-center-10pct  {
-    position:absolute;
-    background-color: gray;
-    min-width: 1px;
-    width: 100%;
-    height: 10%;
-    top: 45%;
-    /* annotline div may be added to annot div _after_ child feature divs, so 
-       if want child divs in front of annotline, make sure has lower 
-       z-index than child divs */
-    z-index: 2;  
-}
-
-
-
-
-.pink-90pct, 
-.plus-pink-90pct, 
-.minus-pink-90pct  {
-    height: 90%;
-    top: 5%;
-    background-color: #D8BDEB;
-    border: 1px solid #01F;
-/*    border-style: solid;
-    border-color: #01F;
-    border-width: 1px;
-*/
-}
-
-.pink-12px, 
-.plus-pink-12px, 
-.minus-pink-12px {
-    background-color: #D8BDEB;
-    border: 1px solid #01F;
-    height: 12px;
-    /*    margin-top: 2px; */  /* rely on centering in code instead? */
-}
-
-.pink-16px, 
-.plus-pink-16px, 
-.minus-pink-16px {
-    background-color: #D8BDEB;
-    border: 1px solid #01F;
-    height: 16px;
-    /*    margin-top: 2px; */  /* rely on centering in code instead? */
-}
-
-.purple-60pct, 
-.plus-purple-60pct, 
-.minus-purple-60pct  {
-    background-color: #8F408F;
-    height: 60%;
-    top: 20%;
-}
-
-.purple-8px, 
-.plus-purple-8px, 
-.minus-purple-8px {
-    background-color: #8F408F;
-    height: 8px; 
-    /*   margin-top: 4px; */  /* rely on centering in code instead? */
-}
-
-.darkblue-80pct, 
-.plus-darkblue-80pct, 
-.minus-darkblue-80pct  {
-    background-color: #1F3DDE;
-    height: 80%;
-    top: 10%;
-}
-
-.bluegreen-80pct, 
-.plus-bluegreen-80pct, 
-.minus-bluegreen-80pct  {
-    background-color: #3BA08E;
-    height: 80%;
-    top: 10%;
-}
-
-
-.brightgreen-80pct, 
-.plus-brightgreen-80pct, 
-.minus-brightgreen-80pct  {
-    background-color: #21D61F;
-    border: 1px solid #555;
-    height: 80%;
-    top: 10%;
-}
-
-.darkgreen-60pct, 
-.plus-darkgreen-60pct, 
-.minus-darkgreen-60pct {
-    height: 60%;
-    top: 20%;
-    background-color: #8DB890;
-}
-
-.trellis-CDS, 
-.plus-trellis-CDS, 
-.minus-trellis-CDS {
-    background-color: gold;
-    border: 1px solid gray;
-    height: 80%;
-    top: 10%;
-}
-
-.trellis-UTR, 
-.plus-trellis-UTR, 
-.minus-trellis-UTR  {
-    background-color: #B39700;
-    height: 60%;
-    top: 20%;
-}
-
-.trellis-match-part, 
-.plus-trellis-match-part, 
-.minus-trellis-match-part  {
-    background-color: #1F3DDE;
-    height: 60%;
-    top: 10%;
-}
-
-/* defaults for rendering aligned read from BAM files */
-.bam-read, 
-.plus-bam-read, 
-.minus-bam-read {
-    height: 5px; 
-    background-color: #AACDDC;
-    z-index: 8;
-}
-
-/* testing different coloration of BAM alignments on minus strand
-.minus-bam {
-    height: 5px; 
-    background-color: #AA00AA;
-    z-index: 8;
-}
-*/
-
-/* CIGAR string "M" subfeature, indicating "alignment match" (can be a sequence match or mismatch) of aligned sequence relative to viewed sequence */
-.cigarM, 
-.plus-cigarM, 
-.minus-cigarM  {
-    height: 100%; 
-    background-color: #1B8A99;
-    z-index: 8;   /* rendered below most other subfeatures */
-    min-width: 1px;
-}
-
-/* CIGAR string "D" subfeature, indicating deletion in aligned sequence relative to viewed sequence */
-/* setting z-index higher than "cigarM" (and default "subfeature") to ensure not hidden by neighboring match regions when zoomed out */
-/* deletions are rendered above matches/mismatches, but below insertion */
-/* turned off, deletion rendering in DraggableAlignments tracks is being handled as non-features by _drawMismatches() now */
-/*
-.cigarD, 
-.plus-cigarD, 
-.minus-cigarD  {
-    height: 100%;
-    background-color: #FF0000;
-    z-index: 12;   
-    min-width: 3px;
-}
-*/
-
-/* CIGAR string "I" subfeature, indicating insertion in aligned sequence relative to viewed sequence */
-/* rendered above sibling subfeature types to increase visibility, since will always be a zero-width feature (?) */
-/* turned off, insertion rendering in DraggableAlignments tracks is being handled as non-features by _drawMismatches() now */
-/*
-.cigarI, 
-.plus-cigarI, 
-.minus-cigarI  {
-    height: 100%;
-    background-color: #00FF00;
-    z-index: 13;  
-    min-width: 3px;
-}
-*/
-
-
-/* CIGAR string "=" (or "E") subfeature, indicating exact sequence match of aligned sequence relative to viewed sequence */
-.cigarEQ, 
-.plus-cigarEQ, 
-.minus-cigarEQ  {
-    height: 100%; 
-    background-color: #1B8A99;
-    z-index: 10; /* rendered above more generic "M" type */
-    min-width: 1px;
-}
-
-/* CIGAR string "X" subfeature, indicating mismatch of aligned sequence relative to viewed sequence */
-.cigarX, 
-.plus-cigarX, 
-.minus-cigarX  {
-    height: 100%; 
-    background-color: rgb(182, 167, 0);  
-    z-index: 11;  /* rendered above matches, but below deletions and insertions */
-    min-width: 3px;
-}
-
-
-/*  don't render skips, just let parent bam show through (similar to not rendering intron but letting transcript show through)
-.cigarN, 
-.plus-cigarN, 
-.minus-cigarN  {
-    position: absolute;
-    height: 2px; 
-    margin-top: 0px;
-    background-color: #AACDDC;
-    z-index: 8;
-    min-width: 1px;
-}
-*/
-
-/* align_insertion, align_deletion, align_skip, align_mismatch are assigned to 
-   non-feature child divs of bam-read features in DraggableAlignments._drawMismatches()
-*/
-.align_insertion {
-    background-color: #00FF00;
-    height: 100%;
-    min-width: 2px;
-    z-index: 20;  // render on top of mismatches etc.
-}
-
-.align_deletion {
-    background-color: #FF0000;
-    height: 100%;
-    min-width: 2px;
-    z-index: 20;  // render on top of mismatches etc.
-}
-
-.align_skip {
-}
-
-.align_mismatch {
-    background-color: #D8C046;
-    height: 100%;
-    min-width: 2px;
-    z-index: 12;
 }
 
 .noncanonical-splice-site,
@@ -2058,20 +1686,8 @@ div.sequence .dna-highlighted {
     border: 2px dotted red;
     background: rgb(100, 150, 255);
     background: rgba(100, 150, 255, 0.5);
-    
 }
 
-/**
-*  By default, no styling associated with custom multifeature draggable helper
-*  But leaving here for easing toggling of diagnostic rendering
-*/
-.custom-multifeature-draggable-helper  {
-/*  
-    outline-style: dotted; 
-    outline-color: red;
-    outline-width: 4px; 
-*/
-}
 
 /**
  * Appearance of annotations (features in AnnoTracks)  when they are drop
