@@ -170,7 +170,7 @@ return declare( [BlockBased, ExportMixin],
         var charWidth = 100/seq.length+"%";
         for( var i=0; i < seq.length; i++ ) {
             var base = document.createElement('span');
-            base.className = 'base base_'+seq.charAt([i]).toLowerCase();
+            base.className = 'base';
             base.style.width = charWidth;
             base.innerHTML = seq.charAt(i);
             container.appendChild(base);
