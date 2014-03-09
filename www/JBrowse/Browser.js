@@ -1644,27 +1644,9 @@ showRegionWithHighlight: function( location ) {
     this.showRegion( location );
 },
 
-// Functions carried over from WA/main.js //
-
-// would rather call view.redrawTracks()
-//
-// BUT, view.redrawTracks currently doesn't force relayout
-//     browser.view.redrawTracks();
-// track.changed() forces relayout (at least for HTMLFeatures)
-//    but also call changeCallBack(), which currently is always view.showVisibleBlocks()
-//    thus will needlessly call view.showVisibleBlocks() repeatedly 
-// so trying for now to be explicit
-redoLayout: function()  {
-    this.view.trackIterate(function(t) {
-        t.hideAll();
-        if (t._clearLayout)  {
-            // console.log("clearing layout for track: " + t.label);
-            t._clearLayout();
-        }
-    });
-    this.view.showVisibleBlocks(true);
-},
-
+/**
+ * Get genome browser's edit track.
+ */
 getEditTrack: function()  {
     if (this && this.view && this.view.tracks)  {
         var tracks = this.view.tracks;
@@ -1678,10 +1660,8 @@ getEditTrack: function()  {
 },
 
 /**
-    *  Get the sequence track we assumes there is only one SequenceTrack if
-    *  there are multiple SequenceTracks, getSequenceTrack returns first one
-    *  found iterating through tracks list.
-    */
+ * Get genome browser's edit track.
+ */
 getSequenceTrack: function()  {
     if (this && this.view && this.view.tracks)  {
         var tracks = this.view.tracks;
@@ -1693,24 +1673,6 @@ getSequenceTrack: function()  {
     }
     return null;
 },
-
-/** utility function, given an array with objects that have label props, 
-    *        return array with all objects that don't have label
-    *   D = [ { label: A }, { label: B}, { label: C } ]
-    *   E = D.removeItemWithLabel("B");
-    *   E ==> [ { label: A }, { label: C } ]
-    */
-removeItemWithLabel: function(inarray, label) {
-    var outarray = [];
-    for (var i=0; i<inarray.length; i++) {
-        var obj = inarray[i];
-        if (! (obj.label && (obj.label === label))) {
-            outarray.push(obj);
-        }
-    }
-    return outarray;
-},
-// Functions carried over from WA/main.js //
 
 scrollToNextEdge: function(event)  {
     var vregion = this.view.visibleRegion();
