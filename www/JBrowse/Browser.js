@@ -1648,6 +1648,7 @@ showRegionWithHighlight: function( location ) {
 
 selectionAdded: function (rec, smanager) {
     var detail = rec.track.defaultFeatureDetail(rec.track, rec.feature);
+    $('#feature-detail').empty();
     $('#feature-detail').append(detail);
 },
 
