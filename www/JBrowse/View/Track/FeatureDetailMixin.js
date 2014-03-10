@@ -8,7 +8,6 @@ define([
             'dojo/aspect',
             'dojo/dom-construct',
             'JBrowse/Util',
-            'JBrowse/View/FASTA',
             'JBrowse/View/_FeatureDescriptionMixin'
         ],
         function(
@@ -18,7 +17,6 @@ define([
             aspect,
             domConstruct,
             Util,
-            FASTAView,
             FeatureDescriptionMixin
         ) {
 
@@ -71,9 +69,9 @@ return declare( FeatureDescriptionMixin, {
     defaultFeatureDetail: function( /** JBrowse.Track */ track, /** Object */ f, /** HTMLElement */ featDiv, /** HTMLElement */ container ) {
         container  = container || dojo.create('div', { className: 'panel panel-default', innerHTML: '' });
         var header = dojo.create('div', {className: 'panel-heading'}, container);
-        var body_collapse = dojo.create('div', {className: 'panel-collapse collapse', id: "feature-" + f.id().replace(/,/g, '-')}, container);
-        var body   = dojo.create('div', {className: 'panel-body'   }, body_collapse);
-        var footer = dojo.create('div', {className: 'panel-footer' }, container);
+        var collapse = dojo.create('div', {className: 'panel-collapse collapse', id: "feature-" + f.id().replace(/,/g, '-')}, container);
+        var body   = dojo.create('div', {className: 'panel-body'   }, collapse);
+        var footer = dojo.create('div', {className: 'panel-footer' }, collapse);
 
         this._renderCoreDetails(track, f, header);
         //this._renderAdditionalTagsDetail(track, f, featDiv, container);
@@ -86,16 +84,15 @@ return declare( FeatureDescriptionMixin, {
     _renderCoreDetails: function(track, f, container) {
         container.innerHTML +=
             '<h4 class="panel-title" data-toggle="collapse" data-target="#feature-' + f.id().replace(/,/g, '-') + '">'    +
-            this.getFeatureLabel(f)       +
-            '<small><br>'                 +
-            f.get('type')                 +
-            ' | ' + Util.assembleLocString({ start: f.get('start'),
-                                     end: f.get('end'),
-                                     ref: this.refSeq.name,
-                                     strand: f.get('strand')
-                                   })     +
-            ' | ' + Util.addCommas(f.get('end')-f.get('start')) +' bp'  +
-            '</small>'                    +
+            this.getFeatureLabel(f)                                                         +
+            '<small><br>'                                                                   +
+            f.get('type')                                                                   +
+            ' | ' + Util.assembleLocString({start: f.get('start'),
+                                           end:    f.get('end'),
+                                           ref:    this.refSeq.name,
+                                           strand: f.get('strand')}).replace(' strand', '') +
+            ' | ' + Util.addCommas(f.get('end') - f.get('start')) + ' bp'  +
+            '</small>'                                                                      +
             '</h4>';
     },
 
@@ -156,21 +153,27 @@ return declare( FeatureDescriptionMixin, {
                              var seq = feature.get('seq');
                              valueContainer = dojo.byId(valueContainerID) || valueContainer;
                              valueContainer.innerHTML = '';
-                             // the HTML is rewritten by the dojo dialog
-                             // parser, but this callback may be called either
-                             // before or after that happens.  if the fetch by
-                             // ID fails, we have come back before the parse.
-                             var textArea = new FASTAView({ width: 32, htmlMaxRows: 10 })
-                                                .renderHTML(
-                                                    { ref:   this.refSeq.name,
-                                                      start: f.get('start'),
-                                                      end:   f.get('end'),
-                                                      strand: f.get('strand'),
-                                                      type: f.get('type')
-                                                    },
-                                                    f.get('strand') == -1 ? Util.reverseComplement(seq) : seq,
-                                                    valueContainer
-                                                );
+                             var region = { ref:   this.refSeq.name,
+                                 start: f.get('start'),
+                                 end:   f.get('end'),
+                                 strand: f.get('strand'),
+                                 type: f.get('type')
+                             };
+
+                             if (f.get('strand') == -1) {
+                                 seq = Util.reverseComplement(seq)
+                             }
+
+                             dojo.create('pre', {
+                                 className: 'pre-scrollable',
+                                 innerHTML: '>' + region.ref
+                                 + ' '+Util.assembleLocString(region)
+                                 + ( region.type ? ' class='+region.type : '' )
+                                 + ' length='+(region.end - region.start)
+                                 + "\n"
+                                 + seq
+                                 //+ this._wrap(seq, this.width )
+                             }, valueContainer);
                        }),
                        // end callback
                        function() {},
