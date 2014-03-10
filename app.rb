@@ -6,7 +6,9 @@ require 'puma/server'
 module App
 
   class Routes < Sinatra::Base
+
     class << self
+
       ## OVERRIDE
       def middleware
         @middleware
