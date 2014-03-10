@@ -97,32 +97,6 @@ task 'configure' do
   Setting.create(key: 'facebook_app_secret', value: fb_app_secret)
 end
 
-desc 'Create user.'
-task 'user:new' do
-  require_relative 'app'
-  App.init_config
-  App.load_models
-
-  print 'Name: '
-  name = STDIN.gets.chomp
-  print 'Email: '
-  email = STDIN.gets.chomp
-  print 'Pasword: '
-  password = STDIN.gets.chomp
-  User.create(name: name, email: email, password: password)
-end
-
-desc 'Create mock users.'
-task 'mock:users' do
-  require_relative 'app'
-  App.init_config
-  App.load_models
-
-  User.create(name: 'Mario', email: 'mario@toadstool.com', password: 'mario')
-  User.create(name: 'Luigi', email: 'luigi@toadstool.com', password: 'luigi')
-  User.create(name: 'Yoshi', email: 'yoshi@toadstool.com', password: 'yoshi')
-end
-
 desc 'Test auto-check'
 task 'auto-check' do
 
