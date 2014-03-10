@@ -127,6 +127,7 @@ constructor: function(params) {
     this.featSelectionManager.addMutualExclusion(this.annotSelectionManager);
 
     this.featSelectionManager.addListener(this);
+    this.annotSelectionManager.addListener(this);
 
     FeatureEdgeMatchManager.addSelectionManager(this.featSelectionManager);
     FeatureEdgeMatchManager.addSelectionManager(this.annotSelectionManager);

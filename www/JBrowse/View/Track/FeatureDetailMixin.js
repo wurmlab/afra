@@ -71,7 +71,8 @@ return declare( FeatureDescriptionMixin, {
     defaultFeatureDetail: function( /** JBrowse.Track */ track, /** Object */ f, /** HTMLElement */ featDiv, /** HTMLElement */ container ) {
         container  = container || dojo.create('div', { className: 'panel panel-default', innerHTML: '' });
         var header = dojo.create('div', {className: 'panel-heading'}, container);
-        var body   = dojo.create('div', {className: 'panel-body'   }, container);
+        var body_collapse = dojo.create('div', {className: 'panel-collapse collapse', id: "feature-" + f.id().replace(/,/g, '-')}, container);
+        var body   = dojo.create('div', {className: 'panel-body'   }, body_collapse);
         var footer = dojo.create('div', {className: 'panel-footer' }, container);
 
         this._renderCoreDetails(track, f, header);
@@ -84,7 +85,7 @@ return declare( FeatureDescriptionMixin, {
 
     _renderCoreDetails: function(track, f, container) {
         container.innerHTML +=
-            '<h4 class="panel-title">'    +
+            '<h4 class="panel-title" data-toggle="collapse" data-target="#feature-' + f.id().replace(/,/g, '-') + '">'    +
             this.getFeatureLabel(f)       +
             '<small><br>'                 +
             f.get('type')                 +
