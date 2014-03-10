@@ -126,6 +126,8 @@ constructor: function(params) {
     this.annotSelectionManager.addMutualExclusion(this.featSelectionManager);
     this.featSelectionManager.addMutualExclusion(this.annotSelectionManager);
 
+    this.featSelectionManager.addListener(this);
+
     FeatureEdgeMatchManager.addSelectionManager(this.featSelectionManager);
     FeatureEdgeMatchManager.addSelectionManager(this.annotSelectionManager);
 
@@ -1642,6 +1644,15 @@ showRegionWithHighlight: function( location ) {
     this.view.hideRegion( location );
     this.setHighlight( location );
     this.showRegion( location );
+},
+
+selectionAdded: function (rec, smanager) {
+    var detail = rec.track.defaultFeatureDetail(rec.track, rec.feature);
+    $('#feature-detail').append(detail);
+},
+
+selectionCleared: function (rec, smanager) {
+    $('#feature-detail').empty();
 },
 
 /**
