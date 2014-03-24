@@ -1653,6 +1653,9 @@ selectionAdded: function (rec, smanager) {
     $('#feature-detail').append(detail);
 },
 
+selectionRemoved: function (rec, smanager) {
+},
+
 selectionCleared: function (rec, smanager) {
     $('#feature-detail').empty();
 },
