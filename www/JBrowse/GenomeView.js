@@ -148,7 +148,7 @@ constructor: function( args ) {
     //this prevents us from scrolling off the left end of the ref seq
     this.minLeft = this.bpToPx(this.ref.start);
     //distance, in pixels, between each track
-    this.trackPadding = 20;
+    this.trackPadding = 8;
     //extra margin to draw around the visible area, in multiples of the visible area
     //0: draw only the visible area; 0.1: draw an extra 10% around the visible area, etc.
     this.drawMargin = 0.2;
