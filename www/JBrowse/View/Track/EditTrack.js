@@ -192,7 +192,13 @@ var EditTrack = declare(DraggableFeatureTrack,
             drop: function(event, ui)  {
                 var dropped_feats = target_track.browser.featSelectionManager.getSelection();
                 for (var i in dropped_feats)  {
-                    target_track.addTranscript(dropped_feats[i].feature);
+                    var top_level_feature = !dropped_feats[i].feature.parent();
+                    if (top_level_feature) {
+                        target_track.addTranscript(dropped_feats[i].feature);
+                    }
+                    else {
+                        target_track.addExon(dropped_feats[i].feature);
+                    }
                 }
             }
         });
@@ -203,6 +209,21 @@ var EditTrack = declare(DraggableFeatureTrack,
         //this.store.insert(new_transcript);
         //this.changed();
         this.findNonCanonicalSpliceSites(new_transcript);
+    },
+
+    addExon: function (exon) {
+        var new_transcript = this.newTranscript(exon);
+        var parent = exon.parent();
+        var subfeatures = parent.get('subfeatures');
+        var subfeatures_i = new Array();
+        for (var j in subfeatures) {
+            if (subfeatures[j].get('start') >= exon.get('start') && subfeatures[j].get('end') <= exon.get('end')) {
+                subfeatures_i.push(subfeatures[j]);
+            }
+        }
+        new_transcript.set('subfeatures', subfeatures_i);
+        this.store.insert(new_transcript);
+        this.changed();
     },
 
     resizeExon: function (transcript, index, leftDelta, rightDelta) {
@@ -244,22 +265,26 @@ var EditTrack = declare(DraggableFeatureTrack,
         });
 
         var from_subfeatures = from.get('subfeatures');
+        //console.log(from);
+        //console.log(from_subfeatures);
 
-        var subfeatures = new Array();
-        for (var i = 0; i < from_subfeatures.length; ++i) {
-            var from_subfeature = from_subfeatures[i];
-            var subfeature = new SimpleFeature({
-                data: {
-                    start:  from_subfeature.get('start'),
-                    end:    from_subfeature.get('end'),
-                    strand: from_subfeature.get('strand'),
-                    type:   from_subfeature.get('type')
-                },
-                parent: feature
-            });
-            subfeatures.push(subfeature);
+        if (from_subfeatures) {
+            var subfeatures = new Array();
+            for (var i = 0; i < from_subfeatures.length; ++i) {
+                var from_subfeature = from_subfeatures[i];
+                var subfeature = new SimpleFeature({
+                    data: {
+                        start:  from_subfeature.get('start'),
+                        end:    from_subfeature.get('end'),
+                        strand: from_subfeature.get('strand'),
+                        type:   from_subfeature.get('type')
+                    },
+                    parent: feature
+                });
+                subfeatures.push(subfeature);
+            }
+            feature.set('subfeatures', subfeatures);
         }
-        feature.set('subfeatures', subfeatures);
         //console.log(feature);
         return feature;
     },
