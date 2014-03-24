@@ -10,13 +10,15 @@
   },
   "dependencies": {
       "bower":        "~ 1.2.8",
-      "jqueryui-amd": "~ 0.0.2"
+      "jqueryui-amd": "~ 0.0.2",
+      "urequire":     "~ 0.6.13"
   },
   "devDependencies": {
   },
   "scripts": {
     "bower":         "bower install",
-    "amdify-jquery": "jqueryui-amd www/lib/jquery.ui"
+    "amdify-jquery": "jqueryui-amd www/lib/jquery.ui",
+    "amdify-bionode":"urequire AMD www/lib/bionode/lib -f"
   },
   "license": "Apache Public License 2.0"
 }
