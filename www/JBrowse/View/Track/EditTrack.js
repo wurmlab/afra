@@ -245,8 +245,9 @@ var EditTrack = declare(DraggableFeatureTrack,
             new_transcript.set('end', fmax);
         }
 
-        this.store.replace(new_transcript);
-        this.changed();
+        //this.store.replace(new_transcript);
+        //this.changed();
+        this.findNonCanonicalSpliceSites(new_transcript);
 
         var featdiv = this.getFeatDiv(exon);
         $(featdiv).trigger('mousedown');
@@ -631,7 +632,7 @@ var EditTrack = declare(DraggableFeatureTrack,
                         var cds_ranges  = [];
                         for (var i = 0; i < subfeatures.length; i++) {
                             var subfeature = subfeatures[i];
-                            if (subfeature.get('type') == 'CDS') {
+                            if (subfeature.get('type') == 'exon') {
                                 cds_ranges.push([subfeature.get('start') - start, subfeature.get('end') - start]);
                             }
                         }
