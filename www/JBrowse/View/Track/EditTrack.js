@@ -643,6 +643,8 @@ var EditTrack = declare(DraggableFeatureTrack,
                         }
                         else if (strand === -1) {
                             nonCanonicalSpliceSites = Bionode.findNonCanonicalSplices(Util.reverseComplement(seq), Bionode.reverseExons(cds_ranges, seq.length));
+                            for (var i = 0; i < nonCanonicalSpliceSites.length; i++)
+                                nonCanonicalSpliceSites[i] = seq.length - nonCanonicalSpliceSites[i];
                         }
                         for (var i = 0; i < nonCanonicalSpliceSites.length; i++) {
                             var non_canonical_splice_site = nonCanonicalSpliceSites[i];
