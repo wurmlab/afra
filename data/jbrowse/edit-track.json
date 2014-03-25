@@ -15,7 +15,8 @@
                  "three_prime_UTR" : "three_prime_UTR",
                  "five_prime_UTR"  : "five_prime_UTR",
                  "exon" : "exon",
-                 "CDS"  : "CDS"
+                 "CDS"  : "CDS",
+                 "non_canonical_splice_site" : "non-canonical-splice-site"
              }
          },
          "subfeatures" : 1,

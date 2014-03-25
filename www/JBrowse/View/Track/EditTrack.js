@@ -650,7 +650,7 @@ var EditTrack = declare(DraggableFeatureTrack,
                                 data: {
                                     start: non_canonical_splice_site + start,
                                     end:   non_canonical_splice_site + start + 1,
-                                    type:  'noncanonical-splice-site'
+                                    type:  'non_canonical_splice_site'
                                 },
                                 parent: feature
                             }));

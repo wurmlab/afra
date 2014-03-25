@@ -14,9 +14,12 @@ return declare( null,
         this.selected = [];
         this.listeners = [];
         this.clearOnAdd = [];
-        this.unselectableTypes = { "non_canonical_five_prime_splice_site" : true, 
-			           "non_canonical_three_prime_splice_site" : true,
-			           "stop_codon_read_through" : true};
+        this.unselectableTypes = {
+            "non_canonical_five_prime_splice_site"  : true,
+            "non_canonical_three_prime_splice_site" : true,
+            "non_canonical_splice_site" : true,
+            "stop_codon_read_through" : true
+        };
     },
 
     /**
