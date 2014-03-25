@@ -1,6 +1,7 @@
 define([
             'dojo/_base/declare',
             'jquery',
+            'underscore',
             'jqueryui/droppable',
             'jqueryui/resizable',
             'contextmenu',
@@ -15,6 +16,7 @@ define([
         ],
         function(declare,
                  $,
+                 _,
                  droppable,
                  resizable,
                  contextmenu,
@@ -628,8 +630,14 @@ var EditTrack = declare(DraggableFeatureTrack,
                     dojo.hitch(this, function (f) {
                         var seq = f.get('seq');
                         var start = f.get('start')
-                        var subfeatures = feature.get('subfeatures');
+                        //var subfeatures = feature.get('subfeatures');
                         var cds_ranges  = [];
+
+                        // remove non-canonical splice sites from before
+                        var subfeatures = _.reject(feature.get('subfeatures'), function (f) {
+                            return f.get('type') == 'non_canonical_splice_site';
+                        });
+
                         for (var i = 0; i < subfeatures.length; i++) {
                             var subfeature = subfeatures[i];
                             if (subfeature.get('type') == 'exon') {
@@ -658,6 +666,7 @@ var EditTrack = declare(DraggableFeatureTrack,
                             }));
                         }
                         track.sortAnnotationsByLocation(subfeatures);
+                        feature.set('subfeatures', subfeatures);
                         track.store.insert(feature);
                         track.changed();
                     }));
