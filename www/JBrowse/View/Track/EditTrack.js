@@ -491,14 +491,13 @@ var EditTrack = declare(DraggableFeatureTrack,
         }
     },
 
-    splitSelectedFeatures: function(event)  {
-        // var selected = this.selectionManager.getSelection();
+    splitSelectedFeatures: function()  {
         var selected = this.selectionManager.getSelectedFeatures();
         this.selectionManager.clearSelection();
-        this.splitAnnotations(selected, event);
+        this.splitFeatures(selected);
     },
 
-    splitFeatures: function(annots, event) {
+    splitFeatures: function(annots) {
         // can only split on max two elements
         if( annots.length > 2 ) {
             return;
@@ -529,10 +528,7 @@ var EditTrack = declare(DraggableFeatureTrack,
         var operation;
         // split exon
         if (leftAnnot == rightAnnot) {
-            var coordinate = this.getGenomeCoord(event);
-            console.log(leftAnnot.get('start'));
-            console.log(leftAnnot.get('end'));
-            console.log(coordinate);
+            var coordinate = this.gview.absXtoBp($('#contextmenu').position().left);
             var parent = leftAnnot.parent();
             var feature = new SimpleFeature({
                 id:   parent.id(),
@@ -553,7 +549,8 @@ var EditTrack = declare(DraggableFeatureTrack,
                     end:    coordinate - 10,
                     strand: leftAnnot.get('strand'),
                     type:   leftAnnot.get('type')
-                }
+                },
+                parent: feature
             }));
             subfeatures.push(new SimpleFeature({
                 data: {
@@ -561,7 +558,8 @@ var EditTrack = declare(DraggableFeatureTrack,
                     end:    leftAnnot.get('end'),
                     strand: leftAnnot.get('strand'),
                     type:   leftAnnot.get('type')
-                }
+                },
+                parent: feature
             }));
             subfeatures = this.sortAnnotationsByLocation(subfeatures);
             feature.set('subfeatures', subfeatures);
