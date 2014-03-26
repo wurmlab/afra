@@ -454,9 +454,30 @@ var EditTrack = declare(DraggableFeatureTrack,
         }
         // merge transcripts
         else {
-            var leftTranscriptId = leftAnnot.parent() ? leftAnnot.parent().id() : leftAnnot.id();
-            var rightTranscriptId = rightAnnot.parent() ? rightAnnot.parent().id() : rightAnnot.id();
             console.log('merge transcripts');
+            if (leftAnnot.parent())
+                leftAnnot = leftAnnot.parent();
+
+            if (rightAnnot.parent())
+                rightAnnot = rightAnnot.parent();
+
+            var new_transcript = new SimpleFeature({
+                data: {
+                    name: leftAnnot.get('name'),
+                    ref:  leftAnnot.get('ref'),
+                    start: leftAnnot.get('start'),
+                    end:   rightAnnot.get('end'),
+                    strand: leftAnnot.get('strand'),
+                    type:   leftAnnot.get('type')
+                }
+            });
+            var subfeatures = leftAnnot.children();
+            subfeatures = subfeatures.concat(rightAnnot.children());
+            new_transcript.set('subfeatures', subfeatures);
+            this.store.deleteFeatureById(leftAnnot.id());
+            this.store.deleteFeatureById(rightAnnot.id());
+            this.store.insert(new_transcript);
+            this.changed();
         }
     },
 
