@@ -565,10 +565,45 @@ var EditTrack = declare(DraggableFeatureTrack,
             feature.set('subfeatures', subfeatures);
             this.store.replace(feature);
             this.changed();
-            console.log(coordinate);
         }
         // split transcript
         else if (leftAnnot.parent() == rightAnnot.parent()) {
+            var parent = leftAnnot.parent();
+            var feature1 = new SimpleFeature({
+                data: {
+                    name:   parent.get('name'),
+                    ref:    parent.get('seq_id') || parent.get('ref'),
+                    start:  parent.get('start'),
+                    end:    leftAnnot.get('end'),
+                    strand: parent.get('strand')
+                }
+            });
+            var feature2 = new SimpleFeature({
+                data: {
+                    name:   parent.get('name'),
+                    ref:    parent.get('seq_id') || parent.get('ref'),
+                    start:  rightAnnot.get('start'),
+                    end:    parent.get('end'),
+                    strand: parent.get('strand')
+                }
+            });
+            var splitPoint   = false;
+            var subfeatures1 = [];
+            var subfeatures2 = [];
+            _.each(parent.children(), function (f) {
+                if (f.id() == rightAnnot.id())
+                    splitPoint = true;
+                if (!splitPoint)
+                    subfeatures1.push(f)
+                else
+                    subfeatures2.push(f);
+            });
+            feature1.set('subfeatures', subfeatures1);
+            feature2.set('subfeatures', subfeatures2);
+            this.store.deleteFeatureById(parent.id());
+            this.store.insert(feature1);
+            this.store.insert(feature2);
+            this.changed();
         }
         else {
             return;
