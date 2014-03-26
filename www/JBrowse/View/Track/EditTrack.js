@@ -81,13 +81,13 @@ var EditTrack = declare(DraggableFeatureTrack,
 
         if (featDiv && featDiv != null)  {
             $(featDiv).contextmenu({
-                target: '#contextmenu',
-                onItem: function (event, element) {
-                    var selection = track.selectionManager.getSelectedFeatures();
-                    var action = element.data('action');
-                    track[action].call(track, selection, event);
-                    track.selectionManager.clearSelection();
-                }
+                target: '#contextmenu'
+                //onItem: function (event, element) {
+                    //var selection = track.selectionManager.getSelectedFeatures();
+                    //var action = element.data('action');
+                    //track[action].call(track, selection, event);
+                    //track.selectionManager.clearSelection();
+                //}
             })
         }
         return featDiv;
@@ -364,6 +364,12 @@ var EditTrack = declare(DraggableFeatureTrack,
             track.executeUpdateOperation(postData);
     },
 
+    deleteSelectedFeatures: function () {
+        var selected = this.selectionManager.getSelectedFeatures();
+        this.selectionManager.clearSelection();
+        this.deleteFeatures(selected);
+    },
+
     deleteFeatures: function(selection)  {
         for (var i in selection) {
             var feature = selection[i];
@@ -397,9 +403,9 @@ var EditTrack = declare(DraggableFeatureTrack,
     },
 
     mergeSelectedFeatures: function()  {
-        var selected = this.selectionManager.getSelection();
+        var selected = this.selectionManager.getSelectedFeatures();
         this.selectionManager.clearSelection();
-        this.mergeAnnotations(selected);
+        this.mergeFeatures(selected);
     },
 
     mergeFeatures: function(selection) {

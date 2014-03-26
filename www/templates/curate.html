@@ -273,14 +273,14 @@
     <ul class="dropdown-menu" role="menu">
       <li
         role="presentation">
-        <a role="menuitem" tabindex="-1" href="#" data-action="deleteFeatures">
+        <a role="menuitem" tabindex="-1" ng-click="browser.getEditTrack().deleteSelectedFeatures()">
           <i class="fa fa-trash-o"></i>
           Delete
         </a>
       </li>
       <li
         role="presentation">
-        <a role="menuitem" tabindex="-1" href="#" data-action="mergeFeatures">
+        <a role="menuitem" tabindex="-1" ng-click="browser.getEditTrack().mergeSelectedFeatures()">
           <i class="fa fa-link"></i>
           Merge
         </a>
