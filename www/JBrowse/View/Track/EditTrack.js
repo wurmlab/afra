@@ -397,14 +397,8 @@ var EditTrack = declare(DraggableFeatureTrack,
         this.mergeAnnotations(selected);
     },
 
-    mergeAnnotations: function(selection) {
-        var track = this;
-        var annots = []; 
-        for (var i=0; i<selection.length; i++)  { 
-        	annots[i] = selection[i].feature; 
-        }
-
-        var sortedAnnots = track.sortAnnotationsByLocation(annots);
+    mergeFeatures: function(selection) {
+        var sortedAnnots = this.sortAnnotationsByLocation(selection);
         var leftAnnot = sortedAnnots[0];
         var rightAnnot = sortedAnnots[sortedAnnots.length - 1];
         var trackName = this.getUniqueTrackName();
@@ -430,18 +424,40 @@ var EditTrack = declare(DraggableFeatureTrack,
         var operation;
         // merge exons
         if (leftAnnot.parent() && rightAnnot.parent() && leftAnnot.parent() == rightAnnot.parent()) {
-            features = '"features": [ { "uniquename": "' + leftAnnot.id() + '" }, { "uniquename": "' + rightAnnot.id() + '" } ]';
-            operation = "merge_exons";
+            var parent = leftAnnot.parent();
+            var new_transcript = new SimpleFeature({
+                id:   parent.id(),
+                data: {
+                    name:   parent.get('name'),
+                    ref:    parent.get('seq_id') || parent.get('ref'),
+                    start:  parent.get('start'),
+                    end:    parent.get('end'),
+                    strand: parent.get('strand')
+                }
+            });
+            var subfeatures = _.reject(parent.children(), function (f) {
+                return f.id() == leftAnnot.id() || f.id() == rightAnnot.id();
+            });
+            subfeatures.push(new SimpleFeature({
+                data: {
+                    start: leftAnnot.get('start'),
+                    end:   rightAnnot.get('end'),
+                    strand: leftAnnot.get('strand'),
+                    type:   leftAnnot.get('type')
+                },
+                parent: new_transcript
+            }));
+            subfeatures = this.sortAnnotationsByLocation(subfeatures);
+            new_transcript.set('subfeatures', subfeatures);
+            this.store.replace(new_transcript);
+            this.changed();
         }
         // merge transcripts
         else {
             var leftTranscriptId = leftAnnot.parent() ? leftAnnot.parent().id() : leftAnnot.id();
             var rightTranscriptId = rightAnnot.parent() ? rightAnnot.parent().id() : rightAnnot.id();
-            features = '"features": [ { "uniquename": "' + leftTranscriptId + '" }, { "uniquename": "' + rightTranscriptId + '" } ]';
-            operation = "merge_transcripts";
+            console.log('merge transcripts');
         }
-        var postData = '{ "track": "' + trackName + '", ' + features + ', "operation": "' + operation + '" }';
-        track.executeUpdateOperation(postData);
     },
 
     splitSelectedFeatures: function(event)  {
