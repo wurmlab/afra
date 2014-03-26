@@ -288,7 +288,7 @@
       <li
         class="disabled"
         role="presentation">
-        <a role="menuitem" tabindex="-1" href="#" data-action="splitFeatures">
+        <a role="menuitem" tabindex="-1" ng-click="browser.getEditTrack().splitSelectedFeatures()">
           <i class="fa fa-unlink"></i>
           Split
         </a>
@@ -296,7 +296,7 @@
       <li
         class="disabled"
         role="presentation">
-        <a role="menuitem" tabindex="-1" href="#">
+        <a role="menuitem" tabindex="-1" ng-click="browser.getEditTrack().duplicateSelectedFeatures()">
           <i class="fa fa-copy"></i>
           Duplicate
         </a>
@@ -304,7 +304,7 @@
       <li
         class="disabled"
         role="presentation">
-        <a role="menuitem" tabindex="-1" href="#">
+        <a role="menuitem" tabindex="-1" ng-click="browser.getEditTrack().flipStrandOfSelectedFeatures()">
           <i class="fa fa-exchange"></i>
           Flip strand
         </a>
