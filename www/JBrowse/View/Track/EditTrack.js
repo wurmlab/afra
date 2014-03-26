@@ -656,42 +656,46 @@ var EditTrack = declare(DraggableFeatureTrack,
     	track.executeUpdateOperation(postData);
     },
 
-    flipStrand: function()  {
-        var selected = this.selectionManager.getSelection();
-        this.flipStrandForSelectedFeatures(selected);
+    flipStrandForSelectedFeatures: function()  {
+        var selected = this.selectionManager.getSelectedFeatures();
+        this.flipStrand(selected);
     },
 
-    flipStrandForSelectedFeatures: function(records) {
-        var track = this;
-        var uniqueNames = new Object();
-        for (var i in records)  {
-	    var record = records[i];
-	    var selfeat = record.feature;
-	    var seltrack = record.track;
-            var topfeat = EditTrack.getTopLevelAnnotation(selfeat);
-            var uniqueName = topfeat.id();
-            // just checking to ensure that all features in selection are from this track
-            if (seltrack === track)  {
-                    uniqueNames[uniqueName] = 1;
+    flipStrand: function(features) {
+        for (var i in features)  {
+            var feature  = features[i];
+            if (feature.parent()) {
+                // can't flips strand for subfeatures
+                return;
             }
-        }
-        var features = '"features": [';
-        var i = 0;
-        for (var uniqueName in uniqueNames) {
-                var trackdiv = track.div;
-                var trackName = track.getUniqueTrackName();
 
-                if (i > 0) {
-                    features += ',';
+            var new_transcript = new SimpleFeature({
+                id:   feature.id(),
+                data: {
+                    name:   feature.get('name'),
+                    ref:    feature.get('seq_id') || feature.get('ref'),
+                    start:  feature.get('start'),
+                    end:    feature.get('end'),
+                    strand: feature.get('strand') * -1,
+                    type:   feature.get('type')
                 }
-                features += ' { "uniquename": "' + uniqueName + '" } ';
-                ++i;
+            });
+            var subfeatures = _.map(feature.children(), function (f) {
+                return new SimpleFeature({
+                    data: {
+                        name:   f.get('name'),
+                        ref:    f.get('seq_id') || feature.get('ref'),
+                        start:  f.get('start'),
+                        end:    f.get('end'),
+                        strand: f.get('strand') * -1,
+                        type:   f.get('type')
+                    }
+                });
+            });
+            new_transcript.set('subfeatures', subfeatures);
+            this.store.replace(new_transcript);
+            this.changed();
         }
-        features += ']';
-        var operation = "flip_strand";
-        var trackName = track.getUniqueTrackName();
-        var postData = '{ "track": "' + trackName + '", ' + features + ', "operation": "' + operation + '" }';
-        track.executeUpdateOperation(postData);
     },
 
     setLongestORF: function()  {
