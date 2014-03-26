@@ -1061,6 +1061,7 @@ var EditTrack = declare(DraggableFeatureTrack,
             var featdiv = this.getFeatDiv(feat);
             $("div.sequence", track.div).remove();
         }
+        $('.ui-resizable').resizable('destroy');
     },
 
     startZoom: function(destScale, destStart, destEnd) {
