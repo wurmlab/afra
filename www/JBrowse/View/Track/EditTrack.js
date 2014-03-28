@@ -255,9 +255,12 @@ var EditTrack = declare(DraggableFeatureTrack,
         $(featdiv).trigger('mousedown');
     },
 
-    newTranscript: function (from)  {
+    newTranscript: function (from, reuse_id)  {
+        if (reuse_id === undefined)
+            reuse_id = true;
+
         var feature = new SimpleFeature({
-            id:   from.id(),
+            id:   reuse_id ? from.id() : undefined,
             data: {
                 name:   from.get('name'),
                 ref:    from.get('seq_id') || from.get('ref'),
@@ -314,31 +317,32 @@ var EditTrack = declare(DraggableFeatureTrack,
     },
 
     duplicateSelectedFeatures: function() {
-        var selected = this.selectionManager.getSelection();
-        var selfeats = this.selectionManager.getSelectedFeatures();
+        var selected = this.selectionManager.getSelectedFeatures();
         this.selectionManager.clearSelection();
-        this.duplicateAnnotations(selfeats);
+        this.duplicateFeatures(selected);
     },
 
-    duplicateAnnotations: function(feats)  {
-            var track = this;
-            var featuresToAdd = new Array();
-            var subfeaturesToAdd = new Array();
+    duplicateFeatures: function(feats)  {
+            var subfeaturesToAdd = [];
             var parentFeature;
             for( var i in feats )  {
                     var feat = feats[i];
                     var is_subfeature = !! feat.parent() ;  // !! is shorthand for returning true if value is defined and non-null
                     if (is_subfeature) {
-                            subfeaturesToAdd.push(feat);
+                            subfeaturesToAdd = subfeaturesToAdd.concat(_.select(feat.parent().children(), function (f) {
+                                return (f.get('start') >= feat.get('start') && f.get('end') <= feat.get('end'));
+                            }));
                     }
                     else {
-                            //featuresToAdd.push( JSONUtils.createApolloFeature( feat, "transcript") );
+                        var new_transcript = this.newTranscript(feats[i], false);
+                        this.store.insert(new_transcript);
+                        this.changed();
                     }
             }
             if (subfeaturesToAdd.length > 0) {
                     var feature = new SimpleFeature();
                     var subfeatures = new Array();
-                    feature.set( 'subfeatures', subfeatures );
+                    feature.set('subfeatures', subfeatures );
                     var fmin = undefined;
                     var fmax = undefined;
                     var strand = undefined;
@@ -353,15 +357,22 @@ var EditTrack = declare(DraggableFeatureTrack,
                             if (strand === undefined) {
                                     strand = subfeature.get('strand');
                             }
-                            subfeatures.push(subfeature);
+                            subfeatures.push(new SimpleFeature({
+                                data: {
+                                    start:  subfeature.get('start'),
+                                    end:    subfeature.get('end'),
+                                    strand: subfeature.get('strand'),
+                                    type:   subfeature.get('type')
+                                },
+                                parent: feature
+                            }));
                     }
                     feature.set('start', fmin );
                     feature.set('end', fmax );
                     feature.set('strand', strand );
-                    //featuresToAdd.push( JSONUtils.createApolloFeature( feature, "transcript") );
+                    this.store.insert(feature);
+                    this.changed();
             }
-            var postData = '{ "track": "' + track.getUniqueTrackName() + '", "features": ' + JSON.stringify(featuresToAdd) + ', "operation": "add_transcript" }';
-            track.executeUpdateOperation(postData);
     },
 
     deleteSelectedFeatures: function () {
