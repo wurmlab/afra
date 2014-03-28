@@ -32,8 +32,13 @@
     <script data-main="app" src="lib/requirejs/require.js"></script>
   </head>
   <body>
+    <!-- for facebook login -->
     <div id="fb-root"></div>
+
+    <!-- actual page content is inserted here -->
     <div class="content"></div>
+
+    <!-- logout dialog -->
     <div id="logout" class="modal fade">
       <div class="modal-dialog">
         <div class="modal-content">
@@ -59,8 +64,11 @@
               I'll be back later
             </button>
           </div>
-        </div><!-- /.modal-content -->
-      </div><!-- /.modal-dialog -->
-    </div><!-- /.modal -->
+        </div>
+      </div>
+    </div>
+
+    <!-- spinner overlay styled such that spinner is centered on the screen -->
+    <div id="spinner-overlay" style="position:fixed; top:50%; left:50%"></div>
   </body>
 </html>
