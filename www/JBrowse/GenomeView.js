@@ -448,14 +448,14 @@ _behaviors: function() { return {
                 dojo.connect( this.scaleTrackDiv,       "mouseout",       this,  'scaleMouseOut'     ),
                 dojo.connect( this.scaleTrackDiv,       "mousemove",      this,  'scaleMouseMove'    ),
 
-                dojo.connect( document.body, 'onkeyup', this, function(evt) {
-                    if( evt.keyCode == dojo.keys.SHIFT ) // shift
-                        this.behaviorManager.swapBehaviors( 'shiftMouse', 'normalMouse' );
-                }),
-                dojo.connect( document.body, 'onkeydown', this, function(evt) {
-                    if( evt.keyCode == dojo.keys.SHIFT ) // shift
-                        this.behaviorManager.swapBehaviors( 'normalMouse', 'shiftMouse' );
-                }),
+                //dojo.connect( document.body, 'onkeyup', this, function(evt) {
+                    //if( evt.keyCode == dojo.keys.SHIFT ) // shift
+                        //this.behaviorManager.swapBehaviors( 'shiftMouse', 'normalMouse' );
+                //}),
+                //dojo.connect( document.body, 'onkeydown', this, function(evt) {
+                    //if( evt.keyCode == dojo.keys.SHIFT ) // shift
+                        //this.behaviorManager.swapBehaviors( 'normalMouse', 'shiftMouse' );
+                //}),
 
                 // scroll the view around in response to keyboard arrow keys
                 dojo.connect( document.body, 'onkeypress', this, function(evt) {
