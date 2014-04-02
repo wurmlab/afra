@@ -272,35 +272,40 @@
   <div id="contextmenu" class="">
     <ul class="dropdown-menu" role="menu">
       <li
-        role="presentation">
+        role="presentation"
+        id="contextmenu-delete">
         <a role="menuitem" tabindex="-1" ng-click="browser.getEditTrack().deleteSelectedFeatures()">
           <i class="fa fa-trash-o"></i>
           Delete
         </a>
       </li>
       <li
-        role="presentation">
+        role="presentation"
+        id="contextmenu-merge">
         <a role="menuitem" tabindex="-1" ng-click="browser.getEditTrack().mergeSelectedFeatures()">
           <i class="fa fa-link"></i>
           Merge
         </a>
       </li>
       <li
-        role="presentation">
+        role="presentation"
+        id="contextmenu-split">
         <a role="menuitem" tabindex="-1" ng-click="browser.getEditTrack().splitSelectedFeatures()">
           <i class="fa fa-unlink"></i>
           Split
         </a>
       </li>
       <li
-        role="presentation">
+        role="presentation"
+        id="contextmenu-duplicate">
         <a role="menuitem" tabindex="-1" ng-click="browser.getEditTrack().duplicateSelectedFeatures()">
           <i class="fa fa-copy"></i>
           Duplicate
         </a>
       </li>
       <li
-        role="presentation">
+        role="presentation"
+        id="contextmenu-flipstrand">
         <a role="menuitem" tabindex="-1" ng-click="browser.getEditTrack().flipStrandForSelectedFeatures()">
           <i class="fa fa-exchange"></i>
           Flip strand

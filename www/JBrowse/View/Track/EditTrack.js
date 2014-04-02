@@ -838,16 +838,15 @@ var EditTrack = declare(DraggableFeatureTrack,
     },
 
     updateMenu: function() {
-        this.updateSetTranslationStartMenuItem();
+        //this.updateSetTranslationStartMenuItem();
         this.updateMergeMenuItem();
         this.updateSplitMenuItem();
-        this.updateMakeIntronMenuItem();
-        this.updateFlipStrandMenuItem();
-        this.updateEditCommentsMenuItem();
-        this.updateEditDbxrefsMenuItem();
-        this.updateUndoMenuItem();
-        this.updateRedoMenuItem();
-        this.updateZoomToBaseLevelMenuItem();
+        //this.updateMakeIntronMenuItem();
+        //this.updateEditCommentsMenuItem();
+        //this.updateEditDbxrefsMenuItem();
+        //this.updateUndoMenuItem();
+        //this.updateRedoMenuItem();
+        //this.updateZoomToBaseLevelMenuItem();
         this.updateDuplicateMenuItem();
     },
 
@@ -872,43 +871,37 @@ var EditTrack = declare(DraggableFeatureTrack,
     },
 
     updateMergeMenuItem: function() {
-        var menuItem = this.getMenuItem("merge");
+        var menuItem = $('#contextmenu-merge');
         var selected = this.selectionManager.getSelection();
         if (selected.length < 2) {
-            menuItem.set("disabled", true);
-            // menuItem.domNode.style.display = "none";  // direct method for hiding menuitem
-            // $(menuItem.domNode).hide();   // probably better method for hiding menuitem
+            menuItem.addClass('disabled')
             return;
-        }
-        else  {
-            // menuItem.domNode.style.display = "";  // direct method for unhiding menuitem
-            // $(menuItem.domNode).show();  // probably better method for unhiding menuitem
         }
         var strand = selected[0].feature.get('strand');
         for (var i = 1; i < selected.length; ++i) {
             if (selected[i].feature.get('strand') != strand) {
-                    menuItem.set("disabled", true);
+                    menuItem.addClass('disabled')
                     return;
             }
         }
-        menuItem.set("disabled", false);
+        menuItem.removeClass('disabled');
     },
 
     updateSplitMenuItem: function() {
-        var menuItem = this.getMenuItem("split");
+        var menuItem = $('#contextmenu-split');
         var selected = this.selectionManager.getSelection();
         if (selected.length > 2) {
-            menuItem.set("disabled", true);
+            menuItem.addClass('disabled')
             return;
         }
         var parent = selected[0].feature.parent();
         for (var i = 1; i < selected.length; ++i) {
             if (selected[i].feature.parent() != parent) {
-                menuItem.set("disabled", true);
+                menuItem.addClass('disabled')
                 return;
             }
         }
-        menuItem.set("disabled", false);
+        menuItem.removeClass('disabled');
     },
 
     updateMakeIntronMenuItem: function() {
@@ -919,10 +912,6 @@ var EditTrack = declare(DraggableFeatureTrack,
             return;
         }
         menuItem.set("disabled", false);
-    },
-
-    updateFlipStrandMenuItem: function() {
-        var menuItem = this.getMenuItem("flip_strand");
     },
 
     updateEditCommentsMenuItem: function() {
@@ -973,14 +962,14 @@ var EditTrack = declare(DraggableFeatureTrack,
 
 
     updateHistoryMenuItem: function() {
-	var menuItem = this.getMenuItem("history");
-	var selected = this.selectionManager.getSelection();
-	if (selected.length > 1) {
-    	    menuItem.set("disabled", true);
-    	    return;
-	}
-	menuItem.set("disabled", false);
-    }, 
+        var menuItem = this.getMenuItem("history");
+        var selected = this.selectionManager.getSelection();
+        if (selected.length > 1) {
+            menuItem.set("disabled", true);
+            return;
+        }
+        menuItem.set("disabled", false);
+    },
 
     updateZoomToBaseLevelMenuItem: function() {
         var menuItem = this.getMenuItem("zoom_to_base_level");
@@ -993,16 +982,16 @@ var EditTrack = declare(DraggableFeatureTrack,
     },
 
     updateDuplicateMenuItem: function() {
-        var menuItem = this.getMenuItem("duplicate");
+        var menuItem = $('contextmenu-duplicate');
         var selected = this.selectionManager.getSelection();
         var parent = EditTrack.getTopLevelAnnotation(selected[0].feature);
         for (var i = 1; i < selected.length; ++i) {
             if (EditTrack.getTopLevelAnnotation(selected[i].feature) != parent) {
-                menuItem.set("disabled", true);
+                menuItem.addClass('disabled')
                 return;
             }
         }
-        menuItem.set("disabled", false);
+        menuItem.removeClass('disabled')
     },
 
     sortAnnotationsByLocation: function(annots) {
@@ -1066,6 +1055,7 @@ var EditTrack = declare(DraggableFeatureTrack,
                 }
             }
         }
+        this.updateMenu();
     },
 
     selectionRemoved: function(selected_record, smanager)  {
@@ -1077,6 +1067,7 @@ var EditTrack = declare(DraggableFeatureTrack,
             $("div.sequence", track.div).remove();
         }
         $('.ui-resizable').resizable('destroy');
+        this.updateMenu();
     },
 
     startZoom: function(destScale, destStart, destEnd) {
