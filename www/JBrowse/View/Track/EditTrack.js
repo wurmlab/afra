@@ -5,7 +5,6 @@ define([
             'jqueryui/droppable',
             'jqueryui/resizable',
             'contextmenu',
-            'dijit/MenuItem',
             'JBrowse/View/Track/DraggableHTMLFeatures',
             'JBrowse/FeatureSelectionManager',
             'JBrowse/BioFeatureUtils',
@@ -20,7 +19,6 @@ define([
                  droppable,
                  resizable,
                  contextmenu,
-                 dijitMenuItem,
                  DraggableFeatureTrack,
                  FeatureSelectionManager,
                  BioFeatureUtils,
@@ -208,9 +206,10 @@ var EditTrack = declare(DraggableFeatureTrack,
 
     addTranscript: function (transcript) {
         var new_transcript = this.newTranscript(transcript);
-        //this.store.insert(new_transcript);
-        //this.changed();
-        this.findNonCanonicalSpliceSites(new_transcript);
+        this.markNonCanonicalSpliceSites(new_transcript, function () {
+            this.store.insert(new_transcript);
+            this.changed();
+        });
     },
 
     addExon: function (exon) {
@@ -247,9 +246,10 @@ var EditTrack = declare(DraggableFeatureTrack,
             new_transcript.set('end', fmax);
         }
 
-        //this.store.replace(new_transcript);
-        //this.changed();
-        this.findNonCanonicalSpliceSites(new_transcript);
+        this.markNonCanonicalSpliceSites(new_transcript, function () {
+            this.store.replace(new_transcript);
+            this.changed();
+        });
 
         var featdiv = this.getFeatDiv(exon);
         $(featdiv).trigger('mousedown');
@@ -748,7 +748,7 @@ var EditTrack = declare(DraggableFeatureTrack,
     getSequenceForSelectedFeatures: function(records) {
     },
 
-    findNonCanonicalSpliceSites: function (feature) {
+    markNonCanonicalSpliceSites: function (feature, callback) {
         var track = this;
         this.browser.getStore('refseqs', dojo.hitch(this, function(refSeqStore) {
             if (refSeqStore) {
@@ -794,8 +794,7 @@ var EditTrack = declare(DraggableFeatureTrack,
                         }
                         track.sortAnnotationsByLocation(subfeatures);
                         feature.set('subfeatures', subfeatures);
-                        track.store.insert(feature);
-                        track.changed();
+                        callback.apply(track, feature);
                     }));
             }
         }));
@@ -1067,7 +1066,6 @@ var EditTrack = declare(DraggableFeatureTrack,
             $("div.sequence", track.div).remove();
         }
         $('.ui-resizable').resizable('destroy');
-        this.updateMenu();
     },
 
     startZoom: function(destScale, destStart, destEnd) {
