@@ -437,12 +437,7 @@ var EditTrack = declare(DraggableFeatureTrack,
 
     mergeSelectedFeatures: function()  {
         var selected = this.selectionManager.getSelectedFeatures();
-        this.selectionManager.clearSelection();
-        this.mergeFeatures(selected);
-    },
-
-    mergeFeatures: function(selection) {
-        var sortedAnnots = this.sortAnnotationsByLocation(selection);
+        var sortedAnnots = this.sortAnnotationsByLocation(selected);
         var leftAnnot = sortedAnnots[0];
         var rightAnnot = sortedAnnots[sortedAnnots.length - 1];
         var trackName = this.getUniqueTrackName();
@@ -464,64 +459,38 @@ var EditTrack = declare(DraggableFeatureTrack,
         }
         */
 
-        var features;
-        var operation;
-        // merge exons
         if (leftAnnot.parent() && rightAnnot.parent() && leftAnnot.parent() == rightAnnot.parent()) {
-            var parent = leftAnnot.parent();
-            var new_transcript = new SimpleFeature({
-                id:   parent.id(),
-                data: {
-                    name:   parent.get('name'),
-                    ref:    parent.get('seq_id') || parent.get('ref'),
-                    start:  parent.get('start'),
-                    end:    parent.get('end'),
-                    strand: parent.get('strand')
-                }
-            });
-            var subfeatures = _.reject(parent.children(), function (f) {
-                return f.id() == leftAnnot.id() || f.id() == rightAnnot.id();
-            });
-            subfeatures.push(new SimpleFeature({
-                data: {
-                    start: leftAnnot.get('start'),
-                    end:   rightAnnot.get('end'),
-                    strand: leftAnnot.get('strand'),
-                    type:   leftAnnot.get('type')
-                },
-                parent: new_transcript
-            }));
-            subfeatures = this.sortAnnotationsByLocation(subfeatures);
-            new_transcript.set('subfeatures', subfeatures);
-            this.store.replace(new_transcript);
-            this.changed();
+            this.mergeExons(leftAnnot.parent(), leftAnnot, rightAnnot);
         }
-        // merge transcripts
         else {
-            console.log('merge transcripts');
-            if (leftAnnot.parent())
-                leftAnnot = leftAnnot.parent();
-
-            if (rightAnnot.parent())
-                rightAnnot = rightAnnot.parent();
-
-            var new_transcript = new SimpleFeature({
-                data: {
-                    name: leftAnnot.get('name'),
-                    ref:  leftAnnot.get('ref'),
-                    start: leftAnnot.get('start'),
-                    end:   rightAnnot.get('end'),
-                    strand: leftAnnot.get('strand'),
-                    type:   leftAnnot.get('type')
-                }
-            });
-            var subfeatures = leftAnnot.children();
-            subfeatures = subfeatures.concat(rightAnnot.children());
-            new_transcript.set('subfeatures', subfeatures);
-            this.store.deleteFeatureById(leftAnnot.id());
-            this.store.insert(new_transcript);
-            this.changed();
+            this.mergeTranscripts(leftAnnot, rightAnnot);
         }
+        this.selectionManager.clearSelection();
+    },
+
+    mergeTranscripts: function(leftTranscript, rightTranscript) {
+        if (leftTranscript.parent())
+            leftTranscript = leftTranscript.parent();
+
+        if (rightTranscript.parent())
+            rightTranscript = rightTranscript.parent();
+
+        var new_transcript = new SimpleFeature({
+            data: {
+                name: leftTranscript.get('name'),
+                ref:  leftTranscript.get('ref'),
+                start: leftTranscript.get('start'),
+                end:   rightTranscript.get('end'),
+                strand: leftTranscript.get('strand'),
+                type:   leftTranscript.get('type')
+            }
+        });
+        var subfeatures = leftTranscript.children();
+        subfeatures = subfeatures.concat(rightTranscript.children());
+        new_transcript.set('subfeatures', subfeatures);
+        this.store.deleteFeatureById(leftTranscript.id());
+        this.store.insert(new_transcript);
+        this.changed();
     },
 
     splitSelectedFeatures: function()  {
