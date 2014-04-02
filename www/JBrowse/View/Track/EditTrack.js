@@ -606,29 +606,8 @@ var EditTrack = declare(DraggableFeatureTrack,
         }
     },
 
-    makeIntron: function(event)  {
-        var selected = this.selectionManager.getSelection();
-        this.selectionManager.clearSelection();
-        this.makeIntronInExon(selected, event);
-    },
-
-    makeIntronInExon: function(records, event) {
-        if (records.length > 1) {
-            return;
-        }
-        var track = this;
-        var annot = records[0].feature;
-        var coordinate = this.getGenomeCoord(event);
-        var features = '"features": [ { "uniquename": "' + annot.id() + '", "location": { "fmin": ' + coordinate + ' } } ]';
-        var operation = "make_intron";
-        var trackName = track.getUniqueTrackName();
-        var postData = '{ "track": "' + trackName + '", ' + features + ', "operation": "' + operation + '" }';
-        track.executeUpdateOperation(postData);
-    },
-
     setTranslationStart: function(event)  {
-        // var selected = this.selectionManager.getSelection();
-	var selfeats = this.selectionManager.getSelectedFeatures();
+        var selfeats = this.selectionManager.getSelectedFeatures();
         this.selectionManager.clearSelection();
         this.setTranslationStartInCDS(selfeats, event);
     },
@@ -639,8 +618,6 @@ var EditTrack = declare(DraggableFeatureTrack,
     	}
     	var track = this;
     	var annot = annots[0];
-    	// var coordinate = this.gview.getGenomeCoord(event);
-//  	var coordinate = Math.floor(this.gview.absXtoBp(event.pageX));
     	var coordinate = this.getGenomeCoord(event);
     	console.log("called setTranslationStartInCDS to: " + coordinate);
 
