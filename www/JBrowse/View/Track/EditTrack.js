@@ -80,12 +80,6 @@ var EditTrack = declare(DraggableFeatureTrack,
         if (featDiv && featDiv != null)  {
             $(featDiv).contextmenu({
                 target: '#contextmenu'
-                //onItem: function (event, element) {
-                    //var selection = track.selectionManager.getSelectedFeatures();
-                    //var action = element.data('action');
-                    //track[action].call(track, selection, event);
-                    //track.selectionManager.clearSelection();
-                //}
             })
         }
         return featDiv;
@@ -1024,10 +1018,9 @@ var EditTrack = declare(DraggableFeatureTrack,
             var scale = track.gview.bpToPx(1);
             var charSize = this.sequenceTrack.getCharacterMeasurements();
             if (scale >= charSize.w && track.useResiduesOverlay)  {
-                var seqTrack = this.browser.getSequenceTrack();
                 for (var bindex = this.firstAttached; bindex <= this.lastAttached; bindex++)  {
                     var block = this.blocks[bindex];
-                    seqTrack.store.getFeatures(
+                    this.sequenceTrack.store.getFeatures(
                         {ref: this.refSeq.name, start: block.startBase, end: block.endBase},
                         function(feat) {
                             var seq = feat.get('seq');
