@@ -467,9 +467,11 @@ var EditTrack = declare(DraggableFeatureTrack,
         var subfeatures = leftTranscript.children();
         subfeatures = subfeatures.concat(rightTranscript.children());
         new_transcript.set('subfeatures', subfeatures);
-        this.store.deleteFeatureById(leftTranscript.id());
-        this.store.insert(new_transcript);
-        this.changed();
+        this.markNonCanonicalSpliceSites(new_transcript, function () {
+            this.store.deleteFeatureById(leftTranscript.id());
+            this.store.insert(new_transcript);
+            this.changed();
+        });
     },
 
     splitSelectedFeatures: function()  {
