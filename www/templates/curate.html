@@ -290,9 +290,17 @@
       <li
         role="presentation"
         id="contextmenu-split">
-        <a role="menuitem" tabindex="-1" ng-click="browser.getEditTrack().splitSelectedFeatures()">
+        <a role="menuitem" tabindex="-1" ng-click="browser.getEditTrack().makeIntronInSelectedExon()">
           <i class="fa fa-unlink"></i>
-          Split
+          Make intron
+        </a>
+      </li>
+      <li
+        role="presentation"
+        id="contextmenu-split">
+        <a role="menuitem" tabindex="-1" ng-click="browser.getEditTrack().splitSelectedTranscript()">
+          <i class="fa fa-unlink"></i>
+          Split transcript
         </a>
       </li>
       <li
