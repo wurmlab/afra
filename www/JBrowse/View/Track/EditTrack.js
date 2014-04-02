@@ -150,15 +150,6 @@ var EditTrack = declare(DraggableFeatureTrack,
                             }
                         };
                         track.resizeExon(parent, subfeatid, leftDeltaBases, rightDeltaBases);
-                        //subfeat[1] = subfeat[1] + leftDeltaBases;
-                        //subfeat[2] = subfeat[2] + leftDeltaBases;
-                        //console.log(track.store.features);
-                        //console.log(parent);
-                        //var new_feature = track.newTranscript(parent);
-                        ////var new_feature = track.create_annotation(parent);
-                        //track.store.replace(new_feature);
-                        //console.log(track.store.features);
-                        //track.changed();
                     }
                 });
             }
