@@ -128,28 +128,33 @@ var EditTrack = declare(DraggableFeatureTrack,
                     grid: gridvals,
 
                     stop: function(event, ui)  {
-                        var gview = track.gview;
-                        var oldPos = ui.originalPosition;
-                        var newPos = ui.position;
-                        var oldSize = ui.originalSize;
-                        var newSize = ui.size;
-                        var leftDeltaPixels = newPos.left - oldPos.left;
-                        var leftDeltaBases = Math.round(gview.pxToBp(leftDeltaPixels));
-                        var oldRightEdge = oldPos.left + oldSize.width;
-                        var newRightEdge = newPos.left + newSize.width;
-                        var rightDeltaPixels = newRightEdge - oldRightEdge;
-                        var rightDeltaBases = Math.round(gview.pxToBp(rightDeltaPixels));
-                        var subfeat = ui.originalElement[0].subfeature;
-                        var parent  = subfeat.parent();
-                        var subfeatures = parent.get('subfeatures');
-                        var subfeatid;
+                        var exon      = ui.originalElement[0].subfeature;
+                        var parent    = exon.parent();
+                        var children  = parent.children();
+                        var exonIndex = _.indexOf(children, exon);
+                        var leftExon  = _.find(children.slice().reverse(), function (f) {
+                            return f.get('end') < exon.get('start') && f.get('type') === 'exon';
+                        });
+                        var rightExon = _.find(children, function (f) {
+                            return f.get('start') > exon.get('end') && f.get('type') === 'exon';
+                        });
 
-                        for (var i in subfeatures) {
-                            if (subfeatures[i].id() == subfeat.id()) {
-                                subfeatid = i;
-                            }
-                        };
-                        track.resizeExon(parent, subfeatid, leftDeltaBases, rightDeltaBases);
+                        var leftDeltaPixels  = ui.position.left - ui.originalPosition.left;
+                        var rightDeltaPixels = ui.position.left + ui.size.width - ui.originalPosition.left - ui.originalSize.width;
+                        var leftDeltaBases   = Math.round(track.gview.pxToBp(leftDeltaPixels));
+                        var rightDeltaBases  = Math.round(track.gview.pxToBp(rightDeltaPixels));
+
+                        if (leftExon && (exon.get('start') + leftDeltaBases) <= leftExon.get('end')) {
+                            console.log('merge this and the one before');
+                            track.mergeExons(parent, leftExon, exon);
+                        }
+                        else if (rightExon && (exon.get('end') + rightDeltaBases) >= rightExon.get('start')) {
+                            console.log('merge this and the one after');
+                            track.mergeExons(parent, exon, rightExon);
+                        }
+                        else {
+                            track.resizeExon(parent, exonIndex, leftDeltaBases, rightDeltaBases);
+                        }
                     }
                 });
             }
@@ -237,6 +242,38 @@ var EditTrack = declare(DraggableFeatureTrack,
         });
 
         var featdiv = this.getFeatDiv(exon);
+        $(featdiv).trigger('mousedown');
+    },
+
+    mergeExons: function(transcript, leftExon, rightExon) {
+        var new_transcript = new SimpleFeature({
+            id:   transcript.id(),
+            data: {
+                name:   transcript.get('name'),
+                ref:    transcript.get('seq_id') || transcript.get('ref'),
+                start:  transcript.get('start'),
+                end:    transcript.get('end'),
+                strand: transcript.get('strand')
+            }
+        });
+        var subfeatures = _.reject(transcript.children(), function (f) {
+            return f.id() == leftExon.id() || f.id() == rightExon.id();
+        });
+        var new_exon    = new SimpleFeature({
+            data: {
+                start: leftExon.get('start'),
+                end:   rightExon.get('end'),
+                strand: leftExon.get('strand'),
+                type:   leftExon.get('type')
+            },
+            parent: new_transcript
+        });
+        subfeatures.push(new_exon);
+        subfeatures = this.sortAnnotationsByLocation(subfeatures);
+        new_transcript.set('subfeatures', subfeatures);
+        this.store.replace(new_transcript);
+        this.changed();
+        var featdiv = this.getFeatDiv(new_exon);
         $(featdiv).trigger('mousedown');
     },
 
