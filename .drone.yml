@@ -1,0 +1,4 @@
+image: bmpvieira/afra-environment
+script:
+  - git clone git@github.com:bmpvieira/afra.git
+  - cd afra && ./scripts/build.sh
