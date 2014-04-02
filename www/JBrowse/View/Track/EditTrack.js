@@ -317,27 +317,6 @@ var EditTrack = declare(DraggableFeatureTrack,
         return feature;
     },
 
-    /* feature_records ==> { feature: the_feature, track: track_feature_is_from } */
-    addToAnnotation: function(annot, feature_records)  {
-        var new_transcript = this.newTranscript(annot);
-        var from_feature = feature_records[0].feature;
-        var feature = new SimpleFeature({
-            data: {
-                start:  from_feature.get('start'),
-                end:    from_feature.get('end'),
-                strand: from_feature.get('strand'),
-                type:   from_feature.get('type')
-            },
-            parent: new_transcript
-        });
-        var subfeatures = new_transcript.get('subfeatures');
-        subfeatures.push(feature);
-        new_transcript.set('subfeatures', subfeatures);
-        this.store.deleteFeatureById(annot.id());
-        this.store.insert(new_transcript);
-        this.changed();
-    },
-
     duplicateSelectedFeatures: function() {
         var selected = this.selectionManager.getSelectedFeatures();
         this.selectionManager.clearSelection();
