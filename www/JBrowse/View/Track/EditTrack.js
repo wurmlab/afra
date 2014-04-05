@@ -201,16 +201,40 @@ var EditTrack = declare(DraggableFeatureTrack,
     },
 
     addExon: function (exon) {
-        var new_transcript = this.newTranscript(exon);
-        var parent = exon.parent();
-        var subfeatures = parent.get('subfeatures');
-        var subfeatures_i = new Array();
-        for (var j in subfeatures) {
-            if (subfeatures[j].get('start') >= exon.get('start') && subfeatures[j].get('end') <= exon.get('end')) {
-                subfeatures_i.push(subfeatures[j]);
+        // When an exon is dragged to the edit track, we need to copy the
+        // underlying CDS feature to the edit track as well.
+        var features_to_add = _.select(exon.parent().children(), function (f) {
+            if (f.get('start') >= exon.get('start') &&
+                f.get('end') <= exon.get('end')) {
+                return f;
             }
-        }
-        new_transcript.set('subfeatures', subfeatures_i);
+        });
+        features_to_add_sorted =
+            this.sortAnnotationsByLocation(features_to_add);
+
+        var new_transcript = new SimpleFeature({
+            data: {
+                name:  features_to_add_sorted[0].get('name'),
+                ref:   features_to_add_sorted[0].get('ref'),
+                start: features_to_add_sorted[0].get('start'),
+                end:   features_to_add_sorted[features_to_add_sorted.length - 1].get('end'),
+                strand: features_to_add_sorted[0].get('strand')
+            }
+        });
+        var subfeatures = _.map(features_to_add_sorted, function (f) {
+            return new SimpleFeature({
+                data: {
+                    name:  f.get('name'),
+                    ref:   f.get('ref'),
+                    start: f.get('start'),
+                    end:   f.get('end'),
+                    type:  f.get('type'),
+                    strand: f.get('strand')
+                },
+                parent: new_transcript
+            });
+        });
+        new_transcript.set('subfeatures', subfeatures);
         this.store.insert(new_transcript);
         this.changed();
     },
@@ -467,6 +491,7 @@ var EditTrack = declare(DraggableFeatureTrack,
         new_transcript.set('subfeatures', subfeatures);
         this.markNonCanonicalSpliceSites(new_transcript, function () {
             this.store.deleteFeatureById(leftTranscript.id());
+            this.store.deleteFeatureById(rightTranscript.id());
             this.store.insert(new_transcript);
             this.changed();
         });
