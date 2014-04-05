@@ -172,20 +172,18 @@ var EditTrack = declare(DraggableFeatureTrack,
     },
 
     makeTrackDroppable: function() {
-        var target_track = this;
-        var target_trackdiv = target_track.div;
-
-        $(target_trackdiv).droppable(  {
+        var track = this;
+        $(this.div).droppable(  {
             accept: ".selected-feature",
             drop: function(event, ui)  {
-                var dropped_feats = target_track.browser.featSelectionManager.getSelection();
-                for (var i in dropped_feats)  {
-                    var top_level_feature = !dropped_feats[i].feature.parent();
+                var features = track.browser.featSelectionManager.getSelectedFeatures();
+                for (var i in features)  {
+                    var top_level_feature = !features[i].parent();
                     if (top_level_feature) {
-                        target_track.addTranscript(dropped_feats[i].feature);
+                        track.addTranscript(features[i]);
                     }
                     else {
-                        target_track.addExon(dropped_feats[i].feature);
+                        track.addExon(features[i]);
                     }
                 }
             }
