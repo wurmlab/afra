@@ -291,10 +291,12 @@ var EditTrack = declare(DraggableFeatureTrack,
         subfeatures.push(new_exon);
         subfeatures = this.sortAnnotationsByLocation(subfeatures);
         new_transcript.set('subfeatures', subfeatures);
-        this.store.replace(new_transcript);
-        this.changed();
-        var featdiv = this.getFeatDiv(new_exon);
-        $(featdiv).trigger('mousedown');
+        this.markNonCanonicalSpliceSites(new_transcript, function () {
+            this.store.replace(new_transcript);
+            this.changed();
+            var featdiv = this.getFeatDiv(new_exon);
+            $(featdiv).trigger('mousedown');
+        });
     },
 
     newTranscript: function (from, reuse_id)  {
