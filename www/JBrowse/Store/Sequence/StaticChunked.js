@@ -143,7 +143,7 @@ return declare( SeqFeatureStore,
                                                                                     response.substring( ci.start - chunkRecord.num*chunkSize,
                                                                                                         ci.end   - chunkRecord.num*chunkSize
                                                                                                       ),
-                                                                                    i
+                                                                                    chunkRecord.num
                                                                                    );
                                                                     });
                                                       delete chunkRecord.callbacks;
