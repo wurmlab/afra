@@ -705,11 +705,13 @@ var EditTrack = declare(DraggableFeatureTrack,
     },
 
     showSequenceDialog: function () {
-        if ($("#sequence pre").html() === '') {
-            this.getGenomicSequenceForSelectedFeature();
+        if ($("#sequence pre").data('id') === this.selectionManager.getSelectedFeatures()[0].id()) {
+            $("#sequence").modal();
         }
         else {
-            $("#sequence").modal();
+            this.getGenomicSequenceForSelectedFeature();
+            $("#sequence .active").removeClass('active');
+            $("#sequence .sequence-type-default").addClass('active');
         }
     },
 
@@ -741,7 +743,7 @@ var EditTrack = declare(DraggableFeatureTrack,
                 + ' '+(region.end - region.start) + 'bp'
                 + "\n"
                 + seq;
-                $('#sequence pre').html(fasta);
+                $('#sequence pre').html(fasta).data('sequence_id', feature.id());
                 $('#sequence').modal();
             }
         }));
@@ -779,7 +781,7 @@ var EditTrack = declare(DraggableFeatureTrack,
                 + ' '+(region.end - region.start) + 'bp'
                 + "\n"
                 + seq.join();
-                $('#sequence pre').html(fasta);
+                $('#sequence pre').html(fasta).data('id', feature.id());
                 $('#sequence').modal();
             }
         }));
@@ -817,7 +819,7 @@ var EditTrack = declare(DraggableFeatureTrack,
                 + ' '+(region.end - region.start) + 'bp'
                 + "\n"
                 + seq.join();
-                $('#sequence pre').html(fasta);
+                $('#sequence pre').html(fasta).data('id', feature.id());
                 $('#sequence').modal();
             }
         }));
@@ -865,7 +867,7 @@ var EditTrack = declare(DraggableFeatureTrack,
                 + ' '+(region.end - region.start) + 'bp'
                 + "\n"
                 + protein;
-                $('#sequence pre').html(fasta);
+                $('#sequence pre').html(fasta).data('id', feature.id());
                 $('#sequence').modal();
             }
         }));
