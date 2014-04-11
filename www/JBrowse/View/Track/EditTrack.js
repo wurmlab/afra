@@ -53,8 +53,6 @@ var EditTrack = declare(DraggableFeatureTrack,
                 }
             }
         }));
-
-        this.sequenceTrack = this.browser.getSequenceTrack();
     },
 
     _defaultConfig: function() {
@@ -119,7 +117,7 @@ var EditTrack = declare(DraggableFeatureTrack,
 
                 // if zoomed int to showing sequence residues, then make edge-dragging snap to interbase pixels
                 var gridvals;
-                var charSize = this.sequenceTrack.getCharacterMeasurements();
+                var charSize = this.browser.getSequenceTrack().getCharacterMeasurements();
                 if (scale === charSize.width) { gridvals = [track.gview.charWidth, 1]; }
                 else  { gridvals = false; }
 
@@ -1132,11 +1130,11 @@ var EditTrack = declare(DraggableFeatureTrack,
             var strand = topfeat.get('strand');
             var selectionYPosition = $(featdiv).position().top;
             var scale = track.gview.bpToPx(1);
-            var charSize = this.sequenceTrack.getCharacterMeasurements();
+            var charSize = this.browser.getSequenceTrack().getCharacterMeasurements();
             if (scale >= charSize.w && track.useResiduesOverlay)  {
                 for (var bindex = this.firstAttached; bindex <= this.lastAttached; bindex++)  {
                     var block = this.blocks[bindex];
-                    this.sequenceTrack.store.getFeatures(
+                    this.browser.getSequenceTrack().store.getFeatures(
                         {ref: this.refSeq.name, start: block.startBase, end: block.endBase},
                         function(feat) {
                             var seq = feat.get('seq');
