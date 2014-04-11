@@ -11,6 +11,7 @@ define([
             'JBrowse/Model/SimpleFeature',
             'JBrowse/Util',
             'JBrowse/View/GranularRectLayout',
+            'JBrowse/CodonTable',
             'bionode'
         ],
         function(declare,
@@ -25,6 +26,7 @@ define([
                  SimpleFeature,
                  Util,
                  Layout,
+                 CodonTable,
                  Bionode) {
 
 var EditTrack = declare(DraggableFeatureTrack,
@@ -323,6 +325,7 @@ var EditTrack = declare(DraggableFeatureTrack,
                 var subfeature = new SimpleFeature({
                     data: {
                         start:  from_subfeature.get('start'),
+                        ref:    from.get('seq_id') || from.get('ref'),
                         end:    from_subfeature.get('end'),
                         strand: from_subfeature.get('strand'),
                         type:   from_subfeature.get('type')
@@ -688,12 +691,171 @@ var EditTrack = declare(DraggableFeatureTrack,
         track.executeUpdateOperation(postData);
     },
 
-    getSequence: function()  {
-        var selected = this.selectionManager.getSelection();
-        this.getSequenceForSelectedFeatures(selected);
+    showSequenceDialog: function () {
+        if ($("#sequence pre").html() === '') {
+            this.getGenomicSequenceForSelectedFeature();
+        }
+        else {
+            $("#sequence").modal();
+        }
     },
 
-    getSequenceForSelectedFeatures: function(records) {
+    getGenomicSequenceForSelectedFeature: function () {
+        var feature = this.selectionManager.getSelectedFeatures()[0];
+        this.browser.getStore('refseqs', dojo.hitch(this, function (refSeqStore) {
+            if (refSeqStore) {
+                var seq;
+                refSeqStore.getFeatures(
+                    {ref: feature.get('ref'), start: feature.get('start'), end: feature.get('end')},
+                    dojo.hitch(this, function (refSeqFeature) {
+                        seq = refSeqFeature.get('seq');
+                    }));
+                var region = {
+                    ref:   feature.get('ref'),
+                    start: feature.get('start'),
+                    end:   feature.get('end'),
+                    strand: feature.get('strand'),
+                    type: feature.get('type')
+                };
+
+                if (feature.get('strand') == -1) {
+                    seq = Util.reverseComplement(seq)
+                }
+
+                var fasta = '>' //+ f.get('label')
+                + Util.assembleLocString(region)
+                + (region.type ? ' '+region.type : '')
+                + ' '+(region.end - region.start) + 'bp'
+                + "\n"
+                + seq;
+                $('#sequence pre').html(fasta);
+                $('#sequence').modal();
+            }
+        }));
+    },
+
+    getCDNASequenceForSelectedFeature: function () {
+        var feature = this.selectionManager.getSelectedFeatures()[0];
+        this.browser.getStore('refseqs', dojo.hitch(this, function (refSeqStore) {
+            if (refSeqStore) {
+                var seq = [];
+                _.each(feature.children(), function (f) {
+                    if (f.get('type') === 'exon') {
+                        refSeqStore.getFeatures(
+                            {ref: f.get('ref'), start: f.get('start'), end: f.get('end')},
+                            dojo.hitch(this, function (refSeqFeature) {
+                                seq.push(refSeqFeature.get('seq'));
+                            }));
+                    }
+                });
+                var region = {
+                    ref:   feature.get('ref'),
+                    start: feature.get('start'),
+                    end:   feature.get('end'),
+                    strand: feature.get('strand'),
+                    type: feature.get('type')
+                };
+
+                if (feature.get('strand') == -1) {
+                    seq = Util.reverseComplement(seq)
+                }
+
+                var fasta = '>' //+ f.get('label')
+                + Util.assembleLocString(region)
+                + (region.type ? ' '+region.type : '')
+                + ' '+(region.end - region.start) + 'bp'
+                + "\n"
+                + seq.join();
+                $('#sequence pre').html(fasta);
+                $('#sequence').modal();
+            }
+        }));
+    },
+
+    getCDSSequenceForSelectedFeature: function () {
+        var feature = this.selectionManager.getSelectedFeatures()[0];
+        this.browser.getStore('refseqs', dojo.hitch(this, function (refSeqStore) {
+            if (refSeqStore) {
+                var seq = [];
+                _.each(feature.children(), function (f) {
+                    if (f.get('type') === 'CDS') {
+                        refSeqStore.getFeatures(
+                            {ref: f.get('ref'), start: f.get('start'), end: f.get('end')},
+                            dojo.hitch(this, function (refSeqFeature) {
+                                seq.push(refSeqFeature.get('seq'));
+                            }));
+                    }
+                });
+                var region = {
+                    ref:   feature.get('ref'),
+                    start: feature.get('start'),
+                    end:   feature.get('end'),
+                    strand: feature.get('strand'),
+                    type: feature.get('type')
+                };
+
+                if (feature.get('strand') == -1) {
+                    seq = Util.reverseComplement(seq)
+                }
+
+                var fasta = '>' //+ f.get('label')
+                + Util.assembleLocString(region)
+                + (region.type ? ' '+region.type : '')
+                + ' '+(region.end - region.start) + 'bp'
+                + "\n"
+                + seq.join();
+                $('#sequence pre').html(fasta);
+                $('#sequence').modal();
+            }
+        }));
+    },
+
+    getProteinSequenceForSelectedFeature: function () {
+        var feature = this.selectionManager.getSelectedFeatures()[0];
+        this.browser.getStore('refseqs', dojo.hitch(this, function (refSeqStore) {
+            if (refSeqStore) {
+                var seq = [];
+                _.each(feature.children(), function (f) {
+                    if (f.get('type') === 'CDS') {
+                        refSeqStore.getFeatures(
+                            {ref: f.get('ref'), start: f.get('start'), end: f.get('end')},
+                            dojo.hitch(this, function (refSeqFeature) {
+                                seq.push(refSeqFeature.get('seq'));
+                            }));
+                    }
+                });
+                seq = seq.join('');
+
+                var region = {
+                    ref:   feature.get('ref'),
+                    start: feature.get('start'),
+                    end:   feature.get('end'),
+                    strand: feature.get('strand'),
+                    type: feature.get('type')
+                };
+
+                if (feature.get('strand') == -1) {
+                    seq = Util.reverseComplement(seq)
+                }
+
+                var protein = seq.replace(/(...)/gi,  function(codon) {
+                    var aa = CodonTable[codon];
+                    if (!aa) {
+                        aa = "?";
+                    }
+                    return aa;
+                });
+
+                var fasta = '>' //+ f.get('label')
+                + Util.assembleLocString(region)
+                + (region.type ? ' '+region.type : '')
+                + ' '+(region.end - region.start) + 'bp'
+                + "\n"
+                + protein;
+                $('#sequence pre').html(fasta);
+                $('#sequence').modal();
+            }
+        }));
     },
 
     markNonCanonicalSpliceSites: function (feature, callback) {

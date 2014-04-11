@@ -317,7 +317,7 @@ Util = {
             s += Math.round(location.end).toFixed(0).toLocaleString();
 
         if( 'strand' in location )
-            s += ({'1':' (+ strand)', '-1': ' (- strand)', '0': ' (no strand)' }[ location.strand || '' ]) || '';
+            s += ({'1':'(+)', '-1': '(-)', '0': '' }[ location.strand || '' ]) || '';
 
         // add on any extra stuff if it was passed in
         if( 'extra' in loc_in )
