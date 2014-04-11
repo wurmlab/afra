@@ -487,6 +487,19 @@ var EditTrack = declare(DraggableFeatureTrack,
         });
         var subfeatures = leftTranscript.children();
         subfeatures = subfeatures.concat(rightTranscript.children());
+        subfeatures = _.map(subfeatures, function (s) {
+            return new SimpleFeature({
+                data: {
+                    name: s.get('name'),
+                    ref:  s.get('ref'),
+                    start: s.get('start'),
+                    end:   s.get('end'),
+                    strand: s.get('strand'),
+                    type:   s.get('type')
+                },
+                parent: new_transcript
+            })
+        });
         new_transcript.set('subfeatures', subfeatures);
         this.markNonCanonicalSpliceSites(new_transcript, function () {
             this.store.deleteFeatureById(leftTranscript.id());
