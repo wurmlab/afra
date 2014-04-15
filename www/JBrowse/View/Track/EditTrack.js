@@ -257,7 +257,8 @@ var EditTrack = declare(DraggableFeatureTrack,
         }
 
         this.markNonCanonicalSpliceSites(new_transcript, function () {
-            this.store.replace(new_transcript);
+            this.store.deleteFeatureById(transcript.id());
+            this.store.insert(new_transcript);
             this.changed();
         });
 
@@ -300,11 +301,7 @@ var EditTrack = declare(DraggableFeatureTrack,
     },
 
     newTranscript: function (from, reuse_id)  {
-        if (reuse_id === undefined)
-            reuse_id = true;
-
         var feature = new SimpleFeature({
-            id:   reuse_id ? from.id() : undefined,
             data: {
                 name:   from.get('name'),
                 ref:    from.get('seq_id') || from.get('ref'),
@@ -315,8 +312,6 @@ var EditTrack = declare(DraggableFeatureTrack,
         });
 
         var from_subfeatures = from.get('subfeatures');
-        //console.log(from);
-        //console.log(from_subfeatures);
 
         if (from_subfeatures) {
             var subfeatures = new Array();
@@ -336,7 +331,6 @@ var EditTrack = declare(DraggableFeatureTrack,
             }
             feature.set('subfeatures', subfeatures);
         }
-        //console.log(feature);
         return feature;
     },
 
