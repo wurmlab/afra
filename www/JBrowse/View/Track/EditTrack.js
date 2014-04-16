@@ -131,7 +131,6 @@ var EditTrack = declare(DraggableFeatureTrack,
                         var exon      = ui.originalElement[0].subfeature;
                         var parent    = exon.parent();
                         var children  = parent.children();
-                        var exonIndex = _.indexOf(children, exon);
                         var leftExon  = _.find(children.slice().reverse(), function (f) {
                             return f.get('end') < exon.get('start') && f.get('type') === 'exon';
                         });
@@ -151,7 +150,7 @@ var EditTrack = declare(DraggableFeatureTrack,
                             track.mergeExons(parent, exon, rightExon);
                         }
                         else {
-                            track.resizeExon(parent, exonIndex, leftDeltaBases, rightDeltaBases);
+                            track.resizeExon(parent, exon, leftDeltaBases, rightDeltaBases);
                         }
                     }
                 });
@@ -191,7 +190,7 @@ var EditTrack = declare(DraggableFeatureTrack,
     },
 
     addTranscript: function (transcript) {
-        var new_transcript = this.newTranscript(transcript);
+        var new_transcript = this.newFeature(transcript.children());
         this.markNonCanonicalSpliceSites(new_transcript, function () {
             this.store.insert(new_transcript);
             this.changed();
@@ -237,101 +236,53 @@ var EditTrack = declare(DraggableFeatureTrack,
         this.changed();
     },
 
-    resizeExon: function (transcript, index, leftDelta, rightDelta) {
-        var new_transcript = this.newTranscript(transcript);
-        var subfeatures = new_transcript.get('subfeatures');
-        var exon = subfeatures[index];
+    resizeExon: function (transcript, exon, leftDelta, rightDelta) {
+        var subfeatures = transcript.get('subfeatures');
+        var exonIndex   = _.indexOf(subfeatures, exon);
 
-        var fmin = exon.get('start');
-        var fmax = exon.get('end');
-        fmin = fmin + leftDelta;
-        fmax = fmax + rightDelta;
-        exon.set('start', fmin);
-        exon.set('end', fmax);
+        exon = this.newFeature(exon, {
+            start: exon.get('start') + leftDelta,
+            end:   exon.get('end') + rightDelta
+        });
+        subfeatures[exonIndex] = exon;
 
-        if (new_transcript.get('start') > fmin){
-            new_transcript.set('start', fmin);
-        }
-        if (new_transcript.get('end') < fmax) {
-            new_transcript.set('end', fmax);
-        }
-
-        this.markNonCanonicalSpliceSites(new_transcript, function () {
+        var newTranscript = this.newFeature(subfeatures);
+        this.markNonCanonicalSpliceSites(newTranscript, function () {
             this.store.deleteFeatureById(transcript.id());
-            this.store.insert(new_transcript);
+            this.store.insert(newTranscript);
             this.changed();
-        });
 
-        var featdiv = this.getFeatDiv(exon);
-        $(featdiv).trigger('mousedown');
-    },
-
-    mergeExons: function(transcript, leftExon, rightExon) {
-        var new_transcript = new SimpleFeature({
-            id:   transcript.id(),
-            data: {
-                name:   transcript.get('name'),
-                ref:    transcript.get('seq_id') || transcript.get('ref'),
-                start:  transcript.get('start'),
-                end:    transcript.get('end'),
-                strand: transcript.get('strand')
-            }
-        });
-        var subfeatures = _.reject(transcript.children(), function (f) {
-            return f.id() == leftExon.id() || f.id() == rightExon.id();
-        });
-        var new_exon    = new SimpleFeature({
-            data: {
-                start: leftExon.get('start'),
-                end:   rightExon.get('end'),
-                strand: leftExon.get('strand'),
-                type:   leftExon.get('type')
-            },
-            parent: new_transcript
-        });
-        subfeatures.push(new_exon);
-        subfeatures = this.sortAnnotationsByLocation(subfeatures);
-        new_transcript.set('subfeatures', subfeatures);
-        this.markNonCanonicalSpliceSites(new_transcript, function () {
-            this.store.replace(new_transcript);
-            this.changed();
-            var featdiv = this.getFeatDiv(new_exon);
+            var resizedExon = _.find(newTranscript.get('subfeatures'), function (f) {
+                return f.get('start') === exon.get('start') &&
+                    f.get('end') === exon.get('end');
+            });
+            var featdiv = this.getFeatDiv(resizedExon);
             $(featdiv).trigger('mousedown');
         });
     },
 
-    newTranscript: function (from, reuse_id)  {
-        var feature = new SimpleFeature({
-            data: {
-                name:   from.get('name'),
-                ref:    from.get('seq_id') || from.get('ref'),
-                start:  from.get('start'),
-                end:    from.get('end'),
-                strand: from.get('strand')
-            }
+    mergeExons: function(transcript, leftExon, rightExon) {
+        var subfeatures = _.reject(transcript.children(), function (f) {
+            return f.id() == leftExon.id() || f.id() == rightExon.id();
         });
-
-        var from_subfeatures = from.get('subfeatures');
-
-        if (from_subfeatures) {
-            var subfeatures = new Array();
-            for (var i = 0; i < from_subfeatures.length; ++i) {
-                var from_subfeature = from_subfeatures[i];
-                var subfeature = new SimpleFeature({
-                    data: {
-                        start:  from_subfeature.get('start'),
-                        ref:    from.get('seq_id') || from.get('ref'),
-                        end:    from_subfeature.get('end'),
-                        strand: from_subfeature.get('strand'),
-                        type:   from_subfeature.get('type')
-                    },
-                    parent: feature
-                });
-                subfeatures.push(subfeature);
+        var mergedExon = this.newFeature(leftExon, {
+                end: rightExon.get('end'),
             }
-            feature.set('subfeatures', subfeatures);
-        }
-        return feature;
+        );
+        subfeatures.push(mergedExon);
+        var newTranscript = this.newFeature(subfeatures);
+        this.markNonCanonicalSpliceSites(newTranscript, function () {
+            this.store.deleteFeatureById(transcript.id());
+            this.store.insert(newTranscript);
+            this.changed();
+            // FIXME: the code below doesn't seem to have desired effect
+            var newMergedExon = _.find(newTranscript.get('subfeatures'), function (f) {
+                return f.get('start') === mergedExon.get('start') &&
+                    f.get('end') === mergedExon.get('end');
+            });
+            var featdiv = this.getFeatDiv(newMergedExon);
+            $(featdiv).trigger('mousedown');
+        });
     },
 
     duplicateSelectedFeatures: function() {
@@ -343,53 +294,24 @@ var EditTrack = declare(DraggableFeatureTrack,
     duplicateFeatures: function(feats)  {
             var subfeaturesToAdd = [];
             var parentFeature;
-            for( var i in feats )  {
+            for (var i in feats)  {
                     var feat = feats[i];
-                    var is_subfeature = !! feat.parent() ;  // !! is shorthand for returning true if value is defined and non-null
+                    var is_subfeature = !!feat.parent();
                     if (is_subfeature) {
                             subfeaturesToAdd = subfeaturesToAdd.concat(_.select(feat.parent().children(), function (f) {
                                 return (f.get('start') >= feat.get('start') && f.get('end') <= feat.get('end'));
                             }));
                     }
                     else {
-                        var new_transcript = this.newTranscript(feats[i], false);
-                        this.store.insert(new_transcript);
+                        var newTranscript = this.newFeature(feats[i].children());
+                        this.store.insert(newTranscript);
                         this.changed();
                     }
             }
             if (subfeaturesToAdd.length > 0) {
-                    var feature = new SimpleFeature();
-                    var subfeatures = new Array();
-                    feature.set('subfeatures', subfeatures );
-                    var fmin = undefined;
-                    var fmax = undefined;
-                    var strand = undefined;
-                    for (var i = 0; i < subfeaturesToAdd.length; ++i) {
-                            var subfeature = subfeaturesToAdd[i];
-                            if (fmin === undefined || subfeature.get('start') < fmin) {
-                                    fmin = subfeature.get('start');
-                            }
-                            if (fmax === undefined || subfeature.get('end') > fmax) {
-                                    fmax = subfeature.get('end');
-                            }
-                            if (strand === undefined) {
-                                    strand = subfeature.get('strand');
-                            }
-                            subfeatures.push(new SimpleFeature({
-                                data: {
-                                    start:  subfeature.get('start'),
-                                    end:    subfeature.get('end'),
-                                    strand: subfeature.get('strand'),
-                                    type:   subfeature.get('type')
-                                },
-                                parent: feature
-                            }));
-                    }
-                    feature.set('start', fmin );
-                    feature.set('end', fmax );
-                    feature.set('strand', strand );
-                    this.store.insert(feature);
-                    this.changed();
+                var newTranscript = this.newFeature(subfeaturesToAdd);
+                this.store.insert(newTranscript);
+                this.changed();
             }
     },
 
@@ -405,22 +327,13 @@ var EditTrack = declare(DraggableFeatureTrack,
             var parent = feature.parent();
 
             if (parent) {
-                var new_transcript = new SimpleFeature({
-                    id:   parent.id(),
-                    data: {
-                        name:   parent.get('name'),
-                        ref:    parent.get('seq_id') || parent.get('ref'),
-                        start:  parent.get('start'),
-                        end:    parent.get('end'),
-                        strand: parent.get('strand')
-                    }
-                });
                 // delete selected exon from parent
                 var subfeatures = _.reject(parent.get('subfeatures'), function (f) {
                     return f.id() == feature.id();
                 });
-                new_transcript.set('subfeatures', subfeatures);
-                this.store.replace(new_transcript);
+                var newTranscript = this.newFeature(subfeatures);
+                this.store.deleteFeatureById(parent.id());
+                this.store.insert(newTranscript);
                 this.changed();
             }
             else {
@@ -436,24 +349,6 @@ var EditTrack = declare(DraggableFeatureTrack,
         var sortedAnnots = this.sortAnnotationsByLocation(selected);
         var leftAnnot = sortedAnnots[0];
         var rightAnnot = sortedAnnots[sortedAnnots.length - 1];
-        //var trackName = this.getUniqueTrackName();
-
-        /*
-        for (var i in annots)  {
-            var annot = annots[i];
-            // just checking to ensure that all features in selection are from this track --
-            //   if not, then don't try and delete them
-            if (annot.track === track)  {
-                var trackName = track.getUniqueTrackName();
-                if (leftAnnot == null || annot[track.fields["start"]] < leftAnnot[track.fields["start"]]) {
-                    leftAnnot = annot;
-                }
-                if (rightAnnot == null || annot[track.fields["end"]] > rightAnnot[track.fields["end"]]) {
-                    rightAnnot = annot;
-                }
-            }
-        }
-        */
 
         if (leftAnnot.parent() && rightAnnot.parent() && leftAnnot.parent() == rightAnnot.parent()) {
             this.mergeExons(leftAnnot.parent(), leftAnnot, rightAnnot);
@@ -471,36 +366,13 @@ var EditTrack = declare(DraggableFeatureTrack,
         if (rightTranscript.parent())
             rightTranscript = rightTranscript.parent();
 
-        var new_transcript = new SimpleFeature({
-            data: {
-                name: leftTranscript.get('name'),
-                ref:  leftTranscript.get('ref'),
-                start: leftTranscript.get('start'),
-                end:   rightTranscript.get('end'),
-                strand: leftTranscript.get('strand'),
-                type:   leftTranscript.get('type')
-            }
-        });
-        var subfeatures = leftTranscript.children();
-        subfeatures = subfeatures.concat(rightTranscript.children());
-        subfeatures = _.map(subfeatures, function (s) {
-            return new SimpleFeature({
-                data: {
-                    name: s.get('name'),
-                    ref:  s.get('ref'),
-                    start: s.get('start'),
-                    end:   s.get('end'),
-                    strand: s.get('strand'),
-                    type:   s.get('type')
-                },
-                parent: new_transcript
-            })
-        });
-        new_transcript.set('subfeatures', subfeatures);
-        this.markNonCanonicalSpliceSites(new_transcript, function () {
+        var subfeatures =
+            leftTranscript.children().concat(rightTranscript.children());
+        var newTranscript = this.newFeature(subfeatures);
+        this.markNonCanonicalSpliceSites(newTranscript, function () {
             this.store.deleteFeatureById(leftTranscript.id());
             this.store.deleteFeatureById(rightTranscript.id());
-            this.store.insert(new_transcript);
+            this.store.insert(newTranscript);
             this.changed();
         });
     },
@@ -520,86 +392,87 @@ var EditTrack = declare(DraggableFeatureTrack,
     },
 
     makeIntron: function(transcript, exon, coordinate) {
-        var feature = new SimpleFeature({
-            id:   transcript.id(),
-            data: {
-                name:   transcript.get('name'),
-                ref:    transcript.get('seq_id') || transcript.get('ref'),
-                start:  transcript.get('start'),
-                end:    transcript.get('end'),
-                strand: transcript.get('strand')
-            }
-        });
         var subfeatures = _.reject(transcript.get('subfeatures'), function (f) {
-            return f.id() == exon.id();
+            return f.id() === exon.id();
         });
-        subfeatures.push(new SimpleFeature({
-            data: {
-                start:  exon.get('start'),
-                end:    coordinate - 10,
-                strand: exon.get('strand'),
-                type:   exon.get('type')
-            },
-            parent: feature
-        }));
-        subfeatures.push(new SimpleFeature({
-            data: {
-                start:  coordinate + 10,
-                end:    exon.get('end'),
-                strand: exon.get('strand'),
-                type:   exon.get('type')
-            },
-            parent: feature
-        }));
-        subfeatures = this.sortAnnotationsByLocation(subfeatures);
-        feature.set('subfeatures', subfeatures);
-        this.store.replace(feature);
+        if (coordinate - 10 > exon.get('start')) {
+            var leftExon  = this.newFeature(exon, {
+                end:    coordinate - 10
+            });
+            subfeatures.push(leftExon);
+        }
+        if (coordinate + 10 < exon.get('end')) {
+            var rightExon = this.newFeature(exon, {
+                start:  coordinate + 10
+            });
+            subfeatures.push(rightExon);
+        }
+        var newTranscript = this.newFeature(subfeatures);
+        this.store.deleteFeatureById(transcript.id());
+        this.store.insert(newTranscript);
         this.changed();
     },
 
     splitTranscript: function (transcript, coordinate) {
         var children  = transcript.children();
-        var leftExon  = _.find(children.slice().reverse(), function (f) {
-            return f.get('end') < coordinate && f.get('type') === 'exon';
+        var featuresOnLeft = _.select(children, function (f) {
+            return f.get('end') < coordinate;
         });
-        var rightExon = _.find(children, function (f) {
-            return f.get('start') > coordinate && f.get('type') === 'exon';
+        var featuresOnRight = _.select(children, function (f) {
+            return f.get('start') > coordinate;
         });
-        var feature1 = new SimpleFeature({
-            data: {
-                name:   transcript.get('name'),
-                ref:    transcript.get('seq_id') || transcript.get('ref'),
-                start:  transcript.get('start'),
-                end:    leftExon.get('end'),
-                strand: transcript.get('strand')
-            }
-        });
-        var feature2 = new SimpleFeature({
-            data: {
-                name:   transcript.get('name'),
-                ref:    transcript.get('seq_id') || transcript.get('ref'),
-                start:  rightExon.get('start'),
-                end:    transcript.get('end'),
-                strand: transcript.get('strand')
-            }
-        });
-        var splitPoint   = false;
-        var subfeatures1 = [];
-        var subfeatures2 = [];
-        _.each(children, function (f) {
-            if (f.id() == rightExon.id())
-                splitPoint = true;
-            if (!splitPoint)
-                subfeatures1.push(f)
-            else
-                subfeatures2.push(f);
-        });
-        feature1.set('subfeatures', subfeatures1);
-        feature2.set('subfeatures', subfeatures2);
+        console.log(featuresOnLeft);
+        console.log(featuresOnRight);
+
+        var newTranscript1 = this.newFeature(featuresOnLeft);
+        var newTranscript2 = this.newFeature(featuresOnRight);
         this.store.deleteFeatureById(transcript.id());
-        this.store.insert(feature1);
-        this.store.insert(feature2);
+        this.store.insert(newTranscript1);
+        this.store.insert(newTranscript2);
         this.changed();
+    },
+
+    /* Create a new feature from another feature or array of features.
+    *
+    * NOTE: Doesn't copy children.
+    */
+    newFeature: function (from, data) {
+        // if it's a jbrowse feature object
+        if (from.hasOwnProperty('_uniqueID')) {
+            var parent = data.parent;
+            delete data.parent;
+            return new SimpleFeature({
+                data: $.extend({
+                    name:   from.get('name'),
+                    seq_id: from.get('seq_id'),
+                    start:  from.get('start'),
+                    end:    from.get('end'),
+                    strand: from.get('strand'),
+                    type:   from.get('type')
+                }, data),
+                parent: parent ? parent : from.parent()
+            });
+        }
+        // if it's a javascript array
+        else if (from instanceof Array) {
+            var track = this;
+            var feature = new SimpleFeature({
+                data: {
+                    //name: ?,
+                    seq_id: from[0].get('seq_id'),
+                    strand: from[0].get('strand'),
+                    type:   'transcript'
+                }
+            });
+            var subfeatures = _.map(from, function (f) {
+                return track.newFeature(f, {parent: feature});
+            });
+            subfeatures = this.sortAnnotationsByLocation(subfeatures);
+            feature.set('start', subfeatures[0].get('start'));
+            feature.set('end', subfeatures[subfeatures.length - 1].get('end'));
+            feature.set('subfeatures', subfeatures);
+            return feature;
+        }
     },
 
     setTranslationStart: function(event)  {
@@ -618,11 +491,6 @@ var EditTrack = declare(DraggableFeatureTrack,
     	console.log("called setTranslationStartInCDS to: " + coordinate);
 
     	var uid = annot.parent() ? annot.parent().id() : annot.id();
-    	var features = '"features": [ { "uniquename": "' + uid + '", "location": { "fmin": ' + coordinate + ' } } ]';
-    	var operation = "set_translation_start";
-    	var trackName = track.getUniqueTrackName();
-    	var postData = '{ "track": "' + trackName + '", ' + features + ', "operation": "' + operation + '" }';
-    	track.executeUpdateOperation(postData);
     },
 
     flipStrandForSelectedFeatures: function()  {
@@ -675,7 +543,6 @@ var EditTrack = declare(DraggableFeatureTrack,
 
     setLongestORFForSelectedFeatures: function(selection) {
         var track = this;
-        var features = '"features": [';
         for (var i in selection)  {
             var annot = EditTrack.getTopLevelAnnotation(selection[i].feature);
 	    var atrack = selection[i].track;
@@ -683,19 +550,8 @@ var EditTrack = declare(DraggableFeatureTrack,
             // just checking to ensure that all features in selection are from this track
             if (atrack === track)  {
                 var trackdiv = track.div;
-                var trackName = track.getUniqueTrackName();
-
-                if (i > 0) {
-                    features += ',';
-                }
-                features += ' { "uniquename": "' + uniqueName + '" } ';
             }
         }
-        features += ']';
-        var operation = "set_longest_orf";
-        var trackName = track.getUniqueTrackName();
-        var postData = '{ "track": "' + trackName + '", ' + features + ', "operation": "' + operation + '" }';
-        track.executeUpdateOperation(postData);
     },
 
     showSequenceDialog: function () {
@@ -944,28 +800,18 @@ var EditTrack = declare(DraggableFeatureTrack,
             return confirm(response); 
     },
 
-    getUniqueTrackName: function() {
-        return this.name + "-" + this.refSeq.name;
-    },
-
-    openDialog: function(title, data) {
-        this.popupDialog.set("title", title);
-        this.popupDialog.set("content", data);
-        this.popupDialog.show();
-        this.popupDialog.placeAt("GenomeBrowser", "first");
-    },
-
     updateMenu: function() {
         //this.updateSetTranslationStartMenuItem();
         this.updateMergeMenuItem();
-        this.updateSplitMenuItem();
-        //this.updateMakeIntronMenuItem();
+        this.updateSplitTranscriptMenuItem();
+        this.updateMakeIntronMenuItem();
         //this.updateEditCommentsMenuItem();
         //this.updateEditDbxrefsMenuItem();
         //this.updateUndoMenuItem();
         //this.updateRedoMenuItem();
         //this.updateZoomToBaseLevelMenuItem();
         this.updateDuplicateMenuItem();
+        this.updateFlipStrandMenuItem();
     },
 
     updateSetTranslationStartMenuItem: function() {
@@ -1005,31 +851,34 @@ var EditTrack = declare(DraggableFeatureTrack,
         menuItem.removeClass('disabled');
     },
 
-    updateSplitMenuItem: function() {
+    updateSplitTranscriptMenuItem: function() {
         var menuItem = $('#contextmenu-split');
         var selected = this.selectionManager.getSelection();
-        if (selected.length > 2) {
+        if (selected.length > 1) {
             menuItem.addClass('disabled')
             return;
         }
         var parent = selected[0].feature.parent();
-        for (var i = 1; i < selected.length; ++i) {
-            if (selected[i].feature.parent() != parent) {
-                menuItem.addClass('disabled')
-                return;
-            }
+        if (parent) {
+            menuItem.addClass('disabled')
+            return;
         }
         menuItem.removeClass('disabled');
     },
 
     updateMakeIntronMenuItem: function() {
-        var menuItem = this.getMenuItem("make_intron");
+        var menuItem = $("#contextmenu-make-intron");
         var selected = this.selectionManager.getSelection();
         if( selected.length > 1) {
-            menuItem.set("disabled", true);
+            menuItem.addClass("disabled");
             return;
         }
-        menuItem.set("disabled", false);
+        var parent = selected[0].feature.parent();
+        if (!parent) {
+            menuItem.addClass('disabled')
+            return;
+        }
+        menuItem.removeClass("disabled");
     },
 
     updateEditCommentsMenuItem: function() {
@@ -1112,6 +961,17 @@ var EditTrack = declare(DraggableFeatureTrack,
         menuItem.removeClass('disabled')
     },
 
+    updateFlipStrandMenuItem: function () {
+        var menuItem = $('#contextmenu-flipstrand');
+        var selected = this.selectionManager.getSelection();
+        var parent = selected[0].feature.parent();
+        if (parent) {
+            menuItem.addClass('disabled');
+            return;
+        }
+        menuItem.removeClass('disabled');
+    },
+
     sortAnnotationsByLocation: function(annots) {
         var track = this;
         return annots.sort(function(annot1, annot2) {
@@ -1124,9 +984,6 @@ var EditTrack = declare(DraggableFeatureTrack,
                                else if (end1 != end2) { return end1 - end2; }
                                else                   { return 0; }
                            });
-    },
-
-    executeUpdateOperation: function(postData, loadCallback) {
     },
 
     selectionAdded: function (rec, smanager) {
