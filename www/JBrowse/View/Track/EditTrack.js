@@ -29,6 +29,7 @@ define([
                  CodonTable,
                  Bionode) {
 
+var counter = 1;
 var EditTrack = declare(DraggableFeatureTrack,
 {
     constructor: function( args ) {
@@ -190,9 +191,10 @@ var EditTrack = declare(DraggableFeatureTrack,
     },
 
     addTranscript: function (transcript) {
-        var new_transcript = this.newFeature(transcript.children());
-        this.markNonCanonicalSpliceSites(new_transcript, function () {
-            this.store.insert(new_transcript);
+        var newTranscript = this.newFeature(transcript.children());
+        newTranscript.set('name', 'afra-' + newTranscript.get('seq_id') + '-mRNA-' + counter++);
+        this.markNonCanonicalSpliceSites(newTranscript, function () {
+            this.store.insert(newTranscript);
             this.changed();
         });
     },
@@ -206,33 +208,9 @@ var EditTrack = declare(DraggableFeatureTrack,
                 return f;
             }
         });
-        features_to_add_sorted =
-            this.sortAnnotationsByLocation(features_to_add);
 
-        var new_transcript = new SimpleFeature({
-            data: {
-                name:  features_to_add_sorted[0].get('name'),
-                ref:   features_to_add_sorted[0].get('ref'),
-                start: features_to_add_sorted[0].get('start'),
-                end:   features_to_add_sorted[features_to_add_sorted.length - 1].get('end'),
-                strand: features_to_add_sorted[0].get('strand')
-            }
-        });
-        var subfeatures = _.map(features_to_add_sorted, function (f) {
-            return new SimpleFeature({
-                data: {
-                    name:  f.get('name'),
-                    ref:   f.get('ref'),
-                    start: f.get('start'),
-                    end:   f.get('end'),
-                    type:  f.get('type'),
-                    strand: f.get('strand')
-                },
-                parent: new_transcript
-            });
-        });
-        new_transcript.set('subfeatures', subfeatures);
-        this.store.insert(new_transcript);
+        var newTranscript = this.newFeature(features_to_add);
+        this.store.insert(newTranscript);
         this.changed();
     },
 
@@ -271,6 +249,7 @@ var EditTrack = declare(DraggableFeatureTrack,
         );
         subfeatures.push(mergedExon);
         var newTranscript = this.newFeature(subfeatures);
+        newTranscript.set('name', transcript.get('name'));
         this.markNonCanonicalSpliceSites(newTranscript, function () {
             this.store.deleteFeatureById(transcript.id());
             this.store.insert(newTranscript);
@@ -303,15 +282,12 @@ var EditTrack = declare(DraggableFeatureTrack,
                             }));
                     }
                     else {
-                        var newTranscript = this.newFeature(feats[i].children());
-                        this.store.insert(newTranscript);
-                        this.changed();
+                        this.addTranscript(feats[i]);
                     }
             }
             if (subfeaturesToAdd.length > 0) {
                 var newTranscript = this.newFeature(subfeaturesToAdd);
-                this.store.insert(newTranscript);
-                this.changed();
+                this.addTranscript(newTranscript);
             }
     },
 
@@ -408,6 +384,7 @@ var EditTrack = declare(DraggableFeatureTrack,
             subfeatures.push(rightExon);
         }
         var newTranscript = this.newFeature(subfeatures);
+        newTranscript.set('name', transcript.get('name'));
         this.store.deleteFeatureById(transcript.id());
         this.store.insert(newTranscript);
         this.changed();
@@ -421,8 +398,6 @@ var EditTrack = declare(DraggableFeatureTrack,
         var featuresOnRight = _.select(children, function (f) {
             return f.get('start') > coordinate;
         });
-        console.log(featuresOnLeft);
-        console.log(featuresOnRight);
 
         var newTranscript1 = this.newFeature(featuresOnLeft);
         var newTranscript2 = this.newFeature(featuresOnRight);
@@ -443,12 +418,11 @@ var EditTrack = declare(DraggableFeatureTrack,
             delete data.parent;
             return new SimpleFeature({
                 data: $.extend({
-                    name:   from.get('name'),
+                    type:   from.get('type'),
                     seq_id: from.get('seq_id'),
-                    start:  from.get('start'),
-                    end:    from.get('end'),
                     strand: from.get('strand'),
-                    type:   from.get('type')
+                    start:  from.get('start'),
+                    end:    from.get('end')
                 }, data),
                 parent: parent ? parent : from.parent()
             });
@@ -458,10 +432,9 @@ var EditTrack = declare(DraggableFeatureTrack,
             var track = this;
             var feature = new SimpleFeature({
                 data: {
-                    //name: ?,
+                    type:   'transcript',
                     seq_id: from[0].get('seq_id'),
-                    strand: from[0].get('strand'),
-                    type:   'transcript'
+                    strand: from[0].get('strand')
                 }
             });
             var subfeatures = _.map(from, function (f) {
