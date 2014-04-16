@@ -345,6 +345,7 @@ var EditTrack = declare(DraggableFeatureTrack,
         var subfeatures =
             leftTranscript.children().concat(rightTranscript.children());
         var newTranscript = this.newFeature(subfeatures);
+        newTranscript.set('name', 'afra-' + newTranscript.get('seq_id') + '-mRNA-' + counter++);
         this.markNonCanonicalSpliceSites(newTranscript, function () {
             this.store.deleteFeatureById(leftTranscript.id());
             this.store.deleteFeatureById(rightTranscript.id());
@@ -400,7 +401,9 @@ var EditTrack = declare(DraggableFeatureTrack,
         });
 
         var newTranscript1 = this.newFeature(featuresOnLeft);
+        newTranscript1.set('name', 'afra-' + newTranscript1.get('seq_id') + '-mRNA-' + counter++);
         var newTranscript2 = this.newFeature(featuresOnRight);
+        newTranscript2.set('name', 'afra-' + newTranscript2.get('seq_id') + '-mRNA-' + counter++);
         this.store.deleteFeatureById(transcript.id());
         this.store.insert(newTranscript1);
         this.store.insert(newTranscript2);
