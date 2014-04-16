@@ -1115,20 +1115,9 @@ div.transcript-hist {
     background-position: right center;  /* center image vertically */
 }
 
-/* introns are hidden by default */
-.plus-intron, .minus-intron {
-    display: none;
-}
-
-/* can also set a class of 'hidden' to hide something */
-.hidden, .plus-hidden, .minus-hidden {
-    display: none;
-}
-
+.CDS,
 .plus-CDS,
-.plus-transcript-CDS,
-.minus-CDS,
-.minus-transcript-CDS {
+.minus-CDS {
     position: absolute;
     height: 11px;
     background-color: #B66;
@@ -1147,7 +1136,7 @@ div.transcript-hist {
 .minus-three_prime_UTR {
     position: absolute;
     height: 11px;
-    background-color: #B66;
+    background-color: transparent;
     z-index: 8;
     min-width: 1px;
     cursor: pointer;
@@ -1194,6 +1183,10 @@ div.generic_parent-hist {
     cursor: pointer;
 }
 
+/* can also set a class of 'hidden' to hide something */
+.hidden, .plus-hidden, .minus-hidden {
+    display: none;
+}
 
 /* floating score display for wiggle tracks */
 .wiggleValueDisplay {
@@ -1510,18 +1503,6 @@ div.generic_parent-hist {
      * feature render div has lower z-index than subfeature divs
      */
     z-index: 2;
-}
-
-.CDS {
-    background-color: transparent;
-}
-
-.mRNA,
-.plus-mRNA,
-.minus-mRNA  {
-    height: 14px;
-    /* outline: 2px dashed green; */
-    background-color: transparent;
 }
 
 .pin_underlay {

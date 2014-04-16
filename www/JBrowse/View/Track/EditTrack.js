@@ -410,63 +410,38 @@ var EditTrack = declare(DraggableFeatureTrack,
         this.changed();
     },
 
-    /* Create a new feature from another feature or array of features.
-    *
-    * NOTE: Doesn't copy children.
-    */
-    newFeature: function (from, data) {
-        // if it's a jbrowse feature object
-        if (from.hasOwnProperty('_uniqueID')) {
-            var parent = data.parent;
-            delete data.parent;
-            return new SimpleFeature({
-                data: $.extend({
-                    type:   from.get('type'),
-                    seq_id: from.get('seq_id'),
-                    strand: from.get('strand'),
-                    start:  from.get('start'),
-                    end:    from.get('end')
-                }, data),
-                parent: parent ? parent : from.parent()
-            });
-        }
-        // if it's a javascript array
-        else if (from instanceof Array) {
-            var track = this;
-            var feature = new SimpleFeature({
-                data: {
-                    type:   'transcript',
-                    seq_id: from[0].get('seq_id'),
-                    strand: from[0].get('strand')
-                }
-            });
-            var subfeatures = _.map(from, function (f) {
-                return track.newFeature(f, {parent: feature});
-            });
-            subfeatures = this.sortAnnotationsByLocation(subfeatures);
-            feature.set('start', subfeatures[0].get('start'));
-            feature.set('end', subfeatures[subfeatures.length - 1].get('end'));
-            feature.set('subfeatures', subfeatures);
-            return feature;
-        }
-    },
-
     setTranslationStart: function(event)  {
-        var selfeats = this.selectionManager.getSelectedFeatures();
+        var selected = this.selectionManager.getSelectedFeatures()[0];
+        var transcript = selected.parent() ? selected.parent() : selected;
+        var coordinate = this.gview.absXtoBp($('#contextmenu').position().left);
         this.selectionManager.clearSelection();
-        this.setTranslationStartInCDS(selfeats, event);
+        this.setTranslationStartInCDS(transcript, coordinate);
     },
 
-    setTranslationStartInCDS: function(annots, event) {
-    	if (annots.length > 1) {
-    		return;
-    	}
-    	var track = this;
-    	var annot = annots[0];
-    	var coordinate = this.getGenomeCoord(event);
-    	console.log("called setTranslationStartInCDS to: " + coordinate);
+    setTranslationStartInCDS: function(transcript, coordinate) {
+        //console.log("called setTranslationStartInCDS to: " + coordinate);
+        var subfeatures = transcript.get('subfeatures');
+        var cds = _.find(subfeatures, function (f) {
+            return f.get('type') === 'CDS' &&
+                f.get('start') < coordinate &&
+                f.get('end') > coordinate;
+        });
+        cds = this.newFeature(cds, {
+            start: coordinate
+        });
 
-    	var uid = annot.parent() ? annot.parent().id() : annot.id();
+        // reject all cds before coordinate
+        console.log(subfeatures.length);
+        subfeatures = _.reject(subfeatures, function (f) {
+            return f.get('type') === 'CDS' && f.get('start') < coordinate;
+        });
+        console.log(subfeatures.length);
+        subfeatures.push(cds);
+        var newTranscript = this.newFeature(subfeatures);
+        this.store.deleteFeatureById(transcript.id());
+        this.store.insert(newTranscript);
+        //console.log(transcript.get('start'));
+        //console.log(firstCDS.get('start'));
     },
 
     flipStrandForSelectedFeatures: function()  {
@@ -699,6 +674,47 @@ var EditTrack = declare(DraggableFeatureTrack,
         }));
     },
 
+    /* Create a new feature from another feature or array of features.
+    *
+    * NOTE: Doesn't copy children.
+    */
+    newFeature: function (from, data) {
+        // if it's a jbrowse feature object
+        if (from.hasOwnProperty('_uniqueID')) {
+            var parent = data.parent;
+            delete data.parent;
+            return new SimpleFeature({
+                data: $.extend({
+                    type:   from.get('type'),
+                    seq_id: from.get('seq_id'),
+                    strand: from.get('strand'),
+                    start:  from.get('start'),
+                    end:    from.get('end')
+                }, data),
+                parent: parent ? parent : from.parent()
+            });
+        }
+        // if it's a javascript array
+        else if (from instanceof Array) {
+            var track = this;
+            var feature = new SimpleFeature({
+                data: {
+                    type:   'transcript',
+                    seq_id: from[0].get('seq_id'),
+                    strand: from[0].get('strand')
+                }
+            });
+            var subfeatures = _.map(from, function (f) {
+                return track.newFeature(f, {parent: feature});
+            });
+            subfeatures = this.sortAnnotationsByLocation(subfeatures);
+            feature.set('start', subfeatures[0].get('start'));
+            feature.set('end', subfeatures[subfeatures.length - 1].get('end'));
+            feature.set('subfeatures', subfeatures);
+            return feature;
+        }
+    },
+
     markNonCanonicalSpliceSites: function (feature, callback) {
         var track = this;
         this.browser.getStore('refseqs', dojo.hitch(this, function(refSeqStore) {
@@ -758,22 +774,6 @@ var EditTrack = declare(DraggableFeatureTrack,
 
     zoomBackOut: function(event) {
         this.gview.zoomBackOut(event);
-    },
-
-    handleError: function(response) {
-        console.log("ERROR: ");
-        console.log(response);  // in Firebug, allows retrieval of stack trace, jump to code, etc.
-        console.log(response.stack);
-        var error = eval('(' + response.responseText + ')');
-        //      var error = response.error ? response : eval('(' + response.responseText + ')');
-        if (error && error.error) {
-            alert(error.error);
-		return false;
-        }
-    },
-
-    handleConfirm: function(response) {
-            return confirm(response); 
     },
 
     updateMenu: function() {
