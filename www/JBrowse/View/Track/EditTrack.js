@@ -415,11 +415,29 @@ var EditTrack = declare(DraggableFeatureTrack,
         var transcript = selected.parent() ? selected.parent() : selected;
         var coordinate = this.gview.absXtoBp($('#contextmenu').position().left);
         this.selectionManager.clearSelection();
-        this.setTranslationStartInCDS(transcript, coordinate);
+        if (transcript.get('strand') == 1) {
+            this.setTranslationStartInCDS(transcript, coordinate);
+        }
+        else if (transcript.get('strand') == -1) {
+            this.setTranslationStopInCDS(transcript, coordinate);
+        }
+    },
+
+    setTranslationStop: function(event)  {
+        var selected = this.selectionManager.getSelectedFeatures()[0];
+        var transcript = selected.parent() ? selected.parent() : selected;
+        var coordinate = this.gview.absXtoBp($('#contextmenu').position().left);
+        this.selectionManager.clearSelection();
+        if (transcript.get('strand') == 1) {
+            this.setTranslationStopInCDS(transcript, coordinate);
+        }
+        else if (transcript.get('strand') == -1) {
+            this.setTranslationStartInCDS(transcript, coordinate);
+        }
+        this.setTranslationStopInCDS(transcript, coordinate);
     },
 
     setTranslationStartInCDS: function(transcript, coordinate) {
-        //console.log("called setTranslationStartInCDS to: " + coordinate);
         var subfeatures = transcript.get('subfeatures');
         var cds = _.find(subfeatures, function (f) {
             return f.get('type') === 'CDS' &&
@@ -431,17 +449,36 @@ var EditTrack = declare(DraggableFeatureTrack,
         });
 
         // reject all cds before coordinate
-        console.log(subfeatures.length);
         subfeatures = _.reject(subfeatures, function (f) {
             return f.get('type') === 'CDS' && f.get('start') < coordinate;
         });
-        console.log(subfeatures.length);
         subfeatures.push(cds);
         var newTranscript = this.newFeature(subfeatures);
         this.store.deleteFeatureById(transcript.id());
         this.store.insert(newTranscript);
-        //console.log(transcript.get('start'));
-        //console.log(firstCDS.get('start'));
+        this.changed();
+    },
+
+    setTranslationStopInCDS: function(transcript, coordinate) {
+        var subfeatures = transcript.get('subfeatures');
+        var cds = _.find(subfeatures, function (f) {
+            return f.get('type') === 'CDS' &&
+                f.get('start') < coordinate &&
+                f.get('end') > coordinate;
+        });
+        cds = this.newFeature(cds, {
+            end: coordinate
+        });
+
+        // reject all cds before coordinate
+        subfeatures = _.reject(subfeatures, function (f) {
+            return f.get('type') === 'CDS' && f.get('end') > coordinate;
+        });
+        subfeatures.push(cds);
+        var newTranscript = this.newFeature(subfeatures);
+        this.store.deleteFeatureById(transcript.id());
+        this.store.insert(newTranscript);
+        this.changed();
     },
 
     flipStrandForSelectedFeatures: function()  {
