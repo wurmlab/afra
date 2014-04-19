@@ -193,7 +193,7 @@ var EditTrack = declare(DraggableFeatureTrack,
     addTranscript: function (transcript) {
         var newTranscript = this.newFeature(transcript.children());
         newTranscript.set('name', 'afra-' + newTranscript.get('seq_id') + '-mRNA-' + counter++);
-        this.markNonCanonicalSpliceSites(newTranscript, function () {
+        this.markNonCanonicalSites(newTranscript, function () {
             this.store.insert(newTranscript);
             this.changed();
         });
@@ -225,7 +225,7 @@ var EditTrack = declare(DraggableFeatureTrack,
         subfeatures[exonIndex] = exon;
 
         var newTranscript = this.newFeature(subfeatures);
-        this.markNonCanonicalSpliceSites(newTranscript, function () {
+        this.markNonCanonicalSites(newTranscript, function () {
             this.store.deleteFeatureById(transcript.id());
             this.store.insert(newTranscript);
             this.changed();
@@ -250,7 +250,7 @@ var EditTrack = declare(DraggableFeatureTrack,
         subfeatures.push(mergedExon);
         var newTranscript = this.newFeature(subfeatures);
         newTranscript.set('name', transcript.get('name'));
-        this.markNonCanonicalSpliceSites(newTranscript, function () {
+        this.markNonCanonicalSites(newTranscript, function () {
             this.store.deleteFeatureById(transcript.id());
             this.store.insert(newTranscript);
             this.changed();
@@ -346,7 +346,7 @@ var EditTrack = declare(DraggableFeatureTrack,
             leftTranscript.children().concat(rightTranscript.children());
         var newTranscript = this.newFeature(subfeatures);
         newTranscript.set('name', 'afra-' + newTranscript.get('seq_id') + '-mRNA-' + counter++);
-        this.markNonCanonicalSpliceSites(newTranscript, function () {
+        this.markNonCanonicalSites(newTranscript, function () {
             this.store.deleteFeatureById(leftTranscript.id());
             this.store.deleteFeatureById(rightTranscript.id());
             this.store.insert(newTranscript);
@@ -454,9 +454,11 @@ var EditTrack = declare(DraggableFeatureTrack,
         });
         subfeatures.push(cds);
         var newTranscript = this.newFeature(subfeatures);
-        this.store.deleteFeatureById(transcript.id());
-        this.store.insert(newTranscript);
-        this.changed();
+        this.markNonCanonicalSites(newTranscript, function () {
+            this.store.deleteFeatureById(transcript.id());
+            this.store.insert(newTranscript);
+            this.changed();
+        });
     },
 
     setTranslationStopInCDS: function(transcript, coordinate) {
@@ -476,9 +478,11 @@ var EditTrack = declare(DraggableFeatureTrack,
         });
         subfeatures.push(cds);
         var newTranscript = this.newFeature(subfeatures);
-        this.store.deleteFeatureById(transcript.id());
-        this.store.insert(newTranscript);
-        this.changed();
+        this.markNonCanonicalSites(newTranscript, function () {
+            this.store.deleteFeatureById(transcript.id());
+            this.store.insert(newTranscript);
+            this.changed();
+        });
     },
 
     flipStrandForSelectedFeatures: function()  {
@@ -752,56 +756,110 @@ var EditTrack = declare(DraggableFeatureTrack,
         }
     },
 
-    markNonCanonicalSpliceSites: function (feature, callback) {
-        var track = this;
+    markNonCanonicalSites: function(transcript, callback) {
         this.browser.getStore('refseqs', dojo.hitch(this, function(refSeqStore) {
             if (refSeqStore) {
                 refSeqStore.getFeatures(
-                    {ref: this.refSeq.name, start: feature.get('start'), end: feature.get('end')},
-                    dojo.hitch(this, function (f) {
-                        var seq = f.get('seq');
-                        var start = f.get('start')
-                        //var subfeatures = feature.get('subfeatures');
-                        var cds_ranges  = [];
-
-                        // remove non-canonical splice sites from before
-                        var subfeatures = _.reject(feature.get('subfeatures'), function (f) {
-                            return f.get('type') == 'non_canonical_splice_site';
-                        });
-
-                        for (var i = 0; i < subfeatures.length; i++) {
-                            var subfeature = subfeatures[i];
-                            if (subfeature.get('type') == 'exon') {
-                                cds_ranges.push([subfeature.get('start') - start, subfeature.get('end') - start]);
-                            }
-                        }
-                        var strand = feature.get('strand')
-                        var nonCanonicalSpliceSites;
-                        if (strand === 1) {
-                            nonCanonicalSpliceSites = Bionode.findNonCanonicalSplices(seq, cds_ranges);
-                        }
-                        else if (strand === -1) {
-                            nonCanonicalSpliceSites = Bionode.findNonCanonicalSplices(Util.reverseComplement(seq), Bionode.reverseExons(cds_ranges, seq.length));
-                            for (var i = 0; i < nonCanonicalSpliceSites.length; i++)
-                                nonCanonicalSpliceSites[i] = seq.length - nonCanonicalSpliceSites[i];
-                        }
-                        for (var i = 0; i < nonCanonicalSpliceSites.length; i++) {
-                            var non_canonical_splice_site = nonCanonicalSpliceSites[i];
-                            subfeatures.push(new SimpleFeature({
-                                data: {
-                                    start: non_canonical_splice_site + start,
-                                    end:   non_canonical_splice_site + start + 1,
-                                    type:  'non_canonical_splice_site'
-                                },
-                                parent: feature
-                            }));
-                        }
-                        track.sortAnnotationsByLocation(subfeatures);
-                        feature.set('subfeatures', subfeatures);
-                        callback.apply(track, feature);
+                    {ref: this.refSeq.name, start: transcript.get('start'), end: transcript.get('end')},
+                    dojo.hitch(this, function (refSeqFeature) {
+                        transcript = this.markNonCanonicalSpliceSites(transcript, refSeqFeature);
+                        transcript = this.markNonCanonicalTranslationStartSite(transcript, refSeqFeature);
+                        callback.apply(this, transcript);
                     }));
             }
         }));
+    },
+
+    markNonCanonicalSpliceSites: function (transcript, refSeqFeature) {
+        var seq = refSeqFeature.get('seq');
+        var start = refSeqFeature.get('start')
+        //var subfeatures = feature.get('subfeatures');
+        var cds_ranges  = [];
+
+        // remove non-canonical splice sites from before
+        var subfeatures = _.reject(transcript.get('subfeatures'), function (f) {
+            return refSeqFeature.get('type') == 'non_canonical_splice_site';
+        });
+
+        for (var i = 0; i < subfeatures.length; i++) {
+            var subfeature = subfeatures[i];
+            if (subfeature.get('type') == 'exon') {
+                cds_ranges.push([subfeature.get('start') - start, subfeature.get('end') - start]);
+            }
+        }
+        var strand = transcript.get('strand')
+        var nonCanonicalSpliceSites;
+        if (strand === 1) {
+            nonCanonicalSpliceSites = Bionode.findNonCanonicalSplices(seq, cds_ranges);
+        }
+        else if (strand === -1) {
+            nonCanonicalSpliceSites = Bionode.findNonCanonicalSplices(Util.reverseComplement(seq), Bionode.reverseExons(cds_ranges, seq.length));
+            for (var i = 0; i < nonCanonicalSpliceSites.length; i++)
+            nonCanonicalSpliceSites[i] = seq.length - nonCanonicalSpliceSites[i];
+        }
+        for (var i = 0; i < nonCanonicalSpliceSites.length; i++) {
+            var non_canonical_splice_site = nonCanonicalSpliceSites[i];
+            subfeatures.push(new SimpleFeature({
+                data: {
+                    start: non_canonical_splice_site + start,
+                    end:   non_canonical_splice_site + start + 1,
+                    type:  'non_canonical_splice_site'
+                },
+                parent: transcript
+            }));
+        }
+        this.sortAnnotationsByLocation(subfeatures);
+        transcript.set('subfeatures', subfeatures);
+        return transcript;
+    },
+
+    markNonCanonicalTranslationStartSite: function (transcript, refSeqFeature) {
+        // remove non-canonical translation start site from before
+        var subfeatures = _.reject(transcript.get('subfeatures'), function (f) {
+            return f.get('type') == 'non_canonical_translation_start_site';
+        });
+
+        var translationStart = this.getTranslationStart(transcript,
+                                                        refSeqFeature.get('seq'));
+        if (translationStart[1].toLowerCase() !== 'atg') {
+            subfeatures.push(new SimpleFeature({
+                data: {
+                    start: translationStart[0],
+                    end:   translationStart[0] + 3,
+                    type:  'non_canonical_translation_start_site'
+                },
+                parent: transcript
+            }));
+            this.sortAnnotationsByLocation(subfeatures);
+            transcript.set('subfeatures', subfeatures);
+        }
+        return transcript;
+    },
+
+    /* Takes a transcript (JB feature with exons and CDS) and returns a tuple of
+     * 1. coordinate of translation start site
+     * 2. translation start sequence
+     */
+    getTranslationStart: function (transcript, sequence) {
+        var offset = transcript.get('start');
+        var strand = transcript.get('strand');
+
+        var firstCDS, translationStartSequence, translationStartCoordinate;
+        if (strand === 1) {
+            firstCDS = _.find(transcript.get('subfeatures'), function (f) {
+                return f.get('type') == 'CDS';
+            });
+            translationStartCoordinate = firstCDS.get('start');
+            translationStartSequence   = sequence.slice(translationStartCoordinate - offset, translationStartCoordinate - offset + 3);
+        }
+        else if (strand === -1) {
+            firstCDS = _.find(transcript.get('subfeatures').slice().reverse(), function (f) {
+                return f.get('type') == 'CDS';
+            });
+            translationStartCoordinate = firstCDS.get('end') - 3,
+            translationStartSequence   = Util.complement(sequence).slice(translationStartCoordinate - offset, translationStartCoordinate - offset + 3).split('').reverse().join('');
+        }
+        return [translationStartCoordinate, translationStartSequence];
     },
 
     zoomToBaseLevel: function(event) {
