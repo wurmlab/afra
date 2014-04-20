@@ -8,7 +8,6 @@ var FeatureEdgeMatchManager = declare(null, {
         this.selection_managers = [];
         this.unmatchableTypes = {};
 
-        this.verbose_edges = false;
         this.unedgeableTypes = { "wholeCDS" : true };
     },
 
@@ -69,22 +68,16 @@ var FeatureEdgeMatchManager = declare(null, {
     // experimenting with highlighting edges of features that match selected features (or their subfeatures)
     // still assuming index 0 for start, index 1 for end
     // assumes all tracks have two-level features, and thus track.fields and track.subFields are populated
-    selectionAdded: function( rec )  {
+    selectionAdded: function (rec) {
         var feat = rec.feature;
         if ( ! this.SHOW_EDGE_MATCHES ) {
             return;
         }
         var source_feat = feat;
-        var verbose_edges = this.verbose_edges;
-        if (verbose_edges)  { console.log("EdgeMatcher.selectionAdded called"); }
 
         var source_subfeats = source_feat.get('subfeatures');
         if (! source_subfeats || source_subfeats.length === 0) {
             source_subfeats = [ source_feat ];
-        }
-
-        if( verbose_edges ) {
-            console.dir(source_subfeats);
         }
 
         var sourceid = source_feat.id();
@@ -92,16 +85,13 @@ var FeatureEdgeMatchManager = declare(null, {
         var qmin = source_feat.get('start');
         var qmax = source_feat.get("end");
 
-        if (verbose_edges)  { console.log("qmin = " + qmin + ", qmax = " + qmax); }
         var unmatchableTypes = this.unmatchableTypes;
         var unedgeableTypes = this.unedgeableTypes;
 
-        var ftracks = $("div.track").each( function(index, trackdiv)  {
+        var ftracks = $("div.track").each(function (index, trackdiv) {
             var target_track = trackdiv.track;
-            // only DraggableHTMLFeatures and descendants should have track.edge_matchin_enabled
+            // only DraggableHTMLFeatures and descendants should have track.edge_matching_enabled
             if (target_track && target_track.store && target_track.edge_matching_enabled)  {
-                if (verbose_edges)  {
-                    console.log("edge matching for: " + target_track.name);
                 }
 
                 var featureStore = target_track.store;
@@ -112,22 +102,17 @@ var FeatureEdgeMatchManager = declare(null, {
                 featureStore.getFeatures(query, function(target_feat, path) {
                     // some stores invoke the callback (with target_feat = undefined) even if no features meet query, so catching this case
                     if (! target_feat)  { return; }  
-                    if (verbose_edges)  {  console.log("========="); console.log("checking feature: "); console.log(target_feat); }
                     var target_subfeats = target_feat.get('subfeatures');
                     if (! target_subfeats) {
                         target_subfeats = [ target_feat ];
                     }
-                    if (verbose_edges)  { console.log(target_subfeats); }
 
                     if (source_subfeats instanceof Array &&
                         target_subfeats instanceof Array)  {
                         var tid = target_feat.id();
-                        if (verbose_edges)  {  console.log("found overlap"); console.log(target_feat); }
                         if (tid)  {
                             var tdiv = target_track.getFeatDiv(target_feat);
-                            if (verbose_edges)  { console.log(tdiv); }
                             if (tdiv)  {  // only keep going if target feature.uid already populated
-                                // console.log(rsubdivs);
                                 for (var i=0; i < source_subfeats.length; i++)  {
                                     var ssfeat = source_subfeats[i];
                                     var sstype = ssfeat.get('type');
@@ -154,10 +139,10 @@ var FeatureEdgeMatchManager = declare(null, {
                                                 if (tsubdiv)  {
                                                     var $tsubdiv = $(tsubdiv);
                                                     if (ssmin === tsmin)  {
-                                                        $(tsubdiv).addClass("left-edge-match");
+                                                        $tsubdiv.addClass("left-edge-match");
                                                     }
                                                     if (ssmax === tsmax)  {
-                                                        $(tsubdiv).addClass("right-edge-match");
+                                                        $tsubdiv.addClass("right-edge-match");
                                                     }
                                                 }
                                             }
@@ -168,9 +153,9 @@ var FeatureEdgeMatchManager = declare(null, {
                             }
                         }
                     }
-                }, function() {} );  // empty function for no-op on finishing
+                }, function() {});  // empty function for no-op on finishing
             }
-        } );
+        });
     }
 });
 
