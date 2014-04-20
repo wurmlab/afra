@@ -177,41 +177,36 @@ var EditTrack = declare(DraggableFeatureTrack,
             accept: ".selected-feature",
             drop: function(event, ui)  {
                 var features = track.browser.featSelectionManager.getSelectedFeatures();
+                var subfeatures = [];
                 for (var i in features)  {
-                    var top_level_feature = !features[i].parent();
-                    if (top_level_feature) {
-                        track.addTranscript(features[i]);
+                    var feature = features[i];
+                    if (feature.parent()) {
+                        console.log(feature.parent().filteredsubs);
+                        subfeatures = subfeatures.concat(
+                            _.select(feature.parent().children(), function (f) {
+                            if (f.get('start') >= feature.get('start') &&
+                                f.get('end') <= feature.get('end')) {
+                                return f;
+                            }
+                        }));
                     }
                     else {
-                        track.addExon(features[i]);
+                        console.log(feature.filteredsubs);
+                        subfeatures = subfeatures.concat(feature.get('subfeatures'));
                     }
                 }
+                track.addTranscript(subfeatures);
             }
         });
     },
 
-    addTranscript: function (transcript) {
-        var newTranscript = this.newFeature(transcript.children());
+    addTranscript: function (subfeatures) {
+        var newTranscript = this.newFeature(subfeatures);
         newTranscript.set('name', 'afra-' + newTranscript.get('seq_id') + '-mRNA-' + counter++);
         this.markNonCanonicalSites(newTranscript, function () {
             this.store.insert(newTranscript);
             this.changed();
         });
-    },
-
-    addExon: function (exon) {
-        // When an exon is dragged to the edit track, we need to copy the
-        // underlying CDS feature to the edit track as well.
-        var features_to_add = _.select(exon.parent().children(), function (f) {
-            if (f.get('start') >= exon.get('start') &&
-                f.get('end') <= exon.get('end')) {
-                return f;
-            }
-        });
-
-        var newTranscript = this.newFeature(features_to_add);
-        this.store.insert(newTranscript);
-        this.changed();
     },
 
     resizeExon: function (transcript, exon, leftDelta, rightDelta) {
