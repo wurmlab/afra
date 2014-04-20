@@ -92,6 +92,8 @@ var FeatureEdgeMatchManager = declare(null, {
             var target_track = trackdiv.track;
             // only DraggableHTMLFeatures and descendants should have track.edge_matching_enabled
             if (target_track && target_track.store && target_track.edge_matching_enabled)  {
+                if (target_track === rec.track) {
+                    return;
                 }
 
                 var featureStore = target_track.store;
@@ -123,6 +125,9 @@ var FeatureEdgeMatchManager = declare(null, {
 
                                     var ssmin = ssfeat.get('start');
                                     var ssmax = ssfeat.get('end');
+
+                                    var ssubdiv = rec.track.getFeatDiv(ssfeat);
+                                    var $ssubdiv = $(ssubdiv);
                                     for (var k=0; k < target_subfeats.length; k++)  {
                                         var tsfeat = target_subfeats[k];
                                         var tstype = tsfeat.get('type');
@@ -140,9 +145,11 @@ var FeatureEdgeMatchManager = declare(null, {
                                                     var $tsubdiv = $(tsubdiv);
                                                     if (ssmin === tsmin)  {
                                                         $tsubdiv.addClass("left-edge-match");
+                                                        $ssubdiv.addClass("left-edge-match");
                                                     }
                                                     if (ssmax === tsmax)  {
                                                         $tsubdiv.addClass("right-edge-match");
+                                                        $ssubdiv.addClass("right-edge-match");
                                                     }
                                                 }
                                             }
