@@ -295,14 +295,26 @@ var EditTrack = declare(DraggableFeatureTrack,
             var parent = feature.parent();
 
             if (parent) {
-                // delete selected exon from parent
-                var subfeatures = _.reject(parent.get('subfeatures'), function (f) {
-                    return f.id() == feature.id();
+                var subfeatures = parent.get('subfeatures');
+                var nExons = _.filter(subfeatures, function (f) {
+                    f.get('type') === 'exon';
                 });
-                var newTranscript = this.newFeature(subfeatures);
-                this.store.deleteFeatureById(parent.id());
-                this.store.insert(newTranscript);
-                this.changed();
+
+                if (nExons < 2) {
+                    // delete transcript
+                    this.store.deleteFeatureById(parent.id());
+                    this.changed();
+                }
+                else {
+                    // delete selected exon from parent
+                    var subfeatures = _.reject(parent.get('subfeatures'), function (f) {
+                        return f.id() == feature.id();
+                    });
+                    var newTranscript = this.newFeature(subfeatures);
+                    this.store.deleteFeatureById(parent.id());
+                    this.store.insert(newTranscript);
+                    this.changed();
+                }
             }
             else {
                 // delete transcript
