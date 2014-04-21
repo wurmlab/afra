@@ -18,6 +18,8 @@ return declare( null,
             "non_canonical_five_prime_splice_site"  : true,
             "non_canonical_three_prime_splice_site" : true,
             "non_canonical_splice_site" : true,
+            "non_canonical_translation_start_site" : true,
+            "non_canonical_translation_stop_site"  : true,
             "stop_codon_read_through" : true
         };
     },
