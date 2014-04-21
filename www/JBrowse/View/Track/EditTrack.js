@@ -181,7 +181,6 @@ var EditTrack = declare(DraggableFeatureTrack,
                 for (var i in features)  {
                     var feature = features[i];
                     if (feature.parent()) {
-                        console.log(feature.parent().filteredsubs);
                         subfeatures = subfeatures.concat(
                             _.select(feature.parent().children(), function (f) {
                             if (f.get('start') >= feature.get('start') &&
@@ -191,7 +190,6 @@ var EditTrack = declare(DraggableFeatureTrack,
                         }));
                     }
                     else {
-                        console.log(feature.filteredsubs);
                         subfeatures = subfeatures.concat(feature.get('subfeatures'));
                     }
                 }
@@ -732,6 +730,11 @@ var EditTrack = declare(DraggableFeatureTrack,
         // if it's a javascript array
         else if (from instanceof Array) {
             var track = this;
+            var types = {
+                'match_part': 'exon',
+                'exon'      : 'exon',
+                'CDS'       : 'CDS'
+            }
             var feature = new SimpleFeature({
                 data: {
                     type:   'transcript',
@@ -740,8 +743,18 @@ var EditTrack = declare(DraggableFeatureTrack,
                 }
             });
             var subfeatures = _.map(from, function (f) {
-                return track.newFeature(f, {parent: feature});
+                return track.newFeature(f, {parent: feature, type: types[f.get('type')]});
             });
+            var hasCDS = _.find(subfeatures, function (f) {
+                return f.get('type') === 'CDS';
+            });
+            if (!hasCDS) {
+                _.each(subfeatures, function (f) {
+                    if (f.get('type') === 'exon') {
+                        subfeatures.push(track.newFeature(f, {type: 'CDS'}));
+                    }
+                });
+            }
             subfeatures = this.sortAnnotationsByLocation(subfeatures);
             feature.set('start', subfeatures[0].get('start'));
             feature.set('end', subfeatures[subfeatures.length - 1].get('end'));
