@@ -264,24 +264,23 @@ var EditTrack = declare(DraggableFeatureTrack,
     },
 
     duplicateFeatures: function(feats)  {
-            var subfeaturesToAdd = [];
-            var parentFeature;
-            for (var i in feats)  {
-                    var feat = feats[i];
-                    var is_subfeature = !!feat.parent();
-                    if (is_subfeature) {
-                            subfeaturesToAdd = subfeaturesToAdd.concat(_.select(feat.parent().children(), function (f) {
-                                return (f.get('start') >= feat.get('start') && f.get('end') <= feat.get('end'));
-                            }));
-                    }
-                    else {
-                        this.addTranscript(feats[i]);
-                    }
+        var subfeaturesToAdd = [];
+        var parentFeature;
+        for (var i in feats)  {
+            var feat = feats[i];
+            var is_subfeature = !!feat.parent();
+            if (is_subfeature) {
+                subfeaturesToAdd = subfeaturesToAdd.concat(_.select(feat.parent().children(), function (f) {
+                    return (f.get('start') >= feat.get('start') && f.get('end') <= feat.get('end'));
+                }));
             }
-            if (subfeaturesToAdd.length > 0) {
-                var newTranscript = this.newFeature(subfeaturesToAdd);
-                this.addTranscript(newTranscript);
+            else {
+                this.addTranscript(feats[i]);
             }
+        }
+        if (subfeaturesToAdd.length > 0) {
+            this.addTranscript(subfeaturesToAdd);
+        }
     },
 
     deleteSelectedFeatures: function () {
