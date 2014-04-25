@@ -794,7 +794,7 @@ var EditTrack = declare(DraggableFeatureTrack,
                 cds_ranges.push([subfeature.get('start') - offset, subfeature.get('end') - offset]);
             }
         }
-        var strand = transcript.get('strand')
+        var strand = transcript.get('strand');
         var nonCanonicalSpliceSites;
         if (strand === 1) {
             nonCanonicalSpliceSites = Bionode.findNonCanonicalSplices(sequence, cds_ranges);
@@ -810,7 +810,9 @@ var EditTrack = declare(DraggableFeatureTrack,
                 data: {
                     start: non_canonical_splice_site + offset,
                     end:   non_canonical_splice_site + offset + 1,
-                    type:  'non_canonical_splice_site'
+                    type:  'non_canonical_splice_site',
+                    seq_id: transcript.get('seq_id'),
+                    strand: transcript.get('strand')
                 },
                 parent: transcript
             }));
@@ -832,7 +834,9 @@ var EditTrack = declare(DraggableFeatureTrack,
                 data: {
                     start: translationStart[0],
                     end:   translationStart[0] + 3,
-                    type:  'non_canonical_translation_start_site'
+                    type:  'non_canonical_translation_start_site',
+                    seq_id: transcript.get('seq_id'),
+                    strand: transcript.get('strand')
                 },
                 parent: transcript
             }));
@@ -854,7 +858,9 @@ var EditTrack = declare(DraggableFeatureTrack,
                 data: {
                     start: translationStop[0],
                     end:   translationStop[0] + 3,
-                    type:  'non_canonical_translation_stop_site'
+                    type:  'non_canonical_translation_stop_site',
+                    seq_id: transcript.get('seq_id'),
+                    strand: transcript.get('strand')
                 },
                 parent: transcript
             }));
