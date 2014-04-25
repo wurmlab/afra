@@ -55,6 +55,9 @@ define(['JBrowse/Browser']
         };
 
         var put = function (id, submission) {
+            _.each(_.values(submission), function (f) {
+                f.set('ref', f.get('seq_id'));
+            });
             var data = JSON.stringify(submission, function (key, value) {
                 if (key === '_parent' && value) {
                     return value.id();
