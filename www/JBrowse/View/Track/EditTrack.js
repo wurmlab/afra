@@ -494,6 +494,7 @@ var EditTrack = declare(DraggableFeatureTrack,
     },
 
     flipStrand: function(features) {
+        var track = this;
         for (var i in features)  {
             var feature  = features[i];
             if (feature.parent()) {
@@ -501,32 +502,18 @@ var EditTrack = declare(DraggableFeatureTrack,
                 return;
             }
 
-            var new_transcript = new SimpleFeature({
-                id:   feature.id(),
-                data: {
-                    name:   feature.get('name'),
-                    ref:    feature.get('seq_id') || feature.get('ref'),
-                    start:  feature.get('start'),
-                    end:    feature.get('end'),
-                    strand: feature.get('strand') * -1,
-                    type:   feature.get('type')
-                }
-            });
             var subfeatures = _.map(feature.children(), function (f) {
-                return new SimpleFeature({
-                    data: {
-                        name:   f.get('name'),
-                        ref:    f.get('seq_id') || feature.get('ref'),
-                        start:  f.get('start'),
-                        end:    f.get('end'),
-                        strand: f.get('strand') * -1,
-                        type:   f.get('type')
-                    }
+                return track.newFeature(f, {
+                    strand: f.get('strand') * -1,
                 });
             });
-            new_transcript.set('subfeatures', subfeatures);
-            this.store.replace(new_transcript);
-            this.changed();
+            var newTranscript = this.newFeature(subfeatures);
+            newTranscript.set('name', feature.get('name'));
+            this.markNonCanonicalSites(newTranscript, function () {
+                this.store.deleteFeatureById(feature.id());
+                this.store.insert(newTranscript);
+                this.changed();
+            });
         }
     },
 
