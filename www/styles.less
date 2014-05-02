@@ -74,7 +74,25 @@ html, body, .content {
 }
 
 .navbar-brand {
-  font-size: floor(@font-size-base * 2.15);
+  font-size: floor(@font-size-base * 2.15);   // ~30px
+  padding-right: 5px;
+}
+
+.navbar-brand-attribution {
+  float: left;
+  color: @navbar-inverse-link-color;
+  font-size: floor(@font-size-base * 0.75);   // ~10px
+  padding-top: floor(@font-size-base * 1.72); // ~24px
+}
+
+.navbar-brand-attribution > a {
+  color: @navbar-inverse-link-color;
+  &:hover,
+  &:focus {
+    text-decoration: none;
+    color: @navbar-inverse-link-hover-color;
+    background-color: @navbar-inverse-link-hover-bg;
+  }
 }
 
 .navbar .container-full {
@@ -92,17 +110,6 @@ article {
 
 article > section {
   margin-bottom: 30px;
-}
-
-.navbar-brand {
-  padding-right: 5px;
-}
-
-.navbar-brand-attribution {
-  float: left;
-  color: #999999;
-  font-size: 10px;
-  padding-top: 24px;
 }
 
 @import 'styles/about';
