@@ -564,32 +564,31 @@ var EditTrack = declare(DraggableFeatureTrack,
         var feature = this.selectionManager.getSelectedFeatures()[0];
         this.browser.getStore('refseqs', dojo.hitch(this, function (refSeqStore) {
             if (refSeqStore) {
-                var seq;
                 refSeqStore.getFeatures(
-                    {ref: feature.get('ref'), start: feature.get('start'), end: feature.get('end')},
+                    {ref: feature.get('seq_id'), start: feature.get('start'), end: feature.get('end')},
                     dojo.hitch(this, function (refSeqFeature) {
-                        seq = refSeqFeature.get('seq');
+                        var seq = refSeqFeature.get('seq');
+                        var region = {
+                            ref:   feature.get('seq_id'),
+                            start: feature.get('start'),
+                            end:   feature.get('end'),
+                            strand: feature.get('strand'),
+                            type: feature.get('type')
+                        };
+
+                        if (feature.get('strand') == -1) {
+                            seq = Util.reverseComplement(seq)
+                        }
+
+                        var fasta = '>' //+ f.get('label')
+                        + Util.assembleLocString(region)
+                        + (region.type ? ' '+region.type : '')
+                        + ' '+(region.end - region.start) + 'bp'
+                        + "\n"
+                        + seq;
+                        $('#sequence pre').html(fasta).data('sequence_id', feature.id());
+                        $('#sequence').modal();
                     }));
-                var region = {
-                    ref:   feature.get('ref'),
-                    start: feature.get('start'),
-                    end:   feature.get('end'),
-                    strand: feature.get('strand'),
-                    type: feature.get('type')
-                };
-
-                if (feature.get('strand') == -1) {
-                    seq = Util.reverseComplement(seq)
-                }
-
-                var fasta = '>' //+ f.get('label')
-                + Util.assembleLocString(region)
-                + (region.type ? ' '+region.type : '')
-                + ' '+(region.end - region.start) + 'bp'
-                + "\n"
-                + seq;
-                $('#sequence pre').html(fasta).data('sequence_id', feature.id());
-                $('#sequence').modal();
             }
         }));
     },
@@ -598,36 +597,43 @@ var EditTrack = declare(DraggableFeatureTrack,
         var feature = this.selectionManager.getSelectedFeatures()[0];
         this.browser.getStore('refseqs', dojo.hitch(this, function (refSeqStore) {
             if (refSeqStore) {
-                var seq = [];
-                _.each(feature.children(), function (f) {
-                    if (f.get('type') === 'exon') {
-                        refSeqStore.getFeatures(
-                            {ref: f.get('ref'), start: f.get('start'), end: f.get('end')},
-                            dojo.hitch(this, function (refSeqFeature) {
-                                seq.push(refSeqFeature.get('seq'));
-                            }));
-                    }
-                });
-                var region = {
-                    ref:   feature.get('ref'),
-                    start: feature.get('start'),
-                    end:   feature.get('end'),
-                    strand: feature.get('strand'),
-                    type: feature.get('type')
-                };
+                refSeqStore.getFeatures(
+                    {ref: feature.get('seq_id'), start: feature.get('start'), end: feature.get('end')},
+                    dojo.hitch(this, function (refSeqFeature) {
+                        var seq = refSeqFeature.get('seq')
+                            , offset = refSeqFeature.get('start');
 
-                if (feature.get('strand') == -1) {
-                    seq = Util.reverseComplement(seq)
-                }
+                        var cdna = [];
+                        _.each(feature.children(), function (f) {
+                            if (f.get('type') === 'exon') {
+                                var start = f.get('start') - offset
+                                    , end = f.get('end') - offset;
+                                cdna.push(seq.slice(start, end));
+                            }
+                        });
+                        cdna = cdna.join('');
 
-                var fasta = '>' //+ f.get('label')
-                + Util.assembleLocString(region)
-                + (region.type ? ' '+region.type : '')
-                + ' '+(region.end - region.start) + 'bp'
-                + "\n"
-                + seq.join();
-                $('#sequence pre').html(fasta).data('id', feature.id());
-                $('#sequence').modal();
+                        var region = {
+                            ref:   feature.get('ref'),
+                            start: feature.get('start'),
+                            end:   feature.get('end'),
+                            strand: feature.get('strand'),
+                            type: feature.get('type')
+                        };
+
+                        if (feature.get('strand') == -1) {
+                            cdna = Util.reverseComplement(cdna);
+                        }
+
+                        var fasta = '>' //+ f.get('label')
+                        + Util.assembleLocString(region)
+                        + (region.type ? ' '+region.type : '')
+                        + ' '+(region.end - region.start) + 'bp'
+                        + "\n"
+                        + cdna;
+                        $('#sequence pre').html(fasta).data('id', feature.id());
+                        $('#sequence').modal();
+                    }));
             }
         }));
     },
@@ -636,36 +642,43 @@ var EditTrack = declare(DraggableFeatureTrack,
         var feature = this.selectionManager.getSelectedFeatures()[0];
         this.browser.getStore('refseqs', dojo.hitch(this, function (refSeqStore) {
             if (refSeqStore) {
-                var seq = [];
-                _.each(feature.children(), function (f) {
-                    if (f.get('type') === 'CDS') {
-                        refSeqStore.getFeatures(
-                            {ref: f.get('ref'), start: f.get('start'), end: f.get('end')},
-                            dojo.hitch(this, function (refSeqFeature) {
-                                seq.push(refSeqFeature.get('seq'));
-                            }));
-                    }
-                });
-                var region = {
-                    ref:   feature.get('ref'),
-                    start: feature.get('start'),
-                    end:   feature.get('end'),
-                    strand: feature.get('strand'),
-                    type: feature.get('type')
-                };
+                refSeqStore.getFeatures(
+                    {ref: feature.get('seq_id'), start: feature.get('start'), end: feature.get('end')},
+                    dojo.hitch(this, function (refSeqFeature) {
+                        var seq = refSeqFeature.get('seq')
+                            , offset = refSeqFeature.get('start');
 
-                if (feature.get('strand') == -1) {
-                    seq = Util.reverseComplement(seq)
-                }
+                        var cds = [];
+                        _.each(feature.children(), function (f) {
+                            if (f.get('type') === 'CDS') {
+                                var start = f.get('start') - offset
+                                    , end = f.get('end') - offset;
+                                cds.push(seq.slice(start, end));
+                            }
+                        });
+                        cds = cds.join('');
 
-                var fasta = '>' //+ f.get('label')
-                + Util.assembleLocString(region)
-                + (region.type ? ' '+region.type : '')
-                + ' '+(region.end - region.start) + 'bp'
-                + "\n"
-                + seq.join();
-                $('#sequence pre').html(fasta).data('id', feature.id());
-                $('#sequence').modal();
+                        var region = {
+                            ref:   feature.get('ref'),
+                            start: feature.get('start'),
+                            end:   feature.get('end'),
+                            strand: feature.get('strand'),
+                            type: feature.get('type')
+                        };
+
+                        if (feature.get('strand') == -1) {
+                            cds = Util.reverseComplement(cds);
+                        }
+
+                        var fasta = '>' //+ f.get('label')
+                        + Util.assembleLocString(region)
+                        + (region.type ? ' '+region.type : '')
+                        + ' '+(region.end - region.start) + 'bp'
+                        + "\n"
+                        + cds;
+                        $('#sequence pre').html(fasta).data('id', feature.id());
+                        $('#sequence').modal();
+                    }));
             }
         }));
     },
@@ -674,46 +687,51 @@ var EditTrack = declare(DraggableFeatureTrack,
         var feature = this.selectionManager.getSelectedFeatures()[0];
         this.browser.getStore('refseqs', dojo.hitch(this, function (refSeqStore) {
             if (refSeqStore) {
-                var seq = [];
-                _.each(feature.children(), function (f) {
-                    if (f.get('type') === 'CDS') {
-                        refSeqStore.getFeatures(
-                            {ref: f.get('ref'), start: f.get('start'), end: f.get('end')},
-                            dojo.hitch(this, function (refSeqFeature) {
-                                seq.push(refSeqFeature.get('seq'));
-                            }));
-                    }
-                });
-                seq = seq.join('');
+                refSeqStore.getFeatures(
+                    {ref: feature.get('seq_id'), start: feature.get('start'), end: feature.get('end')},
+                    dojo.hitch(this, function (refSeqFeature) {
+                        var seq = refSeqFeature.get('seq')
+                            , offset = refSeqFeature.get('start');
 
-                var region = {
-                    ref:   feature.get('ref'),
-                    start: feature.get('start'),
-                    end:   feature.get('end'),
-                    strand: feature.get('strand'),
-                    type: feature.get('type')
-                };
+                        var cds = [];
+                        _.each(feature.children(), function (f) {
+                            if (f.get('type') === 'CDS') {
+                                var start = f.get('start') - offset
+                                    , end = f.get('end') - offset;
+                                cds.push(seq.slice(start, end));
+                            }
+                        });
+                        cds = cds.join('');
 
-                if (feature.get('strand') == -1) {
-                    seq = Util.reverseComplement(seq)
-                }
+                        if (feature.get('strand') == -1) {
+                            cds = Util.reverseComplement(cds)
+                        }
 
-                var protein = seq.replace(/(...)/gi,  function(codon) {
-                    var aa = CodonTable[codon];
-                    if (!aa) {
-                        aa = "?";
-                    }
-                    return aa;
-                });
+                        var protein = cds.replace(/(...)/gi,  function(codon) {
+                            var aa = CodonTable[codon];
+                            if (!aa) {
+                                aa = "?";
+                            }
+                            return aa;
+                        });
 
-                var fasta = '>' //+ f.get('label')
-                + Util.assembleLocString(region)
-                + (region.type ? ' '+region.type : '')
-                + ' '+(region.end - region.start) + 'bp'
-                + "\n"
-                + protein;
-                $('#sequence pre').html(fasta).data('id', feature.id());
-                $('#sequence').modal();
+                        var region = {
+                            ref:   feature.get('ref'),
+                            start: feature.get('start'),
+                            end:   feature.get('end'),
+                            strand: feature.get('strand'),
+                            type: feature.get('type')
+                        };
+
+                        var fasta = '>' //+ f.get('label')
+                        + Util.assembleLocString(region)
+                        + (region.type ? ' '+region.type : '')
+                        + ' '+(region.end - region.start) + 'bp'
+                        + "\n"
+                        + protein;
+                        $('#sequence pre').html(fasta).data('id', feature.id());
+                        $('#sequence').modal();
+                    }));
             }
         }));
     },
@@ -925,6 +943,7 @@ var EditTrack = declare(DraggableFeatureTrack,
             });
             translationStopCoordinate = lastCDS.get('start');
             translationStopSequence   = Util.complement(sequence).slice(translationStopCoordinate - offset, translationStopCoordinate - offset + 3);
+            translationStopSequence   = Util.reverse(translationStopSequence);
         }
         return [translationStopCoordinate, translationStopSequence];
     },
