@@ -593,6 +593,37 @@ var EditTrack = declare(DraggableFeatureTrack,
                         }
                         //console.log(orfStart, orfStop);
                         //console.log(transcript.get('start'), transcript.get('end'), transcript.get('strand'));
+
+                        var subfeatures = _.reject(transcript.get('subfeatures'), function (f) {
+                            return f.get('type') === 'CDS';
+                        });
+
+                        _.each(subfeatures, function (f) {
+                            if (f.get('type') === 'exon') {
+                                if (f.get('start') >= orfStart && f.get('end') <= orfEnd) {
+                                    // exon containing CDS only
+                                    subfeatures.push(track.newFeature(f, {type: 'CDS'}));
+                                }
+                                else if (f.get('start') < orfStart && f.get('end') > orfStart) {
+                                    // exon with a 5' UTR
+                                    subfeatures.push(track.newFeature(f, {type: 'CDS', start: orfStart}));
+                                }
+                                else if (f.get('start') < orfStop && f.get('end') > orfStop) {
+                                    // exon with a 3' UTR
+                                    subfeatures.push(track.newFeature(f, {type: 'CDS', end: orfStop}));
+                                }
+                                else if (f.get('start') < orfStop && f.get('end') <= orfStop) {
+                                    // this exon contains the ORF - will never happen in practice
+                                    subfeatures.push(track.newFeature(f, {type: 'CDS', start: orfStart, end: orfStop}));
+                                }
+                                else {
+                                    // exon lies completely out of UTR
+                                    // do nothing
+                                }
+                            }
+                        });
+
+                        this.addTranscript(subfeatures);
                     }));
             }
         }));
