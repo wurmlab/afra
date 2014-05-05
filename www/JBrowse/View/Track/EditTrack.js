@@ -517,23 +517,70 @@ var EditTrack = declare(DraggableFeatureTrack,
         }
     },
 
-    setLongestORF: function()  {
-        var selected = this.selectionManager.getSelection();
+    setLongestORFForSelectedFeatures: function () {
+        var selection = this.selectionManager.getSelectedFeatures();
         this.selectionManager.clearSelection();
-        this.setLongestORFForSelectedFeatures(selected);
+        for (var i in selection)  {
+            var annot = EditTrack.getTopLevelAnnotation(selection[i]);
+            this.setLongestORF(annot);
+        }
     },
 
-    setLongestORFForSelectedFeatures: function(selection) {
-        var track = this;
-        for (var i in selection)  {
-            var annot = EditTrack.getTopLevelAnnotation(selection[i].feature);
-	    var atrack = selection[i].track;
-            var uniqueName = annot.id();
-            // just checking to ensure that all features in selection are from this track
-            if (atrack === track)  {
-                var trackdiv = track.div;
+    setLongestORF: function (transcript) {
+        var stopCodons = ['tga', 'tag', 'taa', 'TGA', 'TAG', 'TAA'];
+        this.browser.getStore('refseqs', dojo.hitch(this, function (refSeqStore) {
+            if (refSeqStore) {
+                refSeqStore.getFeatures(
+                    {ref: transcript.get('seq_id'), start: transcript.get('start'), end: transcript.get('end')},
+                    dojo.hitch(this, function (refSeqFeature) {
+                        var seq = refSeqFeature.get('seq')
+                            , offset = refSeqFeature.get('start');
+
+                        var cdna = [];
+                        _.each(transcript.children(), function (f) {
+                            if (f.get('type') === 'exon') {
+                                var start = f.get('start') - offset
+                                    , end = f.get('end') - offset;
+                                cdna.push(seq.slice(start, end));
+                            }
+                        });
+                        cdna = cdna.join('');
+
+                        if (transcript.get('strand') == -1) {
+                            cdna = Util.reverseComplement(cdna);
+                        }
+
+                        var orfStart, orfStop, longestORF = 0;
+                        var startIndex = cdna.indexOf('ATG');
+                        while (startIndex >= 0) {
+                            var runningORF = 0;
+                            var readingFrame = cdna.slice(startIndex);
+                            _.each(readingFrame.match(/.{1,3}/g), function(codon) {
+                                runningORF += 3;
+                                if (stopCodons.indexOf(codon) !== -1) {
+                                    return;
+                                }
+                            });
+                            if (runningORF > longestORF) {
+                                orfStart   = startIndex;
+                                orfStop    = orfStart + runningORF;
+                                longestORF = runningORF;
+                            }
+                            startIndex = cdna.indexOf('ATG', startIndex + 1);
+                        }
+
+                        //if (transcript.get('strand') == -1) {
+                            //orfStart = transcript.get('end') - orfStart;
+                            //orfStop  = transcript.get('end') - orfStop;
+                        //}
+                        console.log(cdna.length);
+                        console.log(orfStart);
+                        console.log(cdna.slice(orfStart, 3));
+                        console.log(orfStop);
+                        console.log(cdna.slice(orfStop - 3));
+                    }));
             }
-        }
+        }));
     },
 
     showSequenceDialog: function () {
