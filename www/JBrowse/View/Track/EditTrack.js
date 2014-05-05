@@ -536,12 +536,23 @@ var EditTrack = declare(DraggableFeatureTrack,
                         var seq = refSeqFeature.get('seq')
                             , offset = refSeqFeature.get('start');
 
-                        var cdna = [];
+                        var cdna   = [];
+                        var island = []; // coordinate range on mRNA (spliced) mapped to offset from start of pre-mRNA (non-spliced)
+                        var lastEnd, i = 0;
                         _.each(transcript.children(), function (f) {
                             if (f.get('type') === 'exon') {
                                 var start = f.get('start') - offset
                                     , end = f.get('end') - offset;
                                 cdna.push(seq.slice(start, end));
+
+                                if (!lastEnd) { // first exon
+                                    island.push([end - start, 0]);
+                                }
+                                else { // second exon onwards
+                                    island.push([island[i - 1][0] + end - start, island[i - 1][1] + start - lastEnd])
+                                }
+                                lastEnd = end;
+                                i++;
                             }
                         });
                         cdna = cdna.join('');
@@ -569,15 +580,19 @@ var EditTrack = declare(DraggableFeatureTrack,
                             startIndex = cdna.indexOf('ATG', startIndex + 1);
                         }
 
-                        //if (transcript.get('strand') == -1) {
-                            //orfStart = transcript.get('end') - orfStart;
-                            //orfStop  = transcript.get('end') - orfStop;
-                        //}
-                        console.log(cdna.length);
-                        console.log(orfStart);
-                        console.log(cdna.slice(orfStart, 3));
-                        console.log(orfStop);
-                        console.log(cdna.slice(orfStop - 3));
+                        //console.log(island);
+                        //console.log(orfStart, orfStop);
+                        orfStart = orfStart + offset + _.find(island, function (i) { if (i[0] >= orfStart) return i; })[1];
+                        orfStop = orfStop + offset + _.find(island, function (i) { if (i[0] >= orfStop) return i; })[1];
+
+                        if (transcript.get('strand') == -1) {
+                            // simply swap start and stop
+                            orfStart = orfStart + orfStop;
+                            orfStop  = orfStart - orfStop;
+                            orfStart = orfStart - orfStop;
+                        }
+                        //console.log(orfStart, orfStop);
+                        //console.log(transcript.get('start'), transcript.get('end'), transcript.get('strand'));
                     }));
             }
         }));
