@@ -218,9 +218,10 @@ return declare( [BlockBased, ExportMixin],
         var charWidth = 100/blockLength+"%";
         for (var i=0; i < aaResidues.length; i++) {
             var base = document.createElement('span');
-            base.className = 'acid';
+            var aa = aaResidues.charAt(i)
+            base.className = 'acid' + ' acid_' + aa;
             base.style.width = charWidth;
-            base.innerHTML = aaResidues.charAt(i);
+            base.innerHTML = aa;
             container.appendChild(base);
         }
         return container;
