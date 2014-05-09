@@ -414,49 +414,27 @@ var EditTrack = declare(DraggableFeatureTrack,
         this.changed();
     },
 
-    setTranslationStart: function(event)  {
+    setTranslationStartForSelectedTranscripts: function () {
         var selected = this.selectionManager.getSelectedFeatures()[0];
         var transcript = selected.parent() ? selected.parent() : selected;
         var coordinate = this.gview.absXtoBp($('#contextmenu').position().left);
         this.selectionManager.clearSelection();
-        if (transcript.get('strand') == 1) {
-            this.setTranslationStartInCDS(transcript, coordinate);
-        }
-        else if (transcript.get('strand') == -1) {
-            this.setTranslationStopInCDS(transcript, coordinate);
-        }
+        this.setTranslationStart(transcript, coordinate);
     },
 
-    setTranslationStop: function(event)  {
+    setTranslationStopForSelectedTranscripts: function () {
         var selected = this.selectionManager.getSelectedFeatures()[0];
         var transcript = selected.parent() ? selected.parent() : selected;
         var coordinate = this.gview.absXtoBp($('#contextmenu').position().left);
         this.selectionManager.clearSelection();
-        if (transcript.get('strand') == 1) {
-            this.setTranslationStopInCDS(transcript, coordinate);
-        }
-        else if (transcript.get('strand') == -1) {
-            this.setTranslationStartInCDS(transcript, coordinate);
-        }
+        this.setTranslationStop(transcript, coordinate);
     },
 
-    setTranslationStartInCDS: function(transcript, coordinate) {
-        var subfeatures = transcript.get('subfeatures');
-        var cds = _.find(subfeatures, function (f) {
-            return f.get('type') === 'CDS' &&
-                f.get('start') < coordinate &&
-                f.get('end') > coordinate;
-        });
-        cds = this.newFeature(cds, {
-            start: coordinate
-        });
+    setTranslationStart: function(transcript, coordinate) {
+        var cdsStart = coordinate;
+        var cdsStop  = this.getWholeCDSCoordinate(transcript)[1];
 
-        // reject all cds before coordinate
-        subfeatures = _.reject(subfeatures, function (f) {
-            return f.get('type') === 'CDS' && f.get('start') < coordinate;
-        });
-        subfeatures.push(cds);
-        var newTranscript = this.newFeature(subfeatures);
+        var newTranscript = this.insertCDS(transcript, cdsStart, cdsStop);
         this.markNonCanonicalSites(newTranscript, function () {
             this.store.deleteFeatureById(transcript.id());
             this.store.insert(newTranscript);
@@ -464,23 +442,11 @@ var EditTrack = declare(DraggableFeatureTrack,
         });
     },
 
-    setTranslationStopInCDS: function(transcript, coordinate) {
-        var subfeatures = transcript.get('subfeatures');
-        var cds = _.find(subfeatures, function (f) {
-            return f.get('type') === 'CDS' &&
-                f.get('start') < coordinate &&
-                f.get('end') > coordinate;
-        });
-        cds = this.newFeature(cds, {
-            end: coordinate
-        });
+    setTranslationStop: function(transcript, coordinate) {
+        var cdsStart = this.getWholeCDSCoordinate(transcript)[0];
+        var cdsStop  = coordinate;
 
-        // reject all cds before coordinate
-        subfeatures = _.reject(subfeatures, function (f) {
-            return f.get('type') === 'CDS' && f.get('end') > coordinate;
-        });
-        subfeatures.push(cds);
-        var newTranscript = this.newFeature(subfeatures);
+        var newTranscript = this.insertCDS(transcript, cdsStart, cdsStop);
         this.markNonCanonicalSites(newTranscript, function () {
             this.store.deleteFeatureById(transcript.id());
             this.store.insert(newTranscript);
@@ -587,9 +553,9 @@ var EditTrack = declare(DraggableFeatureTrack,
 
                         if (transcript.get('strand') == -1) {
                             // simply swap start and stop
-                            orfStart = orfStart + orfStop;
-                            orfStop  = orfStart - orfStop;
-                            orfStart = orfStart - orfStop;
+                            var temp = orfStart;
+                            orfStart = orfStop;
+                            orfStop  = temp;
                         }
                         //console.log(orfStart, orfStop);
                         //console.log(transcript.get('start'), transcript.get('end'), transcript.get('strand'));
@@ -844,6 +810,26 @@ var EditTrack = declare(DraggableFeatureTrack,
         }
     },
 
+    getWholeCDSCoordinate: function (transcript) {
+        var cdsStart, cdsStop;
+        var cdsFeatures = _.select(transcript.get('subfeatures'), function (f) {
+            return f.get('type') === 'CDS';
+        });
+
+        // we know the subfeatures are sorted by their coordinates, so
+        var cdsStart = cdsFeatures[0].get('start');
+        var cdsStop  = cdsFeatures[cdsFeatures.length - 1].get('end')
+
+        if (transcript.get('strand') == -1) {
+            // simply swap start and stop
+            var temp = cdsStart;
+            cdsStart = cdsStop;
+            cdsStop  = temp;
+        }
+
+        return [cdsStart, cdsStop];
+    },
+
     // Insert CDS into a transcript replacing the old one if needed.
     insertCDS: function (transcript, cdsStart, cdsStop) {
         // reject existing CDS, if any
@@ -852,9 +838,16 @@ var EditTrack = declare(DraggableFeatureTrack,
         });
 
         // insert new CDS
-        _.each(subfeatures, function (f) {
+        console.log(cdsStart, cdsStop);
+        if (transcript.get('strand') == -1) {
+            // simply swap start and stop
+            var temp = cdsStart;
+            cdsStart = cdsStop;
+            cdsStop  = temp;
+        }
+        _.each(subfeatures, dojo.hitch(this, function (f) {
             if (f.get('type') === 'exon') {
-                if (f.get('start') >= cdsStart && f.get('end') <= orfEnd) {
+                if (f.get('start') >= cdsStart && f.get('end') <= cdsStop) {
                     // exon containing CDS only
                     subfeatures.push(this.newFeature(f, {type: 'CDS'}));
                 }
@@ -867,7 +860,7 @@ var EditTrack = declare(DraggableFeatureTrack,
                     subfeatures.push(this.newFeature(f, {type: 'CDS', end: cdsStop}));
                 }
                 else if (f.get('start') < cdsStop && f.get('end') <= cdsStop) {
-                    // this exon contains the ORF - will never happen in practice
+                    // this exon contains the entire CDS - will never happen in practice
                     subfeatures.push(this.newFeature(f, {type: 'CDS', start: cdsStart, end: cdsStop}));
                 }
                 else {
@@ -875,7 +868,7 @@ var EditTrack = declare(DraggableFeatureTrack,
                     // do nothing
                 }
             }
-        });
+        }));
 
         // return a new transcript
         return this.newFeature(subfeatures);
