@@ -300,10 +300,10 @@ var EditTrack = declare(DraggableFeatureTrack,
             if (parent) {
                 var subfeatures = parent.get('subfeatures');
                 var nExons = _.filter(subfeatures, function (f) {
-                    f.get('type') === 'exon';
+                    return f.get('type') === 'exon';
                 });
 
-                if (nExons < 2) {
+                if (nExons.length < 2) {
                     // delete transcript
                     this.store.deleteFeatureById(parent.id());
                     this.changed();
