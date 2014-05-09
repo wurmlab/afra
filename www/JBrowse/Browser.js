@@ -96,6 +96,7 @@ return declare(FeatureFiltererMixin, {
 
 constructor: function(params) {
     this.globalKeyboardShortcuts = {};
+    this.globalKeyboardShortcutsPreventDefault = {};
 
     this.config = params;
 
@@ -330,7 +331,7 @@ initView: function() {
                 this.view.onResize();
 
                 // make our global keyboard shortcut handler
-                on( document.body, 'keypress', dojo.hitch( this, 'globalKeyHandler' ));
+                on(document.body, 'keydown', dojo.hitch(this, 'globalKeyHandler'));
 
                 // configure our event routing
                 this._initEventRouting();
@@ -1313,16 +1314,17 @@ showTracks: function( trackNames ) {
  * @param keychar the character of the key that is typed
  * @param [...] additional arguments passed to dojo.hitch for making the handler
  */
-setGlobalKeyboardShortcut: function( keychar ) {
+setGlobalKeyboardShortcut: function (keychar) {
     // warn if redefining
-    if( this.globalKeyboardShortcuts[ keychar ] )
+    if (this.globalKeyboardShortcuts[keychar])
         console.warn("WARNING: JBrowse global keyboard shortcut '"+keychar+"' redefined");
 
     // make the wrapped handler func
-    var func = dojo.hitch.apply( dojo, Array.prototype.slice.call( arguments, 1 ) );
+    var func = dojo.hitch.apply(dojo, Array.prototype.slice.call(arguments, 1));
 
     // remember it
-    this.globalKeyboardShortcuts[ keychar ] = func;
+    this.globalKeyboardShortcuts[keychar] = func;
+    this.globalKeyboardShortcutsPreventDefault[keychar] = !!arguments[3];
 },
 
 /**
@@ -1330,13 +1332,16 @@ setGlobalKeyboardShortcut: function( keychar ) {
  */
 globalKeyHandler: function( evt ) {
     // if some digit widget is focused, don't process any global keyboard shortcuts
-    if( dijitFocus.curNode )
+    if (dijitFocus.curNode)
         return;
 
-    var shortcut = this.globalKeyboardShortcuts[ evt.keyChar || String.fromCharCode( evt.charCode || evt.keyCode ) ];
-    if( shortcut ) {
+    var shortcut = this.globalKeyboardShortcuts[evt.keyCode || String.fromCharCode(evt.charCode || evt.keyCode)];
+    if (shortcut) {
         shortcut.call( this );
         evt.stopPropagation();
+        if (this.globalKeyboardShortcutsPreventDefault[evt.keyCode]) {
+            evt.preventDefault();
+        }
     }
 },
 
