@@ -594,36 +594,8 @@ var EditTrack = declare(DraggableFeatureTrack,
                         //console.log(orfStart, orfStop);
                         //console.log(transcript.get('start'), transcript.get('end'), transcript.get('strand'));
 
-                        var subfeatures = _.reject(transcript.get('subfeatures'), function (f) {
-                            return f.get('type') === 'CDS';
-                        });
-
-                        _.each(subfeatures, function (f) {
-                            if (f.get('type') === 'exon') {
-                                if (f.get('start') >= orfStart && f.get('end') <= orfEnd) {
-                                    // exon containing CDS only
-                                    subfeatures.push(track.newFeature(f, {type: 'CDS'}));
-                                }
-                                else if (f.get('start') < orfStart && f.get('end') > orfStart) {
-                                    // exon with a 5' UTR
-                                    subfeatures.push(track.newFeature(f, {type: 'CDS', start: orfStart}));
-                                }
-                                else if (f.get('start') < orfStop && f.get('end') > orfStop) {
-                                    // exon with a 3' UTR
-                                    subfeatures.push(track.newFeature(f, {type: 'CDS', end: orfStop}));
-                                }
-                                else if (f.get('start') < orfStop && f.get('end') <= orfStop) {
-                                    // this exon contains the ORF - will never happen in practice
-                                    subfeatures.push(track.newFeature(f, {type: 'CDS', start: orfStart, end: orfStop}));
-                                }
-                                else {
-                                    // exon lies completely out of UTR
-                                    // do nothing
-                                }
-                            }
-                        });
-
-                        this.addTranscript(subfeatures);
+                        var newTranscript = this.insertCDS(transcript, orfStart, orfStop);
+                        this.addTranscript(newTranscript.get('subfeatures'));
                     }));
             }
         }));
@@ -870,6 +842,43 @@ var EditTrack = declare(DraggableFeatureTrack,
             feature.set('subfeatures', subfeatures);
             return feature;
         }
+    },
+
+    // Insert CDS into a transcript replacing the old one if needed.
+    insertCDS: function (transcript, cdsStart, cdsStop) {
+        // reject existing CDS, if any
+        var subfeatures = _.reject(transcript.get('subfeatures'), function (f) {
+            return f.get('type') === 'CDS';
+        });
+
+        // insert new CDS
+        _.each(subfeatures, function (f) {
+            if (f.get('type') === 'exon') {
+                if (f.get('start') >= cdsStart && f.get('end') <= orfEnd) {
+                    // exon containing CDS only
+                    subfeatures.push(this.newFeature(f, {type: 'CDS'}));
+                }
+                else if (f.get('start') < cdsStart && f.get('end') > cdsStart) {
+                    // exon with a 5' UTR
+                    subfeatures.push(this.newFeature(f, {type: 'CDS', start: cdsStart}));
+                }
+                else if (f.get('start') < cdsStop && f.get('end') > cdsStop) {
+                    // exon with a 3' UTR
+                    subfeatures.push(this.newFeature(f, {type: 'CDS', end: cdsStop}));
+                }
+                else if (f.get('start') < cdsStop && f.get('end') <= cdsStop) {
+                    // this exon contains the ORF - will never happen in practice
+                    subfeatures.push(this.newFeature(f, {type: 'CDS', start: cdsStart, end: cdsStop}));
+                }
+                else {
+                    // exon lies completely out of UTR
+                    // do nothing
+                }
+            }
+        });
+
+        // return a new transcript
+        return this.newFeature(subfeatures);
     },
 
     markNonCanonicalSites: function(transcript, callback) {
