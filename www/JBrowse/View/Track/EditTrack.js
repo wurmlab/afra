@@ -54,6 +54,9 @@ var EditTrack = declare(DraggableFeatureTrack,
                 }
             }
         }));
+
+        this.gview.browser.setGlobalKeyboardShortcut(8,  this, 'deleteSelectedFeatures', true);
+        this.gview.browser.setGlobalKeyboardShortcut(46, this, 'deleteSelectedFeatures', true);
     },
 
     _defaultConfig: function() {
