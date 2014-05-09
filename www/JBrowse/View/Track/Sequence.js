@@ -58,7 +58,7 @@ return declare( [BlockBased, ExportMixin],
         var charSize = this.getCharacterMeasurements();
 
         // if we are zoomed in far enough to draw bases, then draw them
-        if (scale >= charSize.w) {
+        if (scale >= 2) {
             this.show();
             this.store.getFeatures({
                 ref: this.refSeq.name,
@@ -168,11 +168,12 @@ return declare( [BlockBased, ExportMixin],
     _renderSeqDiv: function (seq) {
         var container = document.createElement('div');
         var charWidth = 100/seq.length+"%";
+        var showBase = this._shouldShowBase();
         for( var i=0; i < seq.length; i++ ) {
             var base = document.createElement('span');
             base.className = 'base';
             base.style.width = charWidth;
-            base.innerHTML = seq.charAt(i);
+            base.innerHTML = showBase ? seq.charAt(i) : '&nbsp;';
             container.appendChild(base);
         }
         return container;
@@ -216,12 +217,13 @@ return declare( [BlockBased, ExportMixin],
             }
         }
         var charWidth = 100/blockLength+"%";
+        var showBase = this._shouldShowBase()
         for (var i=0; i < aaResidues.length; i++) {
             var base = document.createElement('span');
             var aa = aaResidues.charAt(i)
             base.className = 'acid' + ' acid_' + aa;
             base.style.width = charWidth;
-            base.innerHTML = aa;
+            base.innerHTML = showBase ? aa : '&nbsp;'
             container.appendChild(base);
         }
         return container;
@@ -254,6 +256,14 @@ return declare( [BlockBased, ExportMixin],
         };
         containerElement.removeChild(widthTest);
         return result;
-  }
-});
+    },
+
+    _shouldShowBase: function() {
+      var ffpc = this.featureFilterParentComponent
+      var scale = ffpc.zoomLevels[ffpc.curZoom]
+      var charWidthPt = this.getCharacterMeasurements().w
+      var shouldShowBase = scale >= charWidthPt
+      return shouldShowBase
+    }
+  });
 });
