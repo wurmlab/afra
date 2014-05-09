@@ -896,7 +896,7 @@ var EditTrack = declare(DraggableFeatureTrack,
 
         // remove non-canonical splice sites from before
         var subfeatures = _.reject(transcript.get('subfeatures'), function (f) {
-            return transcript.get('type') == 'non_canonical_splice_site';
+            return f.get('type') === 'non_canonical_splice_site';
         });
 
         for (var i = 0; i < subfeatures.length; i++) {
@@ -936,7 +936,7 @@ var EditTrack = declare(DraggableFeatureTrack,
     markNonCanonicalTranslationStartSite: function (transcript, sequence) {
         // remove non-canonical translation start site from before
         var subfeatures = _.reject(transcript.get('subfeatures'), function (f) {
-            return f.get('type') == 'non_canonical_translation_start_site';
+            return f.get('type') === 'non_canonical_translation_start_site';
         });
 
         var translationStart = this.getTranslationStart(transcript, sequence);
