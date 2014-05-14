@@ -789,9 +789,9 @@ doubleClickZoom: function(event) {
 
         var zoomLoc = (event.pageX - dojo.position(this.elem, true).x) / this.getWidth();
         if (event.shiftKey) {
-            this.zoomOut(event, zoomLoc, 2);
+            this.zoomOut();
         } else {
-            this.zoomIn(event, zoomLoc, 2);
+            this.zoomIn();
         }
         dojo.stopEvent(event);
     }), $.tripleclickThreshold);
