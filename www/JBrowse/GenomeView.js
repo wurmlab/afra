@@ -14,7 +14,8 @@ define([
            'JBrowse/BehaviorManager',
            'JBrowse/View/Animation/Zoomer',
            'JBrowse/View/Animation/Slider',
-           'JBrowse/View/InfoDialog'
+           'JBrowse/View/InfoDialog',
+           'jquery.tripleclick'
        ], function(
            declare,
            array,
@@ -76,7 +77,6 @@ constructor: function( args ) {
 
     this.topSpace  = this.posHeight;
 
-    // WebApollo needs max zoom level to be sequence residues char width
     this.maxPxPerBp = this.config.maxPxPerBp;
 
     //the reference sequence
@@ -491,6 +491,7 @@ _behaviors: function() { return {
                     dijitFocus.curNode && dijitFocus.curNode.blur();
                 })
             );
+            $(this.outerTrackContainer).on('tripleclick', dojo.hitch(this, 'tripleClickZoom'));
             return handles;
         }
     },
@@ -773,39 +774,42 @@ afterSlide: function() {
     this.showVisibleBlocks(true);
 },
 
-/**
- * Suppress double-click events in the genome view for a certain amount of time, default 100 ms.
- */
-suppressDoubleClick: function( /** Number */ time ) {
+doubleClickZoom: function(event) {
+    // Cooperate with triple click.
+    this._tripleclick = false;
+    setTimeout(dojo.hitch(this, function () {
+        if (this._tripleclick) return;
+        if (this.dragging)     return;
+        if (this.animation)    return;
 
-    if( this._noDoubleClick ) {
-        window.clearTimeout( this._noDoubleClick );
-    }
+        // if we have a timeout in flight from a scaleClicked click,
+        // cancel it, cause it looks now like the user has actually
+        // double-clicked
+        if( this.scaleClickedTimeout ) window.clearTimeout( this.scaleClickedTimeout );
 
-    var thisB = this;
-    this._noDoubleClick = window.setTimeout(
-        function(){ delete thisB._noDoubleClick; },
-        time || 100
-    );
+        var zoomLoc = (event.pageX - dojo.position(this.elem, true).x) / this.getWidth();
+        if (event.shiftKey) {
+            this.zoomOut(event, zoomLoc, 2);
+        } else {
+            this.zoomIn(event, zoomLoc, 2);
+        }
+        dojo.stopEvent(event);
+    }), $.tripleclickThreshold);
 },
 
-doubleClickZoom: function(event) {
-    if( this._noDoubleClick ) return;
-    if( this.dragging ) return;
-    if( "animation" in this ) return;
+tripleClickZoom: function (event, pageX) {
+    this._tripleclick = true;
 
-    // if we have a timeout in flight from a scaleClicked click,
-    // cancel it, cause it looks now like the user has actually
-    // double-clicked
-    if( this.scaleClickedTimeout ) window.clearTimeout( this.scaleClickedTimeout );
+    if (this.dragging)  return;
+    if (this.animation) return;
 
-    var zoomLoc = (event.pageX - dojo.position(this.elem, true).x) / this.getWidth();
-    if (event.shiftKey) {
-    this.zoomOut(event, zoomLoc, 2);
-    } else {
-    this.zoomIn(event, zoomLoc, 2);
+    if (!this.isZoomedToBase()) {
+        var pos = Math.floor(this.absXtoBp(pageX));
+        this.zoomToBaseLevel(event, pos);
     }
-    dojo.stopEvent(event);
+    else {
+        this.zoomBackOut(event);
+    }
 },
 
 /** @private */
@@ -1073,23 +1077,23 @@ setLocation: function(refseq, startbp, endbp) {
 
     if (this.ref != refseq) {
         var thisB = this;
-    this.ref = refseq;
+        this.ref = refseq;
         this._unsetPosBeforeZoom();  // if switching to different sequence, flush zoom position tracking
-    var removeTrack = function(track) {
+        var removeTrack = function(track) {
             if (track.div && track.div.parentNode)
                 track.div.parentNode.removeChild(track.div);
-    };
-    dojo.forEach(this.tracks, removeTrack);
+        };
+        dojo.forEach(this.tracks, removeTrack);
 
-    this.tracks = [];
-    this.trackIndices = {};
-    this.trackHeights = [];
-    this.trackTops = [];
+        this.tracks = [];
+        this.trackIndices = {};
+        this.trackHeights = [];
+        this.trackTops = [];
 
-    dojo.forEach(this.uiTracks, function(track) { track.refSeq = thisB.ref; track.clear(); });
-    this.overviewTrackIterate(removeTrack);
+        dojo.forEach(this.uiTracks, function(track) { track.refSeq = thisB.ref; track.clear(); });
+        this.overviewTrackIterate(removeTrack);
 
-    this.addOverviewTrack(new LocationScaleTrack({
+        this.addOverviewTrack(new LocationScaleTrack({
             label: "overview_loc_track",
             labelClass: "overview-pos",
             posHeight: this.overviewPosHeight,
@@ -1738,7 +1742,6 @@ redrawRegion: function( location ) {
 
 zoomIn: function(e, zoomLoc, steps) {
     if (this.animation) return;
-    this._unsetPosBeforeZoom();
     if (zoomLoc === undefined) zoomLoc = 0.5;
     if (steps === undefined) steps = 1;
     steps = Math.min(steps, (this.zoomLevels.length - 1) - this.curZoom);
@@ -1746,6 +1749,7 @@ zoomIn: function(e, zoomLoc, steps) {
         return;
 
     this.showWait();
+    this._unsetPosBeforeZoom();
     var pos = this.getPosition();
     this.trimVertical(pos.y);
 
@@ -1771,53 +1775,14 @@ zoomIn: function(e, zoomLoc, steps) {
                700, zoomLoc);
 },
 
-isZoomBaseLevel: function () {
-    var baseZoomIndex = this.zoomLevels.length - 1;
-    return this.curZoom === baseZoomIndex;
-},
-
-/** WebApollo support for zooming directly to base level, and later restoring previous zoom level before zooming to base */
-zoomToBaseLevel: function(e, pos) {
-    if (this.animation) return;
-    //   if (this.zoomLevels[this.curZoom] === this.charWidth)  {  console.log("already zoomed to base level"); return; }
-    // if at max zoomLevel then already zoomed to bases, so then no-op
-    var baseZoomIndex = this.zoomLevels.length - 1;
-
-    if (this.isZoomBaseLevel()) { return; }
-    this._setPosBeforeZoom(this.minVisible(), this.maxVisible(), this.curZoom);
-    var zoomLoc = 0.5;
-
-    this.showWait();
-    this.trimVertical();
-
-    var relativeScale = this.zoomLevels[baseZoomIndex] / this.pxPerBp;
-    var fixedBp = pos ||
-        this.pxToBp(this.getX() + this.offset + (zoomLoc * this.getWidth()));
-    this.curZoom = baseZoomIndex;
-    this.pxPerBp = this.zoomLevels[baseZoomIndex];
-
-    this.maxLeft = (this.pxPerBp * this.ref.end) - this.getWidth();
-
-    for (var track = 0; track < this.tracks.length; track++)
-	this.tracks[track].startZoom(this.pxPerBp,
-				     fixedBp - ((zoomLoc * this.getWidth())
-						/ this.pxPerBp),
-				     fixedBp + (((1 - zoomLoc) * this.getWidth())
-						/ this.pxPerBp));
-    new Zoomer(relativeScale, this,
-               function() {this.zoomUpdate(zoomLoc, fixedBp);},
-               700, zoomLoc);
-},
-
-
 zoomOut: function(e, zoomLoc, steps) {
     if (this.animation) return;
-    this._unsetPosBeforeZoom();
     if (steps === undefined) steps = 1;
     steps = Math.min(steps, this.curZoom);
     if (0 == steps) return;
 
     this.showWait();
+    this._unsetPosBeforeZoom();
     var pos = this.getPosition();
     this.trimVertical(pos.y);
     if (zoomLoc === undefined) zoomLoc = 0.5;
@@ -1850,17 +1815,45 @@ zoomOut: function(e, zoomLoc, steps) {
                700, zoomLoc);
 },
 
+zoomToBaseLevel: function (e, pos) {
+    //   if (this.zoomLevels[this.curZoom] === this.charWidth)  {  console.log("already zoomed to base level"); return; }
+    // if at max zoomLevel then already zoomed to bases, so then no-op
+    var baseZoomIndex = this.zoomLevels.length - 1;
 
-/** WebApollo support for zooming directly to base level, and later restoring previous zoom level before zooming to base */
-zoomBackOut: function(e) {
+    if (this.isZoomedToBase()) { return; }
+    this._setPosBeforeZoom(this.minVisible(), this.maxVisible(), this.curZoom);
+    var zoomLoc = 0.5;
+
+    this.showWait();
+    this.trimVertical();
+
+    var relativeScale = this.zoomLevels[baseZoomIndex] / this.pxPerBp;
+    var fixedBp = pos ||
+        this.pxToBp(this.getX() + this.offset + (zoomLoc * this.getWidth()));
+    this.curZoom = baseZoomIndex;
+    this.pxPerBp = this.zoomLevels[baseZoomIndex];
+
+    this.maxLeft = (this.pxPerBp * this.ref.end) - this.getWidth();
+
+    for (var track = 0; track < this.tracks.length; track++)
+	this.tracks[track].startZoom(this.pxPerBp,
+				     fixedBp - ((zoomLoc * this.getWidth())
+						/ this.pxPerBp),
+				     fixedBp + (((1 - zoomLoc) * this.getWidth())
+						/ this.pxPerBp));
+    new Zoomer(relativeScale, this,
+               function() {this.zoomUpdate(zoomLoc, fixedBp);},
+               700, zoomLoc);
+},
+
+zoomBackOut: function (e) {
     if (this.animation) { return; }
     if (!this.isZoomedToBase()) { return; }
 
     var min = this.posBeforeZoom.min;
     var max = this.posBeforeZoom.max;
     var zoomIndex = this.posBeforeZoom.zoomIndex;
-    this.posBeforeZoom = undefined;
-    
+
     var zoomLoc = 0.5;
     this.showWait();
 
@@ -1876,7 +1869,7 @@ zoomBackOut: function(e) {
     					fixedBp + (((1 - zoomLoc) * this.getWidth())
     							/ this.pxPerBp));
 	}
-    
+
     this.minLeft = this.pxPerBp * this.ref.start;
     var thisObj = this;
     // Zooms take an arbitrary 700 milliseconds, which feels about right
@@ -1887,17 +1880,14 @@ zoomBackOut: function(e) {
 	       700, zoomLoc);
 },
 
-/** WebApollo support for zooming directly to base level, and later restoring previous zoom level before zooming to base */
 isZoomedToBase: function() {
 	return this.posBeforeZoom !== undefined;
 },
 
-/** WebApollo support for zooming directly to base level, and later restoring previous zoom level before zooming to base */
 _setPosBeforeZoom: function(min, max, zoomIndex) {
     this.posBeforeZoom = { "min": min, "max": max, "zoomIndex": zoomIndex };
 },
 
-/** WebApollo support for zooming directly to base level, and later restoring previous zoom level before zooming to base */
 _unsetPosBeforeZoom: function() {
 	this.posBeforeZoom = undefined;
 },
