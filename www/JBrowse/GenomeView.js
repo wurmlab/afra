@@ -2390,7 +2390,101 @@ layoutTracks: function() {
 
     this.containerHeight = Math.max( nextTop||0, Math.min( this.getY(), lastTop ) + this.getHeight() );
     this.scrollContainer.style.height = this.containerHeight + "px";
+},
+
+scrollToNextEdge: function(event)  {
+    var vregion = this.visibleRegion();
+    var coordinate = (vregion.start + vregion.end)/2;
+    var selected = this.browser.featSelectionManager.getSelection();
+    if (selected.length == 0) {
+        selected = this.browser.annotSelectionManager.getSelection();
+    }
+    if (selected && (selected.length > 0)) {
+        var selfeat = selected[0].feature;
+        // find current center genome coord, compare to subfeatures, figure out
+        // nearest subfeature right of center of view if subfeature overlaps,
+        // go to right edge else go to left edge if to left, move to left edge
+        // if to right, 
+        while (selfeat.parent()) {
+            selfeat = selfeat.parent();
+        }
+        var coordDelta = Number.MAX_VALUE;
+        var pmin = selfeat.get('start');
+        var pmax = selfeat.get('end');
+        if ((coordinate - pmax) > 10) {
+            this.centerAtBase(pmin, false);
+        }
+        else  {
+            var childfeats = selfeat.children();
+            for (var i=0; i<childfeats.length; i++)  {
+                var cfeat = childfeats[i];
+                var cmin = cfeat.get('start');
+                var cmax = cfeat.get('end');
+                //            if (cmin > coordinate)  {
+                if ((cmin - coordinate) > 10) { // fuzzy factor of 10 bases
+                    coordDelta = Math.min(coordDelta, cmin-coordinate);
+                }
+                //            if (cmax > coordinate)  {
+                if ((cmax - coordinate) > 10) { // fuzzy factor of 10 bases
+                    coordDelta = Math.min(coordDelta, cmax-coordinate);
+                }
+            }
+            // find closest edge right of current coord
+            if (coordDelta != Number.MAX_VALUE)  {
+                var newCenter = coordinate + coordDelta;
+                this.centerAtBase(newCenter, false);
+            }
+        }
+    }
+},
+
+scrollToPreviousEdge: function(event) {
+    var vregion = this.visibleRegion();
+    var coordinate = (vregion.start + vregion.end)/2;
+    var selected = this.browser.featSelectionManager.getSelection();
+    if (selected.length == 0) {
+        selected = this.browser.annotSelectionManager.getSelection();
+    }
+    if (selected && (selected.length > 0)) {
+
+        var selfeat = selected[0].feature;
+        // find current center genome coord, compare to subfeatures, figure out
+        // nearest subfeature right of center of view if subfeature overlaps,
+        // go to right edge else go to left edge if to left, move to left edge
+        // if to right, 
+        while (selfeat.parent()) {
+            selfeat = selfeat.parent();
+        }
+        var coordDelta = Number.MAX_VALUE;
+        var pmin = selfeat.get('start');
+        var pmax = selfeat.get('end');
+        if ((pmin - coordinate) > 10) {
+            this.centerAtBase(pmax, false);
+        }
+        else  {
+            var childfeats = selfeat.children();
+            for (var i=0; i<childfeats.length; i++)  {
+                var cfeat = childfeats[i];
+                var cmin = cfeat.get('start');
+                var cmax = cfeat.get('end');
+                //            if (cmin > coordinate)  {
+                if ((coordinate - cmin) > 10) { // fuzzy factor of 10 bases
+                    coordDelta = Math.min(coordDelta, coordinate-cmin);
+                }
+                //            if (cmax > coordinate)  {
+                if ((coordinate - cmax) > 10) { // fuzzy factor of 10 bases
+                    coordDelta = Math.min(coordDelta, coordinate-cmax);
+                }
+            }
+            // find closest edge right of current coord
+            if (coordDelta != Number.MAX_VALUE)  {
+                var newCenter = coordinate - coordDelta;
+                this.centerAtBase(newCenter, false);
+            }
+        }
+    }
 }
+
 });
 });
 
