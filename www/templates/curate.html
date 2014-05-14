@@ -343,7 +343,7 @@
 <pre class="pre-scrollable"></pre>
         </div>
         <div class="modal-footer">
-          <div class="btn-group" data-toggle="buttons">
+          <div class="btn-group pull-left" data-toggle="buttons">
             <label
               class="btn btn-default"
               ng-click="browser.getEditTrack().getProteinSequenceForSelectedFeature()">
@@ -365,6 +365,18 @@
               <input type="radio">Genomic
             </label>
           </div>
+          <div
+            id="bp"
+            class="input-group col-sm-3 pull-left"
+            style="display: none;">
+            <span class="input-group-addon">±</span>
+            <input type="number" class="form-control">
+          </div>
+          <button
+            class="btn btn-default disabled pull-right">
+            <i class="fa fa-download"></i>
+            Download
+          </button>
         </div>
       </div>
     </div>

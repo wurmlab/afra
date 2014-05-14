@@ -12,7 +12,8 @@ define([
             'JBrowse/Util',
             'JBrowse/View/GranularRectLayout',
             'JBrowse/CodonTable',
-            'bionode'
+            'bionode',
+            'jquery.poll.js'
         ],
         function(declare,
                  $,
@@ -55,10 +56,15 @@ var EditTrack = declare(DraggableFeatureTrack,
             }
         }));
 
-        //this.gview.browser.setGlobalKeyboardShortcut('[', track, 'scrollToPreviousEdge');
-        //this.gview.browser.setGlobalKeyboardShortcut(']', track, 'scrollToNextEdge');
         this.gview.browser.setGlobalKeyboardShortcut(8,  this, 'deleteSelectedFeatures', true);
         this.gview.browser.setGlobalKeyboardShortcut(46, this, 'deleteSelectedFeatures', true);
+
+        $('#sequence input[type=number]')
+        .poll()
+        .change(dojo.hitch(this, function (e) {
+            var coord = parseInt($(e.target).val());
+            this.getGenomicSequenceForSelectedFeature(coord);
+        }));
     },
 
     _defaultConfig: function() {
@@ -583,12 +589,16 @@ var EditTrack = declare(DraggableFeatureTrack,
         }
     },
 
-    getGenomicSequenceForSelectedFeature: function () {
+    getGenomicSequenceForSelectedFeature: function (coord) {
+        if (!coord) {
+            coord = 0;
+        }
+
         var feature = this.selectionManager.getSelectedFeatures()[0];
         this.browser.getStore('refseqs', dojo.hitch(this, function (refSeqStore) {
             if (refSeqStore) {
                 refSeqStore.getFeatures(
-                    {ref: feature.get('seq_id'), start: feature.get('start'), end: feature.get('end')},
+                    {ref: feature.get('seq_id'), start: feature.get('start') - coord, end: feature.get('end') + coord},
                     dojo.hitch(this, function (refSeqFeature) {
                         var seq = refSeqFeature.get('seq');
                         var region = {
@@ -611,6 +621,7 @@ var EditTrack = declare(DraggableFeatureTrack,
                         + seq;
                         $('#sequence pre').html(fasta).data('sequence_id', feature.id());
                         $('#sequence').modal();
+                        $('#bp').fadeIn();
                     }));
             }
         }));
@@ -656,6 +667,7 @@ var EditTrack = declare(DraggableFeatureTrack,
                         + cdna;
                         $('#sequence pre').html(fasta).data('id', feature.id());
                         $('#sequence').modal();
+                        $('#bp').fadeOut();
                     }));
             }
         }));
@@ -701,6 +713,7 @@ var EditTrack = declare(DraggableFeatureTrack,
                         + cds;
                         $('#sequence pre').html(fasta).data('id', feature.id());
                         $('#sequence').modal();
+                        $('#bp').fadeOut();
                     }));
             }
         }));
@@ -754,6 +767,7 @@ var EditTrack = declare(DraggableFeatureTrack,
                         + protein;
                         $('#sequence pre').html(fasta).data('id', feature.id());
                         $('#sequence').modal();
+                        $('#bp').fadeOut();
                     }));
             }
         }));
