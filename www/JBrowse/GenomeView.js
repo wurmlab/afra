@@ -466,11 +466,11 @@ _behaviors: function() { return {
                         return;
 
                     var that = this;
-                    if( evt.keyCode == dojo.keys.LEFT_ARROW || evt.keyCode == dojo.keys.RIGHT_ARROW ) {
-                        var offset = evt.keyCode == dojo.keys.LEFT_ARROW ? -40 : 40;
-                        if( evt.shiftKey )
-                            offset *= 5;
-                        this.keySlideX( offset );
+                    if (evt.keyCode == dojo.keys.LEFT_ARROW) {
+                        this.smartScrollLeft(event);
+                    }
+                    else if (evt.keyCode == dojo.keys.RIGHT_ARROW) {
+                        this.smartScrollRight(event);
                     }
                     else if( evt.keyCode == dojo.keys.DOWN_ARROW || evt.keyCode == dojo.keys.UP_ARROW ) {
                         // shift-up/down zooms in and out
@@ -2392,13 +2392,45 @@ layoutTracks: function() {
     this.scrollContainer.style.height = this.containerHeight + "px";
 },
 
-scrollToNextEdge: function(event)  {
-    var vregion = this.visibleRegion();
-    var coordinate = (vregion.start + vregion.end)/2;
+smartScrollRight: function (event) {
     var selected = this.browser.featSelectionManager.getSelection();
     if (selected.length == 0) {
         selected = this.browser.annotSelectionManager.getSelection();
     }
+
+    if (selected.length == 0) {
+        var offset = 40;
+        if (event.shiftKey)
+            offset *= 5;
+
+        this.keySlideX(offset);
+    }
+    else {
+        this.scrollToNextEdge(selected);
+    }
+},
+
+smartScrollLeft: function (event) {
+    var selected = this.browser.featSelectionManager.getSelection();
+    if (selected.length == 0) {
+        selected = this.browser.annotSelectionManager.getSelection();
+    }
+
+    if (selected.length == 0) {
+        var offset = -40;
+        if (event.shiftKey)
+            offset *= 5;
+
+        this.keySlideX(offset);
+    }
+    else {
+        this.scrollToPreviousEdge(selected);
+    }
+},
+
+scrollToNextEdge: function (selected)  {
+    var vregion = this.visibleRegion();
+    var coordinate = (vregion.start + vregion.end)/2;
     if (selected && (selected.length > 0)) {
         var selfeat = selected[0].feature;
         // find current center genome coord, compare to subfeatures, figure out
@@ -2438,13 +2470,10 @@ scrollToNextEdge: function(event)  {
     }
 },
 
-scrollToPreviousEdge: function(event) {
+scrollToPreviousEdge: function (selected) {
     var vregion = this.visibleRegion();
     var coordinate = (vregion.start + vregion.end)/2;
-    var selected = this.browser.featSelectionManager.getSelection();
-    if (selected.length == 0) {
-        selected = this.browser.annotSelectionManager.getSelection();
-    }
+
     if (selected && (selected.length > 0)) {
 
         var selfeat = selected[0].feature;
