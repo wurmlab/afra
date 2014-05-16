@@ -62,8 +62,7 @@ var EditTrack = declare(DraggableFeatureTrack,
         $('#sequence input[type=number]')
         .poll()
         .change(dojo.hitch(this, function (e) {
-            var coord = parseInt($(e.target).val());
-            this.getGenomicSequenceForSelectedFeature(coord);
+            this.getGenomicSequenceForSelectedFeature();
         }));
     },
 
@@ -589,8 +588,12 @@ var EditTrack = declare(DraggableFeatureTrack,
         }
     },
 
-    getGenomicSequenceForSelectedFeature: function (coord) {
-        if (!coord) {
+    getGenomicSequenceForSelectedFeature: function () {
+        var coord = $('#sequence #bp input[type=number]').val();
+        if (coord) {
+            coord = parseInt(coord);
+        }
+        else {
             coord = 0;
         }
 
