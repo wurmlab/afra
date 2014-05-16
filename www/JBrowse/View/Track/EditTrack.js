@@ -619,7 +619,7 @@ var EditTrack = declare(DraggableFeatureTrack,
                         var fasta = '>' //+ f.get('label')
                         + Util.assembleLocString(region)
                         + (region.type ? ' '+region.type : '')
-                        + ' '+(region.end - region.start) + 'bp'
+                        + ' ' + seq.length + 'bp'
                         + "\n"
                         + seq;
                         $('#sequence pre').html(fasta).data('sequence_id', feature.id());
@@ -665,7 +665,7 @@ var EditTrack = declare(DraggableFeatureTrack,
                         var fasta = '>' //+ f.get('label')
                         + Util.assembleLocString(region)
                         + (region.type ? ' '+region.type : '')
-                        + ' '+(region.end - region.start) + 'bp'
+                        + ' ' + cdna.length + 'bp'
                         + "\n"
                         + cdna;
                         $('#sequence pre').html(fasta).data('id', feature.id());
@@ -711,7 +711,7 @@ var EditTrack = declare(DraggableFeatureTrack,
                         var fasta = '>' //+ f.get('label')
                         + Util.assembleLocString(region)
                         + (region.type ? ' '+region.type : '')
-                        + ' '+(region.end - region.start) + 'bp'
+                        + ' ' + cds.length + 'bp'
                         + "\n"
                         + cds;
                         $('#sequence pre').html(fasta).data('id', feature.id());
@@ -765,7 +765,7 @@ var EditTrack = declare(DraggableFeatureTrack,
                         var fasta = '>' //+ f.get('label')
                         + Util.assembleLocString(region)
                         + (region.type ? ' '+region.type : '')
-                        + ' '+(region.end - region.start) + 'bp'
+                        + ' ' + protein.length + 'bp'
                         + "\n"
                         + protein;
                         $('#sequence pre').html(fasta).data('id', feature.id());
