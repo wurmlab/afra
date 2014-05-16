@@ -503,7 +503,8 @@ var EditTrack = declare(DraggableFeatureTrack,
     },
 
     setLongestORF: function (transcript) {
-        var stopCodons = ['tga', 'tag', 'taa', 'TGA', 'TAG', 'TAA'];
+        var startCodon = 'atg';
+        var stopCodons = ['tga', 'tag', 'taa'];
         this.browser.getStore('refseqs', dojo.hitch(this, function (refSeqStore) {
             if (refSeqStore) {
                 refSeqStore.getFeatures(
@@ -532,13 +533,14 @@ var EditTrack = declare(DraggableFeatureTrack,
                             }
                         });
                         cdna = cdna.join('');
-
                         if (transcript.get('strand') == -1) {
                             cdna = Util.reverseComplement(cdna);
                         }
 
+                        cdna = cdna.toLowerCase();
+
                         var orfStart, orfStop, longestORF = 0;
-                        var startIndex = cdna.indexOf('ATG');
+                        var startIndex = cdna.indexOf(startCodon);
                         while (startIndex >= 0) {
                             var runningORF = 0;
                             var readingFrame = cdna.slice(startIndex);
@@ -553,7 +555,7 @@ var EditTrack = declare(DraggableFeatureTrack,
                                 orfStop    = orfStart + runningORF;
                                 longestORF = runningORF;
                             }
-                            startIndex = cdna.indexOf('ATG', startIndex + 1);
+                            startIndex = cdna.indexOf(startCodon, startIndex + 1);
                         }
 
                         //console.log(island);
@@ -860,7 +862,6 @@ var EditTrack = declare(DraggableFeatureTrack,
         });
 
         // insert new CDS
-        console.log(cdsStart, cdsStop);
         if (transcript.get('strand') == -1) {
             // simply swap start and stop
             var temp = cdsStart;
