@@ -607,18 +607,18 @@ var EditTrack = declare(DraggableFeatureTrack,
                     dojo.hitch(this, function (refSeqFeature) {
                         var seq = refSeqFeature.get('seq');
                         var region = {
-                            ref:   feature.get('seq_id'),
-                            start: feature.get('start'),
-                            end:   feature.get('end'),
+                            ref:    feature.get('seq_id'),
+                            start:  feature.get('start') - coord,
+                            end:    feature.get('end') + coord,
                             strand: feature.get('strand'),
-                            type: feature.get('type')
+                            type:   feature.get('type')
                         };
 
                         if (feature.get('strand') == -1) {
                             seq = Util.reverseComplement(seq)
                         }
 
-                        var fasta = '>' //+ f.get('label')
+                        var fasta = '>' + (feature.get('name') ? (feature.get('name') + ' ') : '')
                         + Util.assembleLocString(region)
                         + (region.type ? ' '+region.type : '')
                         + ' ' + seq.length + 'bp'
@@ -653,18 +653,18 @@ var EditTrack = declare(DraggableFeatureTrack,
                         cdna = cdna.join('');
 
                         var region = {
-                            ref:   feature.get('ref'),
-                            start: feature.get('start'),
-                            end:   feature.get('end'),
+                            ref:    feature.get('seq_id'),
+                            start:  feature.get('start'),
+                            end:    feature.get('end'),
                             strand: feature.get('strand'),
-                            type: feature.get('type')
+                            type:   'cDNA'
                         };
 
                         if (feature.get('strand') == -1) {
                             cdna = Util.reverseComplement(cdna);
                         }
 
-                        var fasta = '>' //+ f.get('label')
+                        var fasta = '>' + (feature.get('name') ? (feature.get('name') + ' ') : '')
                         + Util.assembleLocString(region)
                         + (region.type ? ' '+region.type : '')
                         + ' ' + cdna.length + 'bp'
@@ -699,18 +699,18 @@ var EditTrack = declare(DraggableFeatureTrack,
                         cds = cds.join('');
 
                         var region = {
-                            ref:   feature.get('ref'),
-                            start: feature.get('start'),
-                            end:   feature.get('end'),
+                            ref:    feature.get('seq_id'),
+                            start:  feature.get('start'),
+                            end:    feature.get('end'),
                             strand: feature.get('strand'),
-                            type: feature.get('type')
+                            type:   'CDS'
                         };
 
                         if (feature.get('strand') == -1) {
                             cds = Util.reverseComplement(cds);
                         }
 
-                        var fasta = '>' //+ f.get('label')
+                        var fasta = '>' + (feature.get('name') ? (feature.get('name') + ' ') : '')
                         + Util.assembleLocString(region)
                         + (region.type ? ' '+region.type : '')
                         + ' ' + cds.length + 'bp'
@@ -757,14 +757,14 @@ var EditTrack = declare(DraggableFeatureTrack,
                         });
 
                         var region = {
-                            ref:   feature.get('ref'),
-                            start: feature.get('start'),
-                            end:   feature.get('end'),
+                            ref:    feature.get('seq_id'),
+                            start:  feature.get('start'),
+                            end:    feature.get('end'),
                             strand: feature.get('strand'),
-                            type: feature.get('type')
+                            type:   'protein'
                         };
 
-                        var fasta = '>' //+ f.get('label')
+                        var fasta = '>' + (feature.get('name') ? (feature.get('name') + ' ') : '')
                         + Util.assembleLocString(region)
                         + (region.type ? ' '+region.type : '')
                         + ' ' + protein.length + 'bp'
