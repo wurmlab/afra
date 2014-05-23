@@ -611,7 +611,7 @@ var EditTrack = declare(DraggableFeatureTrack,
                             start:  feature.get('start') - coord,
                             end:    feature.get('end') + coord,
                             strand: feature.get('strand'),
-                            type:   feature.get('type')
+                            type:   'genomic'
                         };
 
                         if (feature.get('strand') == -1) {
