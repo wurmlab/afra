@@ -599,181 +599,208 @@ var EditTrack = declare(DraggableFeatureTrack,
             coord = 0;
         }
 
-        var feature = this.selectionManager.getSelectedFeatures()[0];
+        var features = this.selectionManager.getSelectedFeatures();
         this.browser.getStore('refseqs', dojo.hitch(this, function (refSeqStore) {
             if (refSeqStore) {
-                refSeqStore.getFeatures(
-                    {ref: feature.get('seq_id'), start: feature.get('start') - coord, end: feature.get('end') + coord},
-                    dojo.hitch(this, function (refSeqFeature) {
-                        var seq = refSeqFeature.get('seq');
-                        var region = {
-                            ref:    feature.get('seq_id'),
-                            start:  feature.get('start') - coord,
-                            end:    feature.get('end') + coord,
-                            strand: feature.get('strand'),
-                            type:   'genomic'
-                        };
+                var fasta = [];
+                _.each(features, function (feature) {
+                    refSeqStore.getFeatures(
+                        {ref: feature.get('seq_id'), start: feature.get('start') - coord, end: feature.get('end') + coord},
+                        dojo.hitch(this, function (refSeqFeature) {
+                            var seq = refSeqFeature.get('seq');
+                            var region = {
+                                ref:    feature.get('seq_id'),
+                                start:  feature.get('start') - coord,
+                                end:    feature.get('end') + coord,
+                                strand: feature.get('strand'),
+                                type:   'genomic'
+                            };
 
-                        if (feature.get('strand') == -1) {
-                            seq = Util.reverseComplement(seq)
-                        }
+                            if (feature.get('strand') == -1) {
+                                seq = Util.reverseComplement(seq)
+                            }
 
-                        var fasta = '>' + (feature.get('name') ? (feature.get('name') + ' ') : '')
-                        + Util.assembleLocString(region)
-                        + (region.type ? ' '+region.type : '')
-                        + ' ' + seq.length + 'bp'
-                        + "\n"
-                        + seq;
-                        $('#sequence pre').html(fasta).data('sequence_id', feature.id());
-                        $('#sequence').modal();
-                        $('#bp').fadeIn();
-                    }));
+                            var f_fasta = '>' + (feature.get('name') ? (feature.get('name') + ' ') : '')
+                            + Util.assembleLocString(region)
+                            + (region.type ? ' '+region.type : '')
+                            + ' ' + seq.length + 'bp'
+                            + "\n"
+                            + seq;
+
+                            fasta.push(f_fasta);
+                        }));
+                });
+                fasta = fasta.join("\n");
+                $('#sequence pre').html(fasta);//.data('sequence_id', feature.id());
+                $('#sequence').modal();
+                $('#bp').fadeIn();
             }
         }));
     },
 
     getCDNASequenceForSelectedFeature: function () {
-        var feature = this.selectionManager.getSelectedFeatures()[0];
+        var features = this.selectionManager.getSelectedFeatures();
+
         this.browser.getStore('refseqs', dojo.hitch(this, function (refSeqStore) {
             if (refSeqStore) {
-                refSeqStore.getFeatures(
-                    {ref: feature.get('seq_id'), start: feature.get('start'), end: feature.get('end')},
-                    dojo.hitch(this, function (refSeqFeature) {
-                        var seq = refSeqFeature.get('seq')
-                            , offset = refSeqFeature.get('start');
+                var fasta = [];
+                _.each(features, dojo.hitch(this, function (feature) {
+                    var transcript = EditTrack.getTopLevelAnnotation(feature);
+                    refSeqStore.getFeatures(
+                        {ref: feature.get('seq_id'), start: feature.get('start'), end: feature.get('end')},
+                        dojo.hitch(this, function (refSeqFeature) {
+                            var seq = refSeqFeature.get('seq')
+                                , offset = refSeqFeature.get('start');
 
-                        var cdna = [];
-                        _.each(feature.children(), function (f) {
-                            if (f.get('type') === 'exon') {
-                                var start = f.get('start') - offset
-                                    , end = f.get('end') - offset;
-                                cdna.push(seq.slice(start, end));
+                            var cdna = [];
+                            _.each(transcript.children(), function (f) {
+                                if (f.get('type') === 'exon') {
+                                    var start = f.get('start') - offset
+                                        , end = f.get('end') - offset;
+                                    cdna.push(seq.slice(start, end));
+                                }
+                            });
+                            cdna = cdna.join('');
+
+                            var region = {
+                                ref:    feature.get('seq_id'),
+                                start:  feature.get('start'),
+                                end:    feature.get('end'),
+                                strand: feature.get('strand'),
+                                type:   'cDNA'
+                            };
+
+                            if (feature.get('strand') == -1) {
+                                cdna = Util.reverseComplement(cdna);
                             }
-                        });
-                        cdna = cdna.join('');
 
-                        var region = {
-                            ref:    feature.get('seq_id'),
-                            start:  feature.get('start'),
-                            end:    feature.get('end'),
-                            strand: feature.get('strand'),
-                            type:   'cDNA'
-                        };
+                            var f_fasta = '>' + (feature.get('name') ? (feature.get('name') + ' ') : '')
+                            + Util.assembleLocString(region)
+                            + (region.type ? ' '+region.type : '')
+                            + ' ' + cdna.length + 'bp'
+                            + "\n"
+                            + cdna;
 
-                        if (feature.get('strand') == -1) {
-                            cdna = Util.reverseComplement(cdna);
-                        }
-
-                        var fasta = '>' + (feature.get('name') ? (feature.get('name') + ' ') : '')
-                        + Util.assembleLocString(region)
-                        + (region.type ? ' '+region.type : '')
-                        + ' ' + cdna.length + 'bp'
-                        + "\n"
-                        + cdna;
-                        $('#sequence pre').html(fasta).data('id', feature.id());
-                        $('#sequence').modal();
-                        $('#bp').fadeOut();
-                    }));
+                            fasta.push(f_fasta);
+                        }));
+                }));
+                fasta = fasta.join("\n");
+                $('#sequence pre').html(fasta);//.data('id', feature.id());
+                $('#sequence').modal();
+                $('#bp').fadeOut();
             }
         }));
     },
 
     getCDSSequenceForSelectedFeature: function () {
-        var feature = this.selectionManager.getSelectedFeatures()[0];
+        var features = this.selectionManager.getSelectedFeatures();
         this.browser.getStore('refseqs', dojo.hitch(this, function (refSeqStore) {
             if (refSeqStore) {
-                refSeqStore.getFeatures(
-                    {ref: feature.get('seq_id'), start: feature.get('start'), end: feature.get('end')},
-                    dojo.hitch(this, function (refSeqFeature) {
-                        var seq = refSeqFeature.get('seq')
-                            , offset = refSeqFeature.get('start');
+                var fasta = [];
+                _.each(features, dojo.hitch(this, function (feature) {
+                    var transcript = EditTrack.getTopLevelAnnotation(feature);
+                    refSeqStore.getFeatures(
+                        {ref: feature.get('seq_id'), start: feature.get('start'), end: feature.get('end')},
+                        dojo.hitch(this, function (refSeqFeature) {
+                            var seq = refSeqFeature.get('seq')
+                                , offset = refSeqFeature.get('start');
 
-                        var cds = [];
-                        _.each(feature.children(), function (f) {
-                            if (f.get('type') === 'CDS') {
-                                var start = f.get('start') - offset
-                                    , end = f.get('end') - offset;
-                                cds.push(seq.slice(start, end));
+                            var cds = [];
+                            _.each(transcript.children(), function (f) {
+                                if (f.get('type') === 'CDS') {
+                                    var start = f.get('start') - offset
+                                        , end = f.get('end') - offset;
+                                    cds.push(seq.slice(start, end));
+                                }
+                            });
+                            cds = cds.join('');
+
+                            var region = {
+                                ref:    feature.get('seq_id'),
+                                start:  feature.get('start'),
+                                end:    feature.get('end'),
+                                strand: feature.get('strand'),
+                                type:   'CDS'
+                            };
+
+                            if (feature.get('strand') == -1) {
+                                cds = Util.reverseComplement(cds);
                             }
-                        });
-                        cds = cds.join('');
 
-                        var region = {
-                            ref:    feature.get('seq_id'),
-                            start:  feature.get('start'),
-                            end:    feature.get('end'),
-                            strand: feature.get('strand'),
-                            type:   'CDS'
-                        };
+                            var f_fasta = '>' + (feature.get('name') ? (feature.get('name') + ' ') : '')
+                            + Util.assembleLocString(region)
+                            + (region.type ? ' '+region.type : '')
+                            + ' ' + cds.length + 'bp'
+                            + "\n"
+                            + cds;
 
-                        if (feature.get('strand') == -1) {
-                            cds = Util.reverseComplement(cds);
-                        }
-
-                        var fasta = '>' + (feature.get('name') ? (feature.get('name') + ' ') : '')
-                        + Util.assembleLocString(region)
-                        + (region.type ? ' '+region.type : '')
-                        + ' ' + cds.length + 'bp'
-                        + "\n"
-                        + cds;
-                        $('#sequence pre').html(fasta).data('id', feature.id());
-                        $('#sequence').modal();
-                        $('#bp').fadeOut();
-                    }));
+                            fasta.push(f_fasta);
+                        }));
+                }));
+                fasta = fasta.join("\n");
+                $('#sequence pre').html(fasta);//.data('id', feature.id());
+                $('#sequence').modal();
+                $('#bp').fadeOut();
             }
         }));
     },
 
     getProteinSequenceForSelectedFeature: function () {
-        var feature = this.selectionManager.getSelectedFeatures()[0];
+        var features = this.selectionManager.getSelectedFeatures();
         this.browser.getStore('refseqs', dojo.hitch(this, function (refSeqStore) {
             if (refSeqStore) {
-                refSeqStore.getFeatures(
-                    {ref: feature.get('seq_id'), start: feature.get('start'), end: feature.get('end')},
-                    dojo.hitch(this, function (refSeqFeature) {
-                        var seq = refSeqFeature.get('seq')
-                            , offset = refSeqFeature.get('start');
+                var fasta = [];
+                _.each(features, dojo.hitch(this, function (feature) {
+                    var transcript = EditTrack.getTopLevelAnnotation(feature);
+                    refSeqStore.getFeatures(
+                        {ref: feature.get('seq_id'), start: feature.get('start'), end: feature.get('end')},
+                        dojo.hitch(this, function (refSeqFeature) {
+                            var seq = refSeqFeature.get('seq')
+                                , offset = refSeqFeature.get('start');
 
-                        var cds = [];
-                        _.each(feature.children(), function (f) {
-                            if (f.get('type') === 'CDS') {
-                                var start = f.get('start') - offset
-                                    , end = f.get('end') - offset;
-                                cds.push(seq.slice(start, end));
+                            var cds = [];
+                            _.each(transcript.children(), function (f) {
+                                if (f.get('type') === 'CDS') {
+                                    var start = f.get('start') - offset
+                                        , end = f.get('end') - offset;
+                                    cds.push(seq.slice(start, end));
+                                }
+                            });
+                            cds = cds.join('');
+
+                            if (feature.get('strand') == -1) {
+                                cds = Util.reverseComplement(cds)
                             }
-                        });
-                        cds = cds.join('');
 
-                        if (feature.get('strand') == -1) {
-                            cds = Util.reverseComplement(cds)
-                        }
+                            var protein = cds.replace(/(...)/gi,  function(codon) {
+                                var aa = CodonTable[codon];
+                                if (!aa) {
+                                    aa = "?";
+                                }
+                                return aa;
+                            });
 
-                        var protein = cds.replace(/(...)/gi,  function(codon) {
-                            var aa = CodonTable[codon];
-                            if (!aa) {
-                                aa = "?";
-                            }
-                            return aa;
-                        });
+                            var region = {
+                                ref:    feature.get('seq_id'),
+                                start:  feature.get('start'),
+                                end:    feature.get('end'),
+                                strand: feature.get('strand'),
+                                type:   'protein'
+                            };
 
-                        var region = {
-                            ref:    feature.get('seq_id'),
-                            start:  feature.get('start'),
-                            end:    feature.get('end'),
-                            strand: feature.get('strand'),
-                            type:   'protein'
-                        };
-
-                        var fasta = '>' + (feature.get('name') ? (feature.get('name') + ' ') : '')
-                        + Util.assembleLocString(region)
-                        + (region.type ? ' '+region.type : '')
-                        + ' ' + protein.length + 'bp'
-                        + "\n"
-                        + protein;
-                        $('#sequence pre').html(fasta).data('id', feature.id());
-                        $('#sequence').modal();
-                        $('#bp').fadeOut();
-                    }));
+                            var f_fasta = '>' + (feature.get('name') ? (feature.get('name') + ' ') : '')
+                            + Util.assembleLocString(region)
+                            + (region.type ? ' '+region.type : '')
+                            + ' ' + protein.length + 'bp'
+                            + "\n"
+                            + protein;
+                            fasta.push(f_fasta);
+                        }));
+                }));
+                fasta = fasta.join("\n");
+                $('#sequence pre').html(fasta);//.data('id', feature.id());
+                $('#sequence').modal();
+                $('#bp').fadeOut();
             }
         }));
     },
