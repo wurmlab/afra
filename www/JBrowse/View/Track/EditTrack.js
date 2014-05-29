@@ -644,8 +644,12 @@ var EditTrack = declare(DraggableFeatureTrack,
         this.browser.getStore('refseqs', dojo.hitch(this, function (refSeqStore) {
             if (refSeqStore) {
                 var fasta = [];
+
                 _.each(features, dojo.hitch(this, function (feature) {
                     var transcript = EditTrack.getTopLevelAnnotation(feature);
+                    var fmin = feature.get('start')
+                        , fmax = feature.get('end');
+
                     refSeqStore.getFeatures(
                         {ref: feature.get('seq_id'), start: feature.get('start'), end: feature.get('end')},
                         dojo.hitch(this, function (refSeqFeature) {
@@ -654,7 +658,7 @@ var EditTrack = declare(DraggableFeatureTrack,
 
                             var cdna = [];
                             _.each(transcript.children(), function (f) {
-                                if (f.get('type') === 'exon') {
+                                if (f.get('type') === 'exon' && f.get('start') >= fmin && f.get('end') <= fmax) {
                                     var start = f.get('start') - offset
                                         , end = f.get('end') - offset;
                                     cdna.push(seq.slice(start, end));
@@ -697,8 +701,12 @@ var EditTrack = declare(DraggableFeatureTrack,
         this.browser.getStore('refseqs', dojo.hitch(this, function (refSeqStore) {
             if (refSeqStore) {
                 var fasta = [];
+
                 _.each(features, dojo.hitch(this, function (feature) {
                     var transcript = EditTrack.getTopLevelAnnotation(feature);
+                    var fmin = feature.get('start')
+                        , fmax = feature.get('end');
+
                     refSeqStore.getFeatures(
                         {ref: feature.get('seq_id'), start: feature.get('start'), end: feature.get('end')},
                         dojo.hitch(this, function (refSeqFeature) {
@@ -707,7 +715,7 @@ var EditTrack = declare(DraggableFeatureTrack,
 
                             var cds = [];
                             _.each(transcript.children(), function (f) {
-                                if (f.get('type') === 'CDS') {
+                                if (f.get('type') === 'CDS' && f.get('start') >= fmin && f.get('end') <= fmax) {
                                     var start = f.get('start') - offset
                                         , end = f.get('end') - offset;
                                     cds.push(seq.slice(start, end));
@@ -750,8 +758,12 @@ var EditTrack = declare(DraggableFeatureTrack,
         this.browser.getStore('refseqs', dojo.hitch(this, function (refSeqStore) {
             if (refSeqStore) {
                 var fasta = [];
+
                 _.each(features, dojo.hitch(this, function (feature) {
                     var transcript = EditTrack.getTopLevelAnnotation(feature);
+                    var fmin = feature.get('start')
+                        , fmax = feature.get('end');
+
                     refSeqStore.getFeatures(
                         {ref: feature.get('seq_id'), start: feature.get('start'), end: feature.get('end')},
                         dojo.hitch(this, function (refSeqFeature) {
@@ -760,7 +772,7 @@ var EditTrack = declare(DraggableFeatureTrack,
 
                             var cds = [];
                             _.each(transcript.children(), function (f) {
-                                if (f.get('type') === 'CDS') {
+                                if (f.get('type') === 'CDS' && f.get('start') >= fmin && f.get('end') <= fmax) {
                                     var start = f.get('start') - offset
                                         , end = f.get('end') - offset;
                                     cds.push(seq.slice(start, end));
