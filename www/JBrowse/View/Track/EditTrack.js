@@ -218,15 +218,14 @@ var EditTrack = declare(DraggableFeatureTrack,
         });
 
         if (plusStranded.length > 0) {
-            var newTranscript = this.createTranscript(plusStranded);
+            var newTranscript = this.createTranscript(plusStranded, this.generateName(plusStranded[0].parent()));
             this.insertTranscripts([newTranscript]);
         }
 
         if (minusStranded.length > 0) {
-            var newTranscript = this.createTranscript(minusStranded);
+            var newTranscript = this.createTranscript(minusStranded, this.generateName(minusStranded[0].parent()));
             this.insertTranscripts([newTranscript]);
         }
-        //newTranscript.set('name', 'afra-' + newTranscript.get('seq_id') + '-mRNA-' + counter++);
     },
 
     duplicateSelectedFeatures: function () {
@@ -564,6 +563,10 @@ var EditTrack = declare(DraggableFeatureTrack,
     /* end CONTROLLERS - bridge between the view and model layer */
 
     /* Model layer */
+    generateName: function (feature) {
+        return 'afra-' + feature.get('seq_id') + '-mRNA-' + counter++;
+    },
+
     resizeExon: function (transcript, exon, leftDelta, rightDelta) {
         var subfeatures = transcript.get('subfeatures');
         var exonIndex   = _.indexOf(subfeatures, exon);
@@ -574,7 +577,7 @@ var EditTrack = declare(DraggableFeatureTrack,
         });
         subfeatures[exonIndex] = exon;
 
-        var newTranscript = this.createTranscript(subfeatures);
+        var newTranscript = this.createTranscript(subfeatures, transcript.get('name'));
         this.markNonCanonicalSites(newTranscript, function () {
             this.store.deleteFeatureById(transcript.id());
             this.store.insert(newTranscript);
@@ -645,7 +648,7 @@ var EditTrack = declare(DraggableFeatureTrack,
                     var subfeatures = _.reject(parent.get('subfeatures'), function (f) {
                         return f.id() == feature.id();
                     });
-                    var newTranscript = this.createTranscript(subfeatures);
+                    var newTranscript = this.createTranscript(subfeatures, parent.get('name'));
                     this.store.deleteFeatureById(parent.id());
                     this.store.insert(newTranscript);
                     this.changed();
@@ -689,8 +692,7 @@ var EditTrack = declare(DraggableFeatureTrack,
             });
             subfeatures.push(rightExon);
         }
-        var newTranscript = this.createTranscript(subfeatures);
-        newTranscript.set('name', transcript.get('name'));
+        var newTranscript = this.createTranscript(subfeatures, transcript.get('name'));
         return newTranscript;
     },
 
@@ -703,10 +705,8 @@ var EditTrack = declare(DraggableFeatureTrack,
             return f.get('start') > coordinate;
         });
 
-        var newTranscript1 = this.createTranscript(featuresOnLeft);
-        newTranscript1.set('name', 'afra-' + newTranscript1.get('seq_id') + '-mRNA-' + counter++);
-        var newTranscript2 = this.createTranscript(featuresOnRight);
-        newTranscript2.set('name', 'afra-' + newTranscript2.get('seq_id') + '-mRNA-' + counter++);
+        var newTranscript1 = this.createTranscript(featuresOnLeft, this.generateName(featuresOnLeft[0].parent));
+        var newTranscript2 = this.createTranscript(featuresOnRight, this.generateName(featuresOnLeft[0].parent));
 
         return [newTranscript1, newTranscript2];
     },
@@ -983,7 +983,7 @@ var EditTrack = declare(DraggableFeatureTrack,
         }));
 
         // return a new transcript
-        return this.createTranscript(subfeatures);
+        return this.createTranscript(subfeatures, transcript.get('name'));
     },
 
     /* MODEL VALIDATIONS */
