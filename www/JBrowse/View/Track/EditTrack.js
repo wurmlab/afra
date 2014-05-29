@@ -210,7 +210,7 @@ var EditTrack = declare(DraggableFeatureTrack,
     /* Initializing view, including wiring it to the controller ends here. */
 
     /* CONTROLLERS - bridge between the view and model layer */
-    duplicateSelectedFeatures: function() {
+    duplicateSelectedFeatures: function () {
         var selected = this.selectionManager.getSelectedFeatures();
         this.selectionManager.clearSelection();
         this.duplicateFeatures(selected);
