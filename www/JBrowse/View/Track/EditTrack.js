@@ -83,8 +83,7 @@ var EditTrack = declare(DraggableFeatureTrack,
      *  overriding renderFeature to add event handling right-click context menu
      */
     renderFeature:  function (feature, uniqueId, block, scale, labelScale, descriptionScale, containerStart, containerEnd) {
-        var featDiv = this.inherited( arguments );
-        var track = this;
+        var featDiv = this.inherited (arguments);
 
         if (featDiv && featDiv != null)  {
             $(featDiv).contextmenu({
@@ -615,7 +614,7 @@ var EditTrack = declare(DraggableFeatureTrack,
         return newTranscript;
     },
 
-    duplicateFeatures: function(feats)  {
+    duplicateFeatures: function (feats)  {
         var subfeaturesToAdd = [];
         var parentFeature;
         for (var i in feats)  {
