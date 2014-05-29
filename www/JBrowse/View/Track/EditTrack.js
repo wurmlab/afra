@@ -705,8 +705,8 @@ var EditTrack = declare(DraggableFeatureTrack,
             return f.get('start') > coordinate;
         });
 
-        var newTranscript1 = this.createTranscript(featuresOnLeft, this.generateName(featuresOnLeft[0].parent));
-        var newTranscript2 = this.createTranscript(featuresOnRight, this.generateName(featuresOnLeft[0].parent));
+        var newTranscript1 = this.createTranscript(featuresOnLeft, this.generateName(featuresOnLeft[0].parent()));
+        var newTranscript2 = this.createTranscript(featuresOnRight, this.generateName(featuresOnLeft[0].parent()));
 
         return [newTranscript1, newTranscript2];
     },
