@@ -236,8 +236,23 @@ var EditTrack = declare(DraggableFeatureTrack,
 
     deleteSelectedFeatures: function () {
         var selected = this.selectionManager.getSelectedFeatures();
+
+        _.each(selected, dojo.hitch(this, function (feature) {
+            if (feature.parent()) {
+                var newTranscript = this.deleteExon(feature.parent(), feature);
+                if (newTranscript) {
+                    this.replaceTranscripts([feature.parent()], [newTranscript]);
+                }
+                else {
+                    this.deleteTranscripts([feature.parent()]);
+                }
+            }
+            else {
+                this.deleteTranscripts([feature]);
+            }
+        }));
+
         this.selectionManager.clearSelection();
-        this.deleteFeatures(selected);
     },
 
     mergeSelectedFeatures: function()  {
@@ -627,38 +642,22 @@ var EditTrack = declare(DraggableFeatureTrack,
         }
     },
 
-    deleteFeatures: function(selection)  {
-        for (var i in selection) {
-            var feature = selection[i];
-            var parent = feature.parent();
+    deleteExon: function (transcript, exon)  {
+        var subfeatures = transcript.get('subfeatures');
+        var nExons = _.filter(subfeatures, function (f) {
+            return f.get('type') === 'exon';
+        });
 
-            if (parent) {
-                var subfeatures = parent.get('subfeatures');
-                var nExons = _.filter(subfeatures, function (f) {
-                    return f.get('type') === 'exon';
-                });
-
-                if (nExons.length < 2) {
-                    // delete transcript
-                    this.store.deleteFeatureById(parent.id());
-                    this.changed();
-                }
-                else {
-                    // delete selected exon from parent
-                    var subfeatures = _.reject(parent.get('subfeatures'), function (f) {
-                        return f.id() == feature.id();
-                    });
-                    var newTranscript = this.createTranscript(subfeatures, parent.get('name'));
-                    this.store.deleteFeatureById(parent.id());
-                    this.store.insert(newTranscript);
-                    this.changed();
-                }
-            }
-            else {
-                // delete transcript
-                this.store.deleteFeatureById(feature.id());
-                this.changed();
-            }
+        if (nExons.length < 2) {
+            return;
+        }
+        else {
+            // delete selected exon from transcript
+            var subfeatures = _.reject(transcript.get('subfeatures'), function (f) {
+                return f.id() == exon.id();
+            });
+            var newTranscript = this.createTranscript(subfeatures, transcript.get('name'));
+            return newTranscript;
         }
     },
 
@@ -1112,6 +1111,7 @@ var EditTrack = declare(DraggableFeatureTrack,
 
         _.each(transcripts, dojo.hitch(this, function (t) {
             this.store.deleteFeatureById(t.id());
+            this.changed();
         }));
     },
 
