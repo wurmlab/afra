@@ -228,26 +228,43 @@ var EditTrack = declare(DraggableFeatureTrack,
         var leftAnnot = sortedAnnots[0];
         var rightAnnot = sortedAnnots[sortedAnnots.length - 1];
 
+        var newTranscript;
         if (leftAnnot.parent() && rightAnnot.parent() && leftAnnot.parent() == rightAnnot.parent()) {
-            this.mergeExons(leftAnnot.parent(), leftAnnot, rightAnnot);
+            newTranscript = this.mergeExons(leftAnnot.parent(), leftAnnot, rightAnnot);
+            this.markNonCanonicalSites(newTranscript, function () {
+                this.replaceTranscripts([leftAnnot.parent()], [newTranscript]);
+                // FIXME: the code below doesn't seem to have desired effect
+                //var newMergedExon = _.find(newTranscript.get('subfeatures'), function (f) {
+                    //return f.get('start') === mergedExon.get('start') &&
+                        //f.get('end') === mergedExon.get('end');
+                //});
+                //var featdiv = this.getFeatDiv(newMergedExon);
+                //$(featdiv).trigger('mousedown');
+            });
         }
         else {
-            this.mergeTranscripts(leftAnnot, rightAnnot);
+            newTranscript = this.mergeTranscripts(leftAnnot, rightAnnot);
+            this.markNonCanonicalSites(newTranscript, function () {
+                this.replaceTranscripts([leftAnnot, rightAnnot], [newTranscript]);
+            });
         }
+
         this.selectionManager.clearSelection();
     },
 
     splitSelectedTranscript: function ()  {
         var transcript = this.selectionManager.getSelectedFeatures()[0];
         var coordinate = this.gview.absXtoBp($('#contextmenu').position().left);
-        this.splitTranscript(transcript, coordinate);
+        var newTranscripts = this.splitTranscript(transcript, coordinate);
+        this.replaceTranscripts([transcript], newTranscripts);
         this.selectionManager.clearSelection();
     },
 
     makeIntronInSelectedExon: function () {
         var exon = this.selectionManager.getSelectedFeatures()[0];
         var coordinate = this.gview.absXtoBp($('#contextmenu').position().left);
-        this.makeIntron(exon.parent(), exon, coordinate);
+        var newTranscript = this.makeIntron(exon.parent(), exon, coordinate);
+        this.replaceTranscripts([exon.parent()], [newTranscript]);
         this.selectionManager.clearSelection();
     },
 
@@ -255,16 +272,18 @@ var EditTrack = declare(DraggableFeatureTrack,
         var selected = this.selectionManager.getSelectedFeatures()[0];
         var transcript = selected.parent() ? selected.parent() : selected;
         var coordinate = this.gview.absXtoBp($('#contextmenu').position().left);
+        var newTranscript = this.setTranslationStart(transcript, coordinate);
+        this.replaceTranscripts([transcript], [newTranscript]);
         this.selectionManager.clearSelection();
-        this.setTranslationStart(transcript, coordinate);
     },
 
     setTranslationStopForSelectedTranscripts: function () {
         var selected = this.selectionManager.getSelectedFeatures()[0];
         var transcript = selected.parent() ? selected.parent() : selected;
         var coordinate = this.gview.absXtoBp($('#contextmenu').position().left);
+        var newTranscript = this.setTranslationStop(transcript, coordinate);
+        this.replaceTranscripts([transcript], [newTranscript]);
         this.selectionManager.clearSelection();
-        this.setTranslationStop(transcript, coordinate);
     },
 
     flipStrandForSelectedFeatures: function()  {
@@ -589,18 +608,7 @@ var EditTrack = declare(DraggableFeatureTrack,
         subfeatures.push(mergedExon);
         var newTranscript = this.createTranscript(subfeatures);
         newTranscript.set('name', transcript.get('name'));
-        this.markNonCanonicalSites(newTranscript, function () {
-            this.store.deleteFeatureById(transcript.id());
-            this.store.insert(newTranscript);
-            this.changed();
-            // FIXME: the code below doesn't seem to have desired effect
-            var newMergedExon = _.find(newTranscript.get('subfeatures'), function (f) {
-                return f.get('start') === mergedExon.get('start') &&
-                    f.get('end') === mergedExon.get('end');
-            });
-            var featdiv = this.getFeatDiv(newMergedExon);
-            $(featdiv).trigger('mousedown');
-        });
+        return newTranscript;
     },
 
     duplicateFeatures: function(feats)  {
@@ -670,12 +678,7 @@ var EditTrack = declare(DraggableFeatureTrack,
             leftTranscript.children().concat(rightTranscript.children());
         var newTranscript = this.createTranscript(subfeatures);
         newTranscript.set('name', 'afra-' + newTranscript.get('seq_id') + '-mRNA-' + counter++);
-        this.markNonCanonicalSites(newTranscript, function () {
-            this.store.deleteFeatureById(leftTranscript.id());
-            this.store.deleteFeatureById(rightTranscript.id());
-            this.store.insert(newTranscript);
-            this.changed();
-        });
+        return newTranscript;
     },
 
     makeIntron: function(transcript, exon, coordinate) {
@@ -696,9 +699,7 @@ var EditTrack = declare(DraggableFeatureTrack,
         }
         var newTranscript = this.createTranscript(subfeatures);
         newTranscript.set('name', transcript.get('name'));
-        this.store.deleteFeatureById(transcript.id());
-        this.store.insert(newTranscript);
-        this.changed();
+        return newTranscript;
     },
 
     splitTranscript: function (transcript, coordinate) {
@@ -714,10 +715,8 @@ var EditTrack = declare(DraggableFeatureTrack,
         newTranscript1.set('name', 'afra-' + newTranscript1.get('seq_id') + '-mRNA-' + counter++);
         var newTranscript2 = this.createTranscript(featuresOnRight);
         newTranscript2.set('name', 'afra-' + newTranscript2.get('seq_id') + '-mRNA-' + counter++);
-        this.store.deleteFeatureById(transcript.id());
-        this.store.insert(newTranscript1);
-        this.store.insert(newTranscript2);
-        this.changed();
+
+        return [newTranscript1, newTranscript2];
     },
 
     setTranslationStart: function(transcript, coordinate) {
@@ -725,11 +724,7 @@ var EditTrack = declare(DraggableFeatureTrack,
         var cdsStop  = this.getWholeCDSCoordinate(transcript)[1];
 
         var newTranscript = this.insertCDS(transcript, cdsStart, cdsStop);
-        this.markNonCanonicalSites(newTranscript, function () {
-            this.store.deleteFeatureById(transcript.id());
-            this.store.insert(newTranscript);
-            this.changed();
-        });
+        return newTranscript;
     },
 
     setTranslationStop: function(transcript, coordinate) {
@@ -737,11 +732,7 @@ var EditTrack = declare(DraggableFeatureTrack,
         var cdsStop  = coordinate;
 
         var newTranscript = this.insertCDS(transcript, cdsStart, cdsStop);
-        this.markNonCanonicalSites(newTranscript, function () {
-            this.store.deleteFeatureById(transcript.id());
-            this.store.insert(newTranscript);
-            this.changed();
-        });
+        return newTranscript;
     },
 
     flipStrand: function(features) {
