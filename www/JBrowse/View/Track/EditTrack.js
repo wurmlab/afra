@@ -1107,22 +1107,17 @@ var EditTrack = declare(DraggableFeatureTrack,
         }));
     },
 
-    replaceTranscripts: function(transcriptsToReplace, transcriptsToInsert) {
-        if (transcriptsToReplace.length < 1) return;
-        if (transcriptsToInsert.length < 1) return;
+    deleteTranscripts: function (transcripts) {
+        if (transcripts.length < 1) return;
 
-        // delete transcripts we want to replace
-        _.each(transcriptsToReplace, dojo.hitch(this, function (t) {
+        _.each(transcripts, dojo.hitch(this, function (t) {
             this.store.deleteFeatureById(t.id());
         }));
+    },
 
-        // insert new ones
-        _.each(transcriptsToInsert, dojo.hitch(this, function (t) {
-            this.markNonCanonicalSites(t, function () {
-                this.store.insert(t);
-                this.changed();
-            });
-        }));
+    replaceTranscripts: function(transcriptsToReplace, transcriptsToInsert) {
+        this.deleteTranscripts(transcriptsToReplace);
+        this.insertTranscripts(transcriptsToInsert);
     },
 
     updateMenu: function() {
