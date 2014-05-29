@@ -1105,7 +1105,6 @@ var EditTrack = declare(DraggableFeatureTrack,
                 this.changed();
             });
         }));
-        //newTranscript.set('name', 'afra-' + newTranscript.get('seq_id') + '-mRNA-' + counter++);
     },
 
     replaceTranscripts: function(transcriptsToReplace, transcriptsToInsert) {
@@ -1124,15 +1123,6 @@ var EditTrack = declare(DraggableFeatureTrack,
                 this.changed();
             });
         }));
-    },
-
-    zoomToBaseLevel: function(event) {
-        var coordinate = this.getGenomeCoord(event);
-        this.gview.zoomToBaseLevel(event, coordinate);
-    },
-
-    zoomBackOut: function(event) {
-        this.gview.zoomBackOut(event);
     },
 
     updateMenu: function() {
