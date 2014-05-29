@@ -1,5 +1,4 @@
-define( [],
-        function() {
+define(function () {
 
 var CodonTable = {
     "TCA" : "S",
@@ -69,37 +68,40 @@ var CodonTable = {
 };
 
 
-/** 
-*  take CodonTable above and generate larger codon table that includes 
-*  all permutations of upper and lower case nucleotides
-*/  
-var tempCodonTable = { };
+/**
+ *  take CodonTable above and generate larger codon table that includes 
+ *  all permutations of upper and lower case nucleotides
+ */
+var tempCodonTable = {};
 for (var codon in CodonTable) {
     // looping through codon table, make sure not hitting generic properties...
     if (CodonTable.hasOwnProperty(codon)) {
-	var aa = CodonTable[codon];
-	// console.log("Codon: ", codon, ", aa: ", aa);
-	var nucs = [];
-	for (var i=0; i<3; i++) {
-	    var nuc = codon.charAt(i);
-	    nucs[i] = [];
-	    nucs[i][0] = nuc.toUpperCase();
-	    nucs[i][1] = nuc.toLowerCase();
-	}
-	for (var i=0; i<2; i++) {
-	    var n0 = nucs[0][i];
-	    for (var j=0; j<2; j++) {
-		var n1 = nucs[1][j];
-		for (var k=0; k<2; k++) {
-		    var n2 = nucs[2][k];
-		    var triplet = n0 + n1 + n2;
-		    tempCodonTable[triplet] = aa;
-		    // console.log("triplet: ", triplet, ", aa: ", aa );
-		}
-	    }
-	}
+        var aa = CodonTable[codon];
+        // console.log("Codon: ", codon, ", aa: ", aa);
+        var nucs = [];
+        for (var i=0; i<3; i++) {
+            var nuc = codon.charAt(i);
+            nucs[i] = [];
+            nucs[i][0] = nuc.toUpperCase();
+            nucs[i][1] = nuc.toLowerCase();
+        }
+        for (var i=0; i<2; i++) {
+            var n0 = nucs[0][i];
+            for (var j=0; j<2; j++) {
+                var n1 = nucs[1][j];
+                for (var k=0; k<2; k++) {
+                    var n2 = nucs[2][k];
+                    var triplet = n0 + n1 + n2;
+                    tempCodonTable[triplet] = aa;
+                    // console.log("triplet: ", triplet, ", aa: ", aa );
+                }
+            }
+        }
     }
 }
+
+tempCodonTable.START_CODON = 'atg';
+tempCodonTable.STOP_CODONS = ['tga', 'tag', 'taa'];
 
 return tempCodonTable;
 });

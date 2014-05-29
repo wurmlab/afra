@@ -728,8 +728,6 @@ var EditTrack = declare(DraggableFeatureTrack,
     },
 
     setLongestORF: function (transcript) {
-        var startCodon = 'atg';
-        var stopCodons = ['tga', 'tag', 'taa'];
         this.browser.getStore('refseqs', dojo.hitch(this, function (refSeqStore) {
             if (refSeqStore) {
                 refSeqStore.getFeatures(
@@ -765,13 +763,13 @@ var EditTrack = declare(DraggableFeatureTrack,
                         cdna = cdna.toLowerCase();
 
                         var orfStart, orfStop, longestORF = 0;
-                        var startIndex = cdna.indexOf(startCodon);
+                        var startIndex = cdna.indexOf(CodonTable.START_CODON);
                         while (startIndex >= 0) {
                             var runningORF = 0;
                             var readingFrame = cdna.slice(startIndex);
                             _.each(readingFrame.match(/.{1,3}/g), function(codon) {
                                 runningORF += 3;
-                                if (stopCodons.indexOf(codon) !== -1) {
+                                if (CodonTable.STOP_CODONS.indexOf(codon) !== -1) {
                                     return;
                                 }
                             });
@@ -780,7 +778,7 @@ var EditTrack = declare(DraggableFeatureTrack,
                                 orfStop    = orfStart + runningORF;
                                 longestORF = runningORF;
                             }
-                            startIndex = cdna.indexOf(startCodon, startIndex + 1);
+                            startIndex = cdna.indexOf(CodonTable.START_CODON, startIndex + 1);
                         }
 
                         //console.log(island);
@@ -1053,7 +1051,7 @@ var EditTrack = declare(DraggableFeatureTrack,
         });
 
         var translationStart = this.getTranslationStart(transcript, sequence);
-        if (translationStart[1].toLowerCase() !== 'atg') {
+        if (translationStart[1].toLowerCase() !== CodonTable.START_CODON) {
             subfeatures.push(new SimpleFeature({
                 data: {
                     start: translationStart[0],
@@ -1071,13 +1069,12 @@ var EditTrack = declare(DraggableFeatureTrack,
     },
 
     markNonCanonicalTranslationStopSite: function (transcript, sequence) {
-        var stopCodons = ['tga', 'tag', 'taa'];
         var subfeatures = _.reject(transcript.get('subfeatures'), function (f) {
             return f.get('type') == 'non_canonical_translation_stop_site';
         });
 
         var translationStop = this.getTranslationStop(transcript, sequence);
-        if (!_.contains(stopCodons, translationStop[1].toLowerCase())) {
+        if (!_.contains(CodonTable.STOP_CODONS, translationStop[1].toLowerCase())) {
             subfeatures.push(new SimpleFeature({
                 data: {
                     start: translationStop[0],
