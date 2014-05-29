@@ -201,135 +201,25 @@ var EditTrack = declare(DraggableFeatureTrack,
                         subfeatures = subfeatures.concat(feature.get('subfeatures'));
                     }
                 }
-                track.addTranscript(subfeatures);
+                //track.addTranscript(subfeatures);
+                track.addDraggedSubfeatures(subfeatures);
             }
         });
     },
 
-    addTranscript: function (subfeatures) {
-        var newTranscript = this.newFeature(subfeatures);
-        newTranscript.set('name', 'afra-' + newTranscript.get('seq_id') + '-mRNA-' + counter++);
-        this.markNonCanonicalSites(newTranscript, function () {
-            this.store.insert(newTranscript);
-            this.changed();
-        });
-    },
+    /* Initializing view, including wiring it to the controller ends here. */
 
-    resizeExon: function (transcript, exon, leftDelta, rightDelta) {
-        var subfeatures = transcript.get('subfeatures');
-        var exonIndex   = _.indexOf(subfeatures, exon);
-
-        exon = this.newFeature(exon, {
-            start: exon.get('start') + leftDelta,
-            end:   exon.get('end') + rightDelta
-        });
-        subfeatures[exonIndex] = exon;
-
-        var newTranscript = this.newFeature(subfeatures);
-        this.markNonCanonicalSites(newTranscript, function () {
-            this.store.deleteFeatureById(transcript.id());
-            this.store.insert(newTranscript);
-            this.changed();
-
-            var resizedExon = _.find(newTranscript.get('subfeatures'), function (f) {
-                return f.get('start') === exon.get('start') &&
-                    f.get('end') === exon.get('end');
-            });
-            var featdiv = this.getFeatDiv(resizedExon);
-            $(featdiv).trigger('mousedown');
-        });
-    },
-
-    mergeExons: function(transcript, leftExon, rightExon) {
-        var subfeatures = _.reject(transcript.children(), function (f) {
-            return f.id() == leftExon.id() || f.id() == rightExon.id();
-        });
-        var mergedExon = this.newFeature(leftExon, {
-                end: rightExon.get('end'),
-            }
-        );
-        subfeatures.push(mergedExon);
-        var newTranscript = this.newFeature(subfeatures);
-        newTranscript.set('name', transcript.get('name'));
-        this.markNonCanonicalSites(newTranscript, function () {
-            this.store.deleteFeatureById(transcript.id());
-            this.store.insert(newTranscript);
-            this.changed();
-            // FIXME: the code below doesn't seem to have desired effect
-            var newMergedExon = _.find(newTranscript.get('subfeatures'), function (f) {
-                return f.get('start') === mergedExon.get('start') &&
-                    f.get('end') === mergedExon.get('end');
-            });
-            var featdiv = this.getFeatDiv(newMergedExon);
-            $(featdiv).trigger('mousedown');
-        });
-    },
-
+    /* CONTROLLERS - bridge between the view and model layer */
     duplicateSelectedFeatures: function() {
         var selected = this.selectionManager.getSelectedFeatures();
         this.selectionManager.clearSelection();
         this.duplicateFeatures(selected);
     },
 
-    duplicateFeatures: function(feats)  {
-        var subfeaturesToAdd = [];
-        var parentFeature;
-        for (var i in feats)  {
-            var feat = feats[i];
-            var is_subfeature = !!feat.parent();
-            if (is_subfeature) {
-                subfeaturesToAdd = subfeaturesToAdd.concat(_.select(feat.parent().children(), function (f) {
-                    return (f.get('start') >= feat.get('start') && f.get('end') <= feat.get('end'));
-                }));
-            }
-            else {
-                this.addTranscript(feats[i]);
-            }
-        }
-        if (subfeaturesToAdd.length > 0) {
-            this.addTranscript(subfeaturesToAdd);
-        }
-    },
-
     deleteSelectedFeatures: function () {
         var selected = this.selectionManager.getSelectedFeatures();
         this.selectionManager.clearSelection();
         this.deleteFeatures(selected);
-    },
-
-    deleteFeatures: function(selection)  {
-        for (var i in selection) {
-            var feature = selection[i];
-            var parent = feature.parent();
-
-            if (parent) {
-                var subfeatures = parent.get('subfeatures');
-                var nExons = _.filter(subfeatures, function (f) {
-                    return f.get('type') === 'exon';
-                });
-
-                if (nExons.length < 2) {
-                    // delete transcript
-                    this.store.deleteFeatureById(parent.id());
-                    this.changed();
-                }
-                else {
-                    // delete selected exon from parent
-                    var subfeatures = _.reject(parent.get('subfeatures'), function (f) {
-                        return f.id() == feature.id();
-                    });
-                    var newTranscript = this.newFeature(subfeatures);
-                    this.store.deleteFeatureById(parent.id());
-                    this.store.insert(newTranscript);
-                    this.changed();
-                }
-            }
-            else {
-                // delete transcript
-                this.store.deleteFeatureById(feature.id());
-                this.changed();
-            }
-        }
     },
 
     mergeSelectedFeatures: function()  {
@@ -347,25 +237,6 @@ var EditTrack = declare(DraggableFeatureTrack,
         this.selectionManager.clearSelection();
     },
 
-    mergeTranscripts: function(leftTranscript, rightTranscript) {
-        if (leftTranscript.parent())
-            leftTranscript = leftTranscript.parent();
-
-        if (rightTranscript.parent())
-            rightTranscript = rightTranscript.parent();
-
-        var subfeatures =
-            leftTranscript.children().concat(rightTranscript.children());
-        var newTranscript = this.newFeature(subfeatures);
-        newTranscript.set('name', 'afra-' + newTranscript.get('seq_id') + '-mRNA-' + counter++);
-        this.markNonCanonicalSites(newTranscript, function () {
-            this.store.deleteFeatureById(leftTranscript.id());
-            this.store.deleteFeatureById(rightTranscript.id());
-            this.store.insert(newTranscript);
-            this.changed();
-        });
-    },
-
     splitSelectedTranscript: function ()  {
         var transcript = this.selectionManager.getSelectedFeatures()[0];
         var coordinate = this.gview.absXtoBp($('#contextmenu').position().left);
@@ -378,48 +249,6 @@ var EditTrack = declare(DraggableFeatureTrack,
         var coordinate = this.gview.absXtoBp($('#contextmenu').position().left);
         this.makeIntron(exon.parent(), exon, coordinate);
         this.selectionManager.clearSelection();
-    },
-
-    makeIntron: function(transcript, exon, coordinate) {
-        var subfeatures = _.reject(transcript.get('subfeatures'), function (f) {
-            return f.id() === exon.id();
-        });
-        if (coordinate - 10 > exon.get('start')) {
-            var leftExon  = this.newFeature(exon, {
-                end:    coordinate - 10
-            });
-            subfeatures.push(leftExon);
-        }
-        if (coordinate + 10 < exon.get('end')) {
-            var rightExon = this.newFeature(exon, {
-                start:  coordinate + 10
-            });
-            subfeatures.push(rightExon);
-        }
-        var newTranscript = this.newFeature(subfeatures);
-        newTranscript.set('name', transcript.get('name'));
-        this.store.deleteFeatureById(transcript.id());
-        this.store.insert(newTranscript);
-        this.changed();
-    },
-
-    splitTranscript: function (transcript, coordinate) {
-        var children  = transcript.children();
-        var featuresOnLeft = _.select(children, function (f) {
-            return f.get('end') < coordinate;
-        });
-        var featuresOnRight = _.select(children, function (f) {
-            return f.get('start') > coordinate;
-        });
-
-        var newTranscript1 = this.newFeature(featuresOnLeft);
-        newTranscript1.set('name', 'afra-' + newTranscript1.get('seq_id') + '-mRNA-' + counter++);
-        var newTranscript2 = this.newFeature(featuresOnRight);
-        newTranscript2.set('name', 'afra-' + newTranscript2.get('seq_id') + '-mRNA-' + counter++);
-        this.store.deleteFeatureById(transcript.id());
-        this.store.insert(newTranscript1);
-        this.store.insert(newTranscript2);
-        this.changed();
     },
 
     setTranslationStartForSelectedTranscripts: function () {
@@ -438,57 +267,9 @@ var EditTrack = declare(DraggableFeatureTrack,
         this.setTranslationStop(transcript, coordinate);
     },
 
-    setTranslationStart: function(transcript, coordinate) {
-        var cdsStart = coordinate;
-        var cdsStop  = this.getWholeCDSCoordinate(transcript)[1];
-
-        var newTranscript = this.insertCDS(transcript, cdsStart, cdsStop);
-        this.markNonCanonicalSites(newTranscript, function () {
-            this.store.deleteFeatureById(transcript.id());
-            this.store.insert(newTranscript);
-            this.changed();
-        });
-    },
-
-    setTranslationStop: function(transcript, coordinate) {
-        var cdsStart = this.getWholeCDSCoordinate(transcript)[0];
-        var cdsStop  = coordinate;
-
-        var newTranscript = this.insertCDS(transcript, cdsStart, cdsStop);
-        this.markNonCanonicalSites(newTranscript, function () {
-            this.store.deleteFeatureById(transcript.id());
-            this.store.insert(newTranscript);
-            this.changed();
-        });
-    },
-
     flipStrandForSelectedFeatures: function()  {
         var selected = this.selectionManager.getSelectedFeatures();
         this.flipStrand(selected);
-    },
-
-    flipStrand: function(features) {
-        var track = this;
-        for (var i in features)  {
-            var feature  = features[i];
-            if (feature.parent()) {
-                // can't flips strand for subfeatures
-                return;
-            }
-
-            var subfeatures = _.map(feature.children(), function (f) {
-                return track.newFeature(f, {
-                    strand: f.get('strand') * -1,
-                });
-            });
-            var newTranscript = this.newFeature(subfeatures);
-            newTranscript.set('name', feature.get('name'));
-            this.markNonCanonicalSites(newTranscript, function () {
-                this.store.deleteFeatureById(feature.id());
-                this.store.insert(newTranscript);
-                this.changed();
-            });
-        }
     },
 
     setLongestORFForSelectedFeatures: function () {
@@ -500,81 +281,26 @@ var EditTrack = declare(DraggableFeatureTrack,
         }
     },
 
-    setLongestORF: function (transcript) {
-        var startCodon = 'atg';
-        var stopCodons = ['tga', 'tag', 'taa'];
-        this.browser.getStore('refseqs', dojo.hitch(this, function (refSeqStore) {
-            if (refSeqStore) {
-                refSeqStore.getFeatures(
-                    {ref: transcript.get('seq_id'), start: transcript.get('start'), end: transcript.get('end')},
-                    dojo.hitch(this, function (refSeqFeature) {
-                        var seq = refSeqFeature.get('seq')
-                            , offset = refSeqFeature.get('start');
+    addDraggedSubfeatures: function (subfeatures) {
+        var plusStranded = _.filter(subfeatures, function (f) {
+            return f.get('strand') == 1;
+        });
+        var minusStranded = _.filter(subfeatures, function (f) {
+            return f.get('strand') == -1;
+        });
 
-                        var cdna   = [];
-                        var island = []; // coordinate range on mRNA (spliced) mapped to offset from start of pre-mRNA (non-spliced)
-                        var lastEnd, i = 0;
-                        _.each(transcript.children(), function (f) {
-                            if (f.get('type') === 'exon') {
-                                var start = f.get('start') - offset
-                                    , end = f.get('end') - offset;
-                                cdna.push(seq.slice(start, end));
+        //console.log(plusStranded);
+        //console.log(minusStranded);
 
-                                if (!lastEnd) { // first exon
-                                    island.push([end - start, 0]);
-                                }
-                                else { // second exon onwards
-                                    island.push([island[i - 1][0] + end - start, island[i - 1][1] + start - lastEnd])
-                                }
-                                lastEnd = end;
-                                i++;
-                            }
-                        });
-                        cdna = cdna.join('');
-                        if (transcript.get('strand') == -1) {
-                            cdna = Util.reverseComplement(cdna);
-                        }
+        if (plusStranded.length > 0) {
+            var newTranscript = this.createTranscript(plusStranded);
+            this.insertTranscripts([newTranscript]);
+        }
 
-                        cdna = cdna.toLowerCase();
-
-                        var orfStart, orfStop, longestORF = 0;
-                        var startIndex = cdna.indexOf(startCodon);
-                        while (startIndex >= 0) {
-                            var runningORF = 0;
-                            var readingFrame = cdna.slice(startIndex);
-                            _.each(readingFrame.match(/.{1,3}/g), function(codon) {
-                                runningORF += 3;
-                                if (stopCodons.indexOf(codon) !== -1) {
-                                    return;
-                                }
-                            });
-                            if (runningORF > longestORF) {
-                                orfStart   = startIndex;
-                                orfStop    = orfStart + runningORF;
-                                longestORF = runningORF;
-                            }
-                            startIndex = cdna.indexOf(startCodon, startIndex + 1);
-                        }
-
-                        //console.log(island);
-                        //console.log(orfStart, orfStop);
-                        orfStart = orfStart + offset + _.find(island, function (i) { if (i[0] >= orfStart) return i; })[1];
-                        orfStop = orfStop + offset + _.find(island, function (i) { if (i[0] >= orfStop) return i; })[1];
-
-                        if (transcript.get('strand') == -1) {
-                            // simply swap start and stop
-                            var temp = orfStart;
-                            orfStart = orfStop;
-                            orfStop  = temp;
-                        }
-                        //console.log(orfStart, orfStop);
-                        //console.log(transcript.get('start'), transcript.get('end'), transcript.get('strand'));
-
-                        var newTranscript = this.insertCDS(transcript, orfStart, orfStop);
-                        this.addTranscript(newTranscript.get('subfeatures'));
-                    }));
-            }
-        }));
+        if (minusStranded.length > 0) {
+            var newTranscript = this.createTranscript(minusStranded);
+            this.insertTranscripts([newTranscript]);
+        }
     },
 
     showSequenceDialog: function () {
@@ -815,60 +541,361 @@ var EditTrack = declare(DraggableFeatureTrack,
         }));
     },
 
-    /* Create a new feature from another feature or array of features.
-    *
-    * NOTE: Doesn't copy children.
-    */
-    newFeature: function (from, data) {
-        // if it's a jbrowse feature object
-        if (from.hasOwnProperty('_uniqueID')) {
-            var parent = data.parent;
-            delete data.parent;
-            return new SimpleFeature({
-                data: $.extend({
-                    type:   from.get('type'),
-                    seq_id: from.get('seq_id'),
-                    strand: from.get('strand'),
-                    start:  from.get('start'),
-                    end:    from.get('end')
-                }, data),
-                parent: parent ? parent : from.parent()
+    /* end CONTROLLERS - bridge between the view and model layer */
+
+    /* Model layer */
+    addTranscript: function (subfeatures) {
+        var newTranscript = this.newFeature(subfeatures);
+        newTranscript.set('name', 'afra-' + newTranscript.get('seq_id') + '-mRNA-' + counter++);
+        this.markNonCanonicalSites(newTranscript, function () {
+            this.store.insert(newTranscript);
+            this.changed();
+        });
+    },
+
+    resizeExon: function (transcript, exon, leftDelta, rightDelta) {
+        var subfeatures = transcript.get('subfeatures');
+        var exonIndex   = _.indexOf(subfeatures, exon);
+
+        exon = this.copyFeature(exon, {
+            start: exon.get('start') + leftDelta,
+            end:   exon.get('end') + rightDelta
+        });
+        subfeatures[exonIndex] = exon;
+
+        var newTranscript = this.createTranscript(subfeatures);
+        this.markNonCanonicalSites(newTranscript, function () {
+            this.store.deleteFeatureById(transcript.id());
+            this.store.insert(newTranscript);
+            this.changed();
+
+            var resizedExon = _.find(newTranscript.get('subfeatures'), function (f) {
+                return f.get('start') === exon.get('start') &&
+                    f.get('end') === exon.get('end');
+            });
+            var featdiv = this.getFeatDiv(resizedExon);
+            $(featdiv).trigger('mousedown');
+        });
+    },
+
+    mergeExons: function(transcript, leftExon, rightExon) {
+        var subfeatures = _.reject(transcript.children(), function (f) {
+            return f.id() == leftExon.id() || f.id() == rightExon.id();
+        });
+        var mergedExon = this.copyFeature(leftExon, {
+                end: rightExon.get('end'),
+            }
+        );
+        subfeatures.push(mergedExon);
+        var newTranscript = this.createTranscript(subfeatures);
+        newTranscript.set('name', transcript.get('name'));
+        this.markNonCanonicalSites(newTranscript, function () {
+            this.store.deleteFeatureById(transcript.id());
+            this.store.insert(newTranscript);
+            this.changed();
+            // FIXME: the code below doesn't seem to have desired effect
+            var newMergedExon = _.find(newTranscript.get('subfeatures'), function (f) {
+                return f.get('start') === mergedExon.get('start') &&
+                    f.get('end') === mergedExon.get('end');
+            });
+            var featdiv = this.getFeatDiv(newMergedExon);
+            $(featdiv).trigger('mousedown');
+        });
+    },
+
+    duplicateFeatures: function(feats)  {
+        var subfeaturesToAdd = [];
+        var parentFeature;
+        for (var i in feats)  {
+            var feat = feats[i];
+            var is_subfeature = !!feat.parent();
+            if (is_subfeature) {
+                subfeaturesToAdd = subfeaturesToAdd.concat(_.select(feat.parent().children(), function (f) {
+                    return (f.get('start') >= feat.get('start') && f.get('end') <= feat.get('end'));
+                }));
+            }
+            else {
+                this.insertTranscripts([feats[i]]);
+            }
+        }
+        if (subfeaturesToAdd.length > 0) {
+            var newTranscript = this.createTranscript(subfeaturesToAdd);
+            this.insertTranscripts([newTranscript]);
+        }
+    },
+
+    deleteFeatures: function(selection)  {
+        for (var i in selection) {
+            var feature = selection[i];
+            var parent = feature.parent();
+
+            if (parent) {
+                var subfeatures = parent.get('subfeatures');
+                var nExons = _.filter(subfeatures, function (f) {
+                    return f.get('type') === 'exon';
+                });
+
+                if (nExons.length < 2) {
+                    // delete transcript
+                    this.store.deleteFeatureById(parent.id());
+                    this.changed();
+                }
+                else {
+                    // delete selected exon from parent
+                    var subfeatures = _.reject(parent.get('subfeatures'), function (f) {
+                        return f.id() == feature.id();
+                    });
+                    var newTranscript = this.createTranscript(subfeatures);
+                    this.store.deleteFeatureById(parent.id());
+                    this.store.insert(newTranscript);
+                    this.changed();
+                }
+            }
+            else {
+                // delete transcript
+                this.store.deleteFeatureById(feature.id());
+                this.changed();
+            }
+        }
+    },
+
+    mergeTranscripts: function(leftTranscript, rightTranscript) {
+        if (leftTranscript.parent())
+            leftTranscript = leftTranscript.parent();
+
+        if (rightTranscript.parent())
+            rightTranscript = rightTranscript.parent();
+
+        var subfeatures =
+            leftTranscript.children().concat(rightTranscript.children());
+        var newTranscript = this.createTranscript(subfeatures);
+        newTranscript.set('name', 'afra-' + newTranscript.get('seq_id') + '-mRNA-' + counter++);
+        this.markNonCanonicalSites(newTranscript, function () {
+            this.store.deleteFeatureById(leftTranscript.id());
+            this.store.deleteFeatureById(rightTranscript.id());
+            this.store.insert(newTranscript);
+            this.changed();
+        });
+    },
+
+    makeIntron: function(transcript, exon, coordinate) {
+        var subfeatures = _.reject(transcript.get('subfeatures'), function (f) {
+            return f.id() === exon.id();
+        });
+        if (coordinate - 10 > exon.get('start')) {
+            var leftExon  = this.copyFeature(exon, {
+                end:    coordinate - 10
+            });
+            subfeatures.push(leftExon);
+        }
+        if (coordinate + 10 < exon.get('end')) {
+            var rightExon = this.copyFeature(exon, {
+                start:  coordinate + 10
+            });
+            subfeatures.push(rightExon);
+        }
+        var newTranscript = this.createTranscript(subfeatures);
+        newTranscript.set('name', transcript.get('name'));
+        this.store.deleteFeatureById(transcript.id());
+        this.store.insert(newTranscript);
+        this.changed();
+    },
+
+    splitTranscript: function (transcript, coordinate) {
+        var children  = transcript.children();
+        var featuresOnLeft = _.select(children, function (f) {
+            return f.get('end') < coordinate;
+        });
+        var featuresOnRight = _.select(children, function (f) {
+            return f.get('start') > coordinate;
+        });
+
+        var newTranscript1 = this.createTranscript(featuresOnLeft);
+        newTranscript1.set('name', 'afra-' + newTranscript1.get('seq_id') + '-mRNA-' + counter++);
+        var newTranscript2 = this.createTranscript(featuresOnRight);
+        newTranscript2.set('name', 'afra-' + newTranscript2.get('seq_id') + '-mRNA-' + counter++);
+        this.store.deleteFeatureById(transcript.id());
+        this.store.insert(newTranscript1);
+        this.store.insert(newTranscript2);
+        this.changed();
+    },
+
+    setTranslationStart: function(transcript, coordinate) {
+        var cdsStart = coordinate;
+        var cdsStop  = this.getWholeCDSCoordinate(transcript)[1];
+
+        var newTranscript = this.insertCDS(transcript, cdsStart, cdsStop);
+        this.markNonCanonicalSites(newTranscript, function () {
+            this.store.deleteFeatureById(transcript.id());
+            this.store.insert(newTranscript);
+            this.changed();
+        });
+    },
+
+    setTranslationStop: function(transcript, coordinate) {
+        var cdsStart = this.getWholeCDSCoordinate(transcript)[0];
+        var cdsStop  = coordinate;
+
+        var newTranscript = this.insertCDS(transcript, cdsStart, cdsStop);
+        this.markNonCanonicalSites(newTranscript, function () {
+            this.store.deleteFeatureById(transcript.id());
+            this.store.insert(newTranscript);
+            this.changed();
+        });
+    },
+
+    flipStrand: function(features) {
+        var track = this;
+        for (var i in features)  {
+            var feature  = features[i];
+            if (feature.parent()) {
+                // can't flips strand for subfeatures
+                return;
+            }
+
+            var subfeatures = _.map(feature.children(), function (f) {
+                return track.copyFeature(f, {
+                    strand: f.get('strand') * -1,
+                });
+            });
+            var newTranscript = this.createTranscript(subfeatures);
+            newTranscript.set('name', feature.get('name'));
+            this.markNonCanonicalSites(newTranscript, function () {
+                this.store.deleteFeatureById(feature.id());
+                this.store.insert(newTranscript);
+                this.changed();
             });
         }
-        // if it's a javascript array
-        else if (from instanceof Array) {
-            var track = this;
-            var types = {
-                'match_part': 'exon',
-                'exon'      : 'exon',
-                'CDS'       : 'CDS'
+    },
+
+    setLongestORF: function (transcript) {
+        var startCodon = 'atg';
+        var stopCodons = ['tga', 'tag', 'taa'];
+        this.browser.getStore('refseqs', dojo.hitch(this, function (refSeqStore) {
+            if (refSeqStore) {
+                refSeqStore.getFeatures(
+                    {ref: transcript.get('seq_id'), start: transcript.get('start'), end: transcript.get('end')},
+                    dojo.hitch(this, function (refSeqFeature) {
+                        var seq = refSeqFeature.get('seq')
+                            , offset = refSeqFeature.get('start');
+
+                        var cdna   = [];
+                        var island = []; // coordinate range on mRNA (spliced) mapped to offset from start of pre-mRNA (non-spliced)
+                        var lastEnd, i = 0;
+                        _.each(transcript.children(), function (f) {
+                            if (f.get('type') === 'exon') {
+                                var start = f.get('start') - offset
+                                    , end = f.get('end') - offset;
+                                cdna.push(seq.slice(start, end));
+
+                                if (!lastEnd) { // first exon
+                                    island.push([end - start, 0]);
+                                }
+                                else { // second exon onwards
+                                    island.push([island[i - 1][0] + end - start, island[i - 1][1] + start - lastEnd])
+                                }
+                                lastEnd = end;
+                                i++;
+                            }
+                        });
+                        cdna = cdna.join('');
+                        if (transcript.get('strand') == -1) {
+                            cdna = Util.reverseComplement(cdna);
+                        }
+
+                        cdna = cdna.toLowerCase();
+
+                        var orfStart, orfStop, longestORF = 0;
+                        var startIndex = cdna.indexOf(startCodon);
+                        while (startIndex >= 0) {
+                            var runningORF = 0;
+                            var readingFrame = cdna.slice(startIndex);
+                            _.each(readingFrame.match(/.{1,3}/g), function(codon) {
+                                runningORF += 3;
+                                if (stopCodons.indexOf(codon) !== -1) {
+                                    return;
+                                }
+                            });
+                            if (runningORF > longestORF) {
+                                orfStart   = startIndex;
+                                orfStop    = orfStart + runningORF;
+                                longestORF = runningORF;
+                            }
+                            startIndex = cdna.indexOf(startCodon, startIndex + 1);
+                        }
+
+                        //console.log(island);
+                        //console.log(orfStart, orfStop);
+                        orfStart = orfStart + offset + _.find(island, function (i) { if (i[0] >= orfStart) return i; })[1];
+                        orfStop = orfStop + offset + _.find(island, function (i) { if (i[0] >= orfStop) return i; })[1];
+
+                        if (transcript.get('strand') == -1) {
+                            // simply swap start and stop
+                            var temp = orfStart;
+                            orfStart = orfStop;
+                            orfStop  = temp;
+                        }
+                        //console.log(orfStart, orfStop);
+                        //console.log(transcript.get('start'), transcript.get('end'), transcript.get('strand'));
+
+                        var newTranscript = this.insertCDS(transcript, orfStart, orfStop);
+                        this.replaceTranscripts([transcript], [newTranscript]);
+                    }));
             }
-            var feature = new SimpleFeature({
-                data: {
-                    type:   'transcript',
-                    seq_id: from[0].get('seq_id'),
-                    strand: from[0].get('strand')
+        }));
+    },
+
+    /* Return a copy of the given feature, with modifications applied.
+     * NOTE: Doesn't copy children.
+     */
+    copyFeature: function (from, data) {
+        var parent = data.parent;
+        delete data.parent;
+        return new SimpleFeature({
+            data: $.extend({
+                type:   from.get('type'),
+                seq_id: from.get('seq_id'),
+                strand: from.get('strand'),
+                start:  from.get('start'),
+                end:    from.get('end')
+            }, data),
+            parent: parent ? parent : from.parent()
+        });
+    },
+
+    createTranscript: function(subfeatures, name) {
+        var track = this;
+        var types = {
+            'match_part': 'exon',
+            'exon'      : 'exon',
+            'CDS'       : 'CDS'
+        }
+        var feature = new SimpleFeature({
+            data: {
+                type:   'transcript',
+                name:   name,
+                seq_id: subfeatures[0].get('seq_id'),
+                strand: subfeatures[0].get('strand')
+            }
+        });
+        var subfeatures = _.map(subfeatures, function (f) {
+            return track.copyFeature(f, {parent: feature, type: types[f.get('type')]});
+        });
+        var hasCDS = _.find(subfeatures, function (f) {
+            return f.get('type') === 'CDS';
+        });
+        if (!hasCDS) {
+            _.each(subfeatures, function (f) {
+                if (f.get('type') === 'exon') {
+                    subfeatures.push(track.copyFeature(f, {type: 'CDS'}));
                 }
             });
-            var subfeatures = _.map(from, function (f) {
-                return track.newFeature(f, {parent: feature, type: types[f.get('type')]});
-            });
-            var hasCDS = _.find(subfeatures, function (f) {
-                return f.get('type') === 'CDS';
-            });
-            if (!hasCDS) {
-                _.each(subfeatures, function (f) {
-                    if (f.get('type') === 'exon') {
-                        subfeatures.push(track.newFeature(f, {type: 'CDS'}));
-                    }
-                });
-            }
-            subfeatures = this.sortAnnotationsByLocation(subfeatures);
-            feature.set('start', subfeatures[0].get('start'));
-            feature.set('end', subfeatures[subfeatures.length - 1].get('end'));
-            feature.set('subfeatures', subfeatures);
-            return feature;
         }
+        subfeatures = this.sortAnnotationsByLocation(subfeatures);
+        feature.set('start', subfeatures[0].get('start'));
+        feature.set('end', subfeatures[subfeatures.length - 1].get('end'));
+        feature.set('subfeatures', subfeatures);
+        return feature;
     },
 
     getWholeCDSCoordinate: function (transcript) {
@@ -891,6 +918,55 @@ var EditTrack = declare(DraggableFeatureTrack,
         return [cdsStart, cdsStop];
     },
 
+    /* Takes a transcript (JB feature with exons and CDS) and returns a tuple of
+     * 1. coordinate of translation start site
+     * 2. translation start sequence
+     */
+    getTranslationStart: function (transcript, sequence) {
+        var offset = transcript.get('start');
+        var strand = transcript.get('strand');
+
+        var firstCDS, translationStartSequence, translationStartCoordinate;
+        if (strand === 1) {
+            firstCDS = _.find(transcript.get('subfeatures'), function (f) {
+                return f.get('type') == 'CDS';
+            });
+            translationStartCoordinate = firstCDS.get('start');
+            translationStartSequence   = sequence.slice(translationStartCoordinate - offset, translationStartCoordinate - offset + 3);
+        }
+        else if (strand === -1) {
+            firstCDS = _.find(transcript.get('subfeatures').slice().reverse(), function (f) {
+                return f.get('type') == 'CDS';
+            });
+            translationStartCoordinate = firstCDS.get('end') - 3,
+            translationStartSequence   = Util.complement(sequence).slice(translationStartCoordinate - offset, translationStartCoordinate - offset + 3).split('').reverse().join('');
+        }
+        return [translationStartCoordinate, translationStartSequence];
+    },
+
+    getTranslationStop: function (transcript, sequence) {
+        var offset = transcript.get('start');
+        var strand = transcript.get('strand');
+
+        var lastCDS, translationStopSequence, translationStopCoordinate;
+        if (strand === 1) {
+            lastCDS = _.find(transcript.get('subfeatures').slice().reverse(), function (f) {
+                return f.get('type') == 'CDS';
+            });
+            translationStopCoordinate = lastCDS.get('end') - 3;
+            translationStopSequence   = sequence.slice(translationStopCoordinate - offset, translationStopCoordinate - offset + 3);
+        }
+        else if (strand === -1) {
+            lastCDS = _.find(transcript.get('subfeatures'), function (f) {
+                return f.get('type') == 'CDS';
+            });
+            translationStopCoordinate = lastCDS.get('start');
+            translationStopSequence   = Util.complement(sequence).slice(translationStopCoordinate - offset, translationStopCoordinate - offset + 3);
+            translationStopSequence   = Util.reverse(translationStopSequence);
+        }
+        return [translationStopCoordinate, translationStopSequence];
+    },
+
     // Insert CDS into a transcript replacing the old one if needed.
     insertCDS: function (transcript, cdsStart, cdsStop) {
         // reject existing CDS, if any
@@ -909,19 +985,19 @@ var EditTrack = declare(DraggableFeatureTrack,
             if (f.get('type') === 'exon') {
                 if (f.get('start') >= cdsStart && f.get('end') <= cdsStop) {
                     // exon containing CDS only
-                    subfeatures.push(this.newFeature(f, {type: 'CDS'}));
+                    subfeatures.push(this.copyFeature(f, {type: 'CDS'}));
                 }
                 else if (f.get('start') < cdsStart && f.get('end') > cdsStart) {
                     // exon with a 5' UTR
-                    subfeatures.push(this.newFeature(f, {type: 'CDS', start: cdsStart}));
+                    subfeatures.push(this.copyFeature(f, {type: 'CDS', start: cdsStart}));
                 }
                 else if (f.get('start') < cdsStop && f.get('end') > cdsStop) {
                     // exon with a 3' UTR
-                    subfeatures.push(this.newFeature(f, {type: 'CDS', end: cdsStop}));
+                    subfeatures.push(this.copyFeature(f, {type: 'CDS', end: cdsStop}));
                 }
                 else if (f.get('start') < cdsStop && f.get('end') <= cdsStop) {
                     // this exon contains the entire CDS - will never happen in practice
-                    subfeatures.push(this.newFeature(f, {type: 'CDS', start: cdsStart, end: cdsStop}));
+                    subfeatures.push(this.copyFeature(f, {type: 'CDS', start: cdsStart, end: cdsStop}));
                 }
                 else {
                     // exon lies completely out of UTR
@@ -931,9 +1007,10 @@ var EditTrack = declare(DraggableFeatureTrack,
         }));
 
         // return a new transcript
-        return this.newFeature(subfeatures);
+        return this.createTranscript(subfeatures);
     },
 
+    /* MODEL VALIDATIONS */
     markNonCanonicalSites: function(transcript, callback) {
         this.browser.getStore('refseqs', dojo.hitch(this, function(refSeqStore) {
             if (refSeqStore) {
@@ -1041,53 +1118,39 @@ var EditTrack = declare(DraggableFeatureTrack,
         return transcript;
     },
 
-    /* Takes a transcript (JB feature with exons and CDS) and returns a tuple of
-     * 1. coordinate of translation start site
-     * 2. translation start sequence
-     */
-    getTranslationStart: function (transcript, sequence) {
-        var offset = transcript.get('start');
-        var strand = transcript.get('strand');
+    /* end MODEL VALIDATIONS */
+    /* end MODEL */
 
-        var firstCDS, translationStartSequence, translationStartCoordinate;
-        if (strand === 1) {
-            firstCDS = _.find(transcript.get('subfeatures'), function (f) {
-                return f.get('type') == 'CDS';
+    /* VIEW HELPERS - update the view based on controller events */
+
+    insertTranscripts: function (transcripts) {
+        if (transcripts.length < 1) return;
+
+        _.each(transcripts, dojo.hitch(this, function (t) {
+            this.markNonCanonicalSites(t, function () {
+                this.store.insert(t);
+                this.changed();
             });
-            translationStartCoordinate = firstCDS.get('start');
-            translationStartSequence   = sequence.slice(translationStartCoordinate - offset, translationStartCoordinate - offset + 3);
-        }
-        else if (strand === -1) {
-            firstCDS = _.find(transcript.get('subfeatures').slice().reverse(), function (f) {
-                return f.get('type') == 'CDS';
-            });
-            translationStartCoordinate = firstCDS.get('end') - 3,
-            translationStartSequence   = Util.complement(sequence).slice(translationStartCoordinate - offset, translationStartCoordinate - offset + 3).split('').reverse().join('');
-        }
-        return [translationStartCoordinate, translationStartSequence];
+        }));
+        //newTranscript.set('name', 'afra-' + newTranscript.get('seq_id') + '-mRNA-' + counter++);
     },
 
-    getTranslationStop: function (transcript, sequence) {
-        var offset = transcript.get('start');
-        var strand = transcript.get('strand');
+    replaceTranscripts: function(transcriptsToReplace, transcriptsToInsert) {
+        if (transcriptsToReplace.length < 1) return;
+        if (transcriptsToInsert.length < 1) return;
 
-        var lastCDS, translationStopSequence, translationStopCoordinate;
-        if (strand === 1) {
-            lastCDS = _.find(transcript.get('subfeatures').slice().reverse(), function (f) {
-                return f.get('type') == 'CDS';
+        // delete transcripts we want to replace
+        _.each(transcriptsToReplace, dojo.hitch(this, function (t) {
+            this.store.deleteFeatureById(t.id());
+        }));
+
+        // insert new ones
+        _.each(transcriptsToInsert, dojo.hitch(this, function (t) {
+            this.markNonCanonicalSites(t, function () {
+                this.store.insert(t);
+                this.changed();
             });
-            translationStopCoordinate = lastCDS.get('end') - 3;
-            translationStopSequence   = sequence.slice(translationStopCoordinate - offset, translationStopCoordinate - offset + 3);
-        }
-        else if (strand === -1) {
-            lastCDS = _.find(transcript.get('subfeatures'), function (f) {
-                return f.get('type') == 'CDS';
-            });
-            translationStopCoordinate = lastCDS.get('start');
-            translationStopSequence   = Util.complement(sequence).slice(translationStopCoordinate - offset, translationStopCoordinate - offset + 3);
-            translationStopSequence   = Util.reverse(translationStopSequence);
-        }
-        return [translationStopCoordinate, translationStopSequence];
+        }));
     },
 
     zoomToBaseLevel: function(event) {
@@ -1104,11 +1167,8 @@ var EditTrack = declare(DraggableFeatureTrack,
         this.updateMergeMenuItem();
         this.updateSplitTranscriptMenuItem();
         this.updateMakeIntronMenuItem();
-        //this.updateEditCommentsMenuItem();
-        //this.updateEditDbxrefsMenuItem();
         //this.updateUndoMenuItem();
         //this.updateRedoMenuItem();
-        //this.updateZoomToBaseLevelMenuItem();
         this.updateDuplicateMenuItem();
         this.updateFlipStrandMenuItem();
     },
@@ -1180,32 +1240,6 @@ var EditTrack = declare(DraggableFeatureTrack,
         menuItem.removeClass("disabled");
     },
 
-    updateEditCommentsMenuItem: function() {
-        var menuItem = this.getMenuItem("edit_comments");
-        var selected = this.selectionManager.getSelection();
-        var parent = EditTrack.getTopLevelAnnotation(selected[0].feature);
-        for (var i = 1; i < selected.length; ++i) {
-            if (EditTrack.getTopLevelAnnotation(selected[i].feature) != parent) {
-                menuItem.set("disabled", true);
-                return;
-            }
-        }
-        menuItem.set("disabled", false);
-    },
-
-    updateEditDbxrefsMenuItem: function() {
-        var menuItem = this.getMenuItem("edit_dbxrefs");
-        var selected = this.selectionManager.getSelection();
-        var parent = EditTrack.getTopLevelAnnotation(selected[0].feature);
-        for (var i = 1; i < selected.length; ++i) {
-            if (EditTrack.getTopLevelAnnotation(selected[i].feature) != parent) {
-                menuItem.set("disabled", true);
-                return;
-            }
-        }
-        menuItem.set("disabled", false);
-    },
-
     updateUndoMenuItem: function() {
         var menuItem = this.getMenuItem("undo");
         var selected = this.selectionManager.getSelection();
@@ -1224,27 +1258,6 @@ var EditTrack = declare(DraggableFeatureTrack,
             return;
         }
         menuItem.set("disabled", false);
-    },
-
-
-    updateHistoryMenuItem: function() {
-        var menuItem = this.getMenuItem("history");
-        var selected = this.selectionManager.getSelection();
-        if (selected.length > 1) {
-            menuItem.set("disabled", true);
-            return;
-        }
-        menuItem.set("disabled", false);
-    },
-
-    updateZoomToBaseLevelMenuItem: function() {
-        var menuItem = this.getMenuItem("zoom_to_base_level");
-        if( !this.gview.isZoomedToBase() ) {
-            menuItem.set("label", "Zoom to base level");
-        }
-        else {
-            menuItem.set("label", "Zoom back out");
-        }
     },
 
     updateDuplicateMenuItem: function() {
