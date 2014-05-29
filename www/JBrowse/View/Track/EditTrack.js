@@ -180,28 +180,11 @@ var EditTrack = declare(DraggableFeatureTrack,
 
     makeTrackDroppable: function() {
         var track = this;
-        $(this.div).droppable(  {
+        $(this.div).droppable({
             accept: ".selected-feature",
-            drop: function(event, ui)  {
+            drop:   function (event, ui) {
                 var features = track.browser.featSelectionManager.getSelectedFeatures();
-                var subfeatures = [];
-                for (var i in features)  {
-                    var feature = features[i];
-                    if (feature.parent()) {
-                        subfeatures = subfeatures.concat(
-                            _.select(feature.parent().children(), function (f) {
-                            if (f.get('start') >= feature.get('start') &&
-                                f.get('end') <= feature.get('end')) {
-                                return f;
-                            }
-                        }));
-                    }
-                    else {
-                        subfeatures = subfeatures.concat(feature.get('subfeatures'));
-                    }
-                }
-                //track.addTranscript(subfeatures);
-                track.addDraggedSubfeatures(subfeatures);
+                track.addDraggedFeatures(features);
             }
         });
     },
@@ -209,6 +192,43 @@ var EditTrack = declare(DraggableFeatureTrack,
     /* Initializing view, including wiring it to the controller ends here. */
 
     /* CONTROLLERS - bridge between the view and model layer */
+    addDraggedFeatures: function (features) {
+        var subfeatures = [];
+        for (var i in features)  {
+            var feature = features[i];
+            if (feature.parent()) {
+                subfeatures = subfeatures.concat(
+                    _.select(feature.parent().children(), function (f) {
+                    if (f.get('start') >= feature.get('start') &&
+                        f.get('end') <= feature.get('end')) {
+                        return f;
+                    }
+                }));
+            }
+            else {
+                subfeatures = subfeatures.concat(feature.get('subfeatures'));
+            }
+        }
+
+        var plusStranded = _.filter(subfeatures, function (f) {
+            return f.get('strand') == 1;
+        });
+        var minusStranded = _.filter(subfeatures, function (f) {
+            return f.get('strand') == -1;
+        });
+
+        if (plusStranded.length > 0) {
+            var newTranscript = this.createTranscript(plusStranded);
+            this.insertTranscripts([newTranscript]);
+        }
+
+        if (minusStranded.length > 0) {
+            var newTranscript = this.createTranscript(minusStranded);
+            this.insertTranscripts([newTranscript]);
+        }
+        //newTranscript.set('name', 'afra-' + newTranscript.get('seq_id') + '-mRNA-' + counter++);
+    },
+
     duplicateSelectedFeatures: function () {
         var selected = this.selectionManager.getSelectedFeatures();
         this.selectionManager.clearSelection();
@@ -301,28 +321,6 @@ var EditTrack = declare(DraggableFeatureTrack,
         }));
 
         this.replaceTranscripts(selected, modified);
-    },
-
-    addDraggedSubfeatures: function (subfeatures) {
-        var plusStranded = _.filter(subfeatures, function (f) {
-            return f.get('strand') == 1;
-        });
-        var minusStranded = _.filter(subfeatures, function (f) {
-            return f.get('strand') == -1;
-        });
-
-        //console.log(plusStranded);
-        //console.log(minusStranded);
-
-        if (plusStranded.length > 0) {
-            var newTranscript = this.createTranscript(plusStranded);
-            this.insertTranscripts([newTranscript]);
-        }
-
-        if (minusStranded.length > 0) {
-            var newTranscript = this.createTranscript(minusStranded);
-            this.insertTranscripts([newTranscript]);
-        }
     },
 
     showSequenceDialog: function () {
@@ -566,15 +564,6 @@ var EditTrack = declare(DraggableFeatureTrack,
     /* end CONTROLLERS - bridge between the view and model layer */
 
     /* Model layer */
-    addTranscript: function (subfeatures) {
-        var newTranscript = this.newFeature(subfeatures);
-        newTranscript.set('name', 'afra-' + newTranscript.get('seq_id') + '-mRNA-' + counter++);
-        this.markNonCanonicalSites(newTranscript, function () {
-            this.store.insert(newTranscript);
-            this.changed();
-        });
-    },
-
     resizeExon: function (transcript, exon, leftDelta, rightDelta) {
         var subfeatures = transcript.get('subfeatures');
         var exonIndex   = _.indexOf(subfeatures, exon);
