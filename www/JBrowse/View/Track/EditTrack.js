@@ -286,11 +286,6 @@ var EditTrack = declare(DraggableFeatureTrack,
         this.selectionManager.clearSelection();
     },
 
-    flipStrandForSelectedFeatures: function()  {
-        var selected = this.selectionManager.getSelectedFeatures();
-        this.flipStrand(selected);
-    },
-
     setLongestORFForSelectedFeatures: function () {
         var selection = this.selectionManager.getSelectedFeatures();
         this.selectionManager.clearSelection();
@@ -298,6 +293,15 @@ var EditTrack = declare(DraggableFeatureTrack,
             var annot = EditTrack.getTopLevelAnnotation(selection[i]);
             this.setLongestORF(annot);
         }
+    },
+
+    flipStrandForSelectedFeatures: function ()  {
+        var selected = this.selectionManager.getSelectedFeatures();
+        var modified = _.map(selected, dojo.hitch(this, function (transcript) {
+            return this.flipStrand(transcript);
+        }));
+
+        this.replaceTranscripts(selected, modified);
     },
 
     addDraggedSubfeatures: function (subfeatures) {
@@ -735,30 +739,6 @@ var EditTrack = declare(DraggableFeatureTrack,
         return newTranscript;
     },
 
-    flipStrand: function(features) {
-        var track = this;
-        for (var i in features)  {
-            var feature  = features[i];
-            if (feature.parent()) {
-                // can't flips strand for subfeatures
-                return;
-            }
-
-            var subfeatures = _.map(feature.children(), function (f) {
-                return track.copyFeature(f, {
-                    strand: f.get('strand') * -1,
-                });
-            });
-            var newTranscript = this.createTranscript(subfeatures);
-            newTranscript.set('name', feature.get('name'));
-            this.markNonCanonicalSites(newTranscript, function () {
-                this.store.deleteFeatureById(feature.id());
-                this.store.insert(newTranscript);
-                this.changed();
-            });
-        }
-    },
-
     setLongestORF: function (transcript) {
         var startCodon = 'atg';
         var stopCodons = ['tga', 'tag', 'taa'];
@@ -834,6 +814,23 @@ var EditTrack = declare(DraggableFeatureTrack,
                     }));
             }
         }));
+    },
+
+    flipStrand: function (transcript) {
+        if (transcript.parent()) {
+            // can't flips strand for subfeatures
+            return;
+        }
+
+        var subfeatures = _.map(transcript.children(), dojo.hitch(this, function (f) {
+            return this.copyFeature(f, {
+                strand: f.get('strand') * -1,
+            });
+        }));
+
+        var newTranscript = this.createTranscript(subfeatures);
+        newTranscript.set('name', transcript.get('name'));
+        return newTranscript;
     },
 
     /* Return a copy of the given feature, with modifications applied.
