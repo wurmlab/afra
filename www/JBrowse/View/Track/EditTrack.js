@@ -83,12 +83,27 @@ var EditTrack = declare(DraggableFeatureTrack,
      *  overriding renderFeature to add event handling right-click context menu
      */
     renderFeature:  function (feature, uniqueId, block, scale, labelScale, descriptionScale, containerStart, containerEnd) {
-        var featDiv = this.inherited (arguments);
+        var featDiv = this.inherited(arguments);
+        var track   = this;
 
         if (featDiv && featDiv != null)  {
             $(featDiv).contextmenu({
                 target: '#contextmenu'
             })
+
+            $(featDiv).droppable ({
+                greedy:     true,
+                accept:     ".selected-feature",
+                tolerance:  "pointer",
+                hoverClass: "annot-drop-hover",
+
+                drop:       function(event, ui)  {
+                    var transcript = featDiv.feature;
+                    var features = track.browser.featSelectionManager.getSelectedFeatures();
+                    track.addToTranscript(transcript, features);
+                    event.stopPropagation();
+                }
+            });
         }
         return featDiv;
     },
@@ -226,6 +241,40 @@ var EditTrack = declare(DraggableFeatureTrack,
             var newTranscript = this.createTranscript(minusStranded, this.generateName(minusStranded[0].parent()));
             this.insertTranscripts([newTranscript]);
         }
+    },
+
+    addToTranscript: function (transcript, features) {
+        _.each(features, dojo.hitch(this, function (f) {
+            if (!f.parent()) {
+                // f is a transcript
+                if ((f.get('start') > transcript.get('start') &&
+                     f.get('start') < transcript.get('end'))  ||
+                         (f.get('end') > transcript.get('start')) &&
+                             f.get('end') < transcript.get('end')) {
+                    // and it overlaps with the transcript it was dropped on
+                    var newTranscript = this.createTranscript(f.get('subfeatures'));
+                    this.insertTranscripts([newTranscript]);
+                }
+                else {
+                    // and it doesn't overlap with the transcript it was
+                    // dropped on
+                    if (transcript.get('strand') === f.get('strand')) {
+                        // and both transcripts are on the same strand
+                        var normalizedTranscript = this.createTranscript(f.get('subfeatures'));
+                        var mergedTranscript = this.mergeTranscripts(transcript, normalizedTranscript);
+                        this.replaceTranscripts([transcript], [mergedTranscript]);
+                    }
+                    else {
+                        // but both transcripts are on different strands
+                        var newTranscript = this.createTranscript(f.get('subfeatures'));
+                        this.insertTranscripts([newTranscript]);
+                    }
+                }
+            }
+            else {
+                // f is a subfeature
+            }
+        }));
     },
 
     duplicateSelectedFeatures: function () {
