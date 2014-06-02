@@ -97,7 +97,7 @@ var EditTrack = declare(DraggableFeatureTrack,
                 tolerance:  "pointer",
                 hoverClass: "annot-drop-hover",
 
-                drop:       function(event, ui)  {
+                drop:       function (event, ui) {
                     var transcript = featDiv.feature;
                     var features = track.browser.featSelectionManager.getSelectedFeatures();
                     track.addToTranscript(transcript, features);
@@ -207,7 +207,7 @@ var EditTrack = declare(DraggableFeatureTrack,
     /* Initializing view, including wiring it to the controller ends here. */
 
     /* CONTROLLERS - bridge between the view and model layer */
-    addDraggedFeatures: function (features) {
+    processDraggedFeatures: function (features) {
         var transcripts = [];
         var subfeatures = [];
         for (var i in features)  {
@@ -246,43 +246,34 @@ var EditTrack = declare(DraggableFeatureTrack,
             }
         }
 
+        return transcripts;
+    },
+
+    addDraggedFeatures: function (features) {
+        var transcripts = this.processDraggedFeatures(features);
         if (transcripts.length > 0) {
             this.insertTranscripts(transcripts);
         }
     },
 
     addToTranscript: function (transcript, features) {
-        _.each(features, dojo.hitch(this, function (f) {
-            if (!f.parent()) {
-                // f is a transcript
-                if ((f.get('start') > transcript.get('start') &&
-                     f.get('start') < transcript.get('end'))  ||
-                         (f.get('end') > transcript.get('start')) &&
-                             f.get('end') < transcript.get('end')) {
-                    // and it overlaps with the transcript it was dropped on
-                    var newTranscript = this.createTranscript(f.get('subfeatures'));
-                    this.insertTranscripts([newTranscript]);
-                }
-                else {
-                    // and it doesn't overlap with the transcript it was
-                    // dropped on
-                    if (transcript.get('strand') === f.get('strand')) {
-                        // and both transcripts are on the same strand
-                        var normalizedTranscript = this.createTranscript(f.get('subfeatures'));
-                        var mergedTranscript = this.mergeTranscripts(transcript, normalizedTranscript);
-                        this.replaceTranscripts([transcript], [mergedTranscript]);
-                    }
-                    else {
-                        // but both transcripts are on different strands
-                        var newTranscript = this.createTranscript(f.get('subfeatures'));
-                        this.insertTranscripts([newTranscript]);
-                    }
+        var transcripts = this.processDraggedFeatures(features);
+        if (transcripts.length === 1) {
+            var f = transcripts[0];
+            if (!(f.get('start') > transcript.get('start') &&
+                 f.get('start') < transcript.get('end'))   ||
+                     !(f.get('end') > transcript.get('start')) &&
+                         f.get('end') < transcript.get('end')) {
+
+                if (f.get('strand') === transcript.get('strand')) {
+                    var mergedTranscript = this.mergeTranscripts(transcript, f);
+                    this.replaceTranscripts([transcript], [mergedTranscript]);
                 }
             }
-            else {
-                // f is a subfeature
-            }
-        }));
+        }
+        if (!mergedTranscript && transcripts.length > 0) {
+            this.insertTranscripts(transcripts);
+        }
     },
 
     duplicateSelectedFeatures: function () {
