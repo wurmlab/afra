@@ -208,6 +208,7 @@ var EditTrack = declare(DraggableFeatureTrack,
 
     /* CONTROLLERS - bridge between the view and model layer */
     addDraggedFeatures: function (features) {
+        var transcripts = [];
         var subfeatures = [];
         for (var i in features)  {
             var feature = features[i];
@@ -221,25 +222,32 @@ var EditTrack = declare(DraggableFeatureTrack,
                 }));
             }
             else {
-                subfeatures = subfeatures.concat(feature.get('subfeatures'));
+                var newTranscript = this.createTranscript(feature.get('subfeatures'), this.generateName(feature))
+                transcripts.push(newTranscript);
             }
         }
 
-        var plusStranded = _.filter(subfeatures, function (f) {
-            return f.get('strand') == 1;
-        });
-        var minusStranded = _.filter(subfeatures, function (f) {
-            return f.get('strand') == -1;
-        });
+        if (subfeatures.length > 0) {
+            var plusStranded = _.filter(subfeatures, function (f) {
+                return f.get('strand') == 1;
+            });
+            var minusStranded = _.filter(subfeatures, function (f) {
+                return f.get('strand') == -1;
+            });
 
-        if (plusStranded.length > 0) {
-            var newTranscript = this.createTranscript(plusStranded, this.generateName(plusStranded[0].parent()));
-            this.insertTranscripts([newTranscript]);
+            if (plusStranded.length > 0) {
+                var newTranscript = this.createTranscript(plusStranded, this.generateName(plusStranded[0].parent()));
+                transcripts.push(newTranscript);
+            }
+
+            if (minusStranded.length > 0) {
+                var newTranscript = this.createTranscript(minusStranded, this.generateName(minusStranded[0].parent()));
+                transcripts.push(newTranscript);
+            }
         }
 
-        if (minusStranded.length > 0) {
-            var newTranscript = this.createTranscript(minusStranded, this.generateName(minusStranded[0].parent()));
-            this.insertTranscripts([newTranscript]);
+        if (transcripts.length > 0) {
+            this.insertTranscripts(transcripts);
         }
     },
 
