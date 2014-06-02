@@ -439,7 +439,7 @@ var EditTrack = declare(DraggableFeatureTrack,
                 fasta = fasta.join("\n");
                 $('#sequence pre').html(fasta);//.data('sequence_id', feature.id());
                 $('#sequence').modal();
-                $('#bp').fadeIn();
+                $('#bp').show();
             }
         }));
     },
@@ -497,7 +497,7 @@ var EditTrack = declare(DraggableFeatureTrack,
                 fasta = fasta.join("\n");
                 $('#sequence pre').html(fasta);//.data('id', feature.id());
                 $('#sequence').modal();
-                $('#bp').fadeOut();
+                $('#bp').hide();
             }
         }));
     },
@@ -554,7 +554,7 @@ var EditTrack = declare(DraggableFeatureTrack,
                 fasta = fasta.join("\n");
                 $('#sequence pre').html(fasta);//.data('id', feature.id());
                 $('#sequence').modal();
-                $('#bp').fadeOut();
+                $('#bp').hide();
             }
         }));
     },
@@ -618,7 +618,7 @@ var EditTrack = declare(DraggableFeatureTrack,
                 fasta = fasta.join("\n");
                 $('#sequence pre').html(fasta);//.data('id', feature.id());
                 $('#sequence').modal();
-                $('#bp').fadeOut();
+                $('#bp').hide();
             }
         }));
     },
