@@ -97,4 +97,17 @@ task 'configure' do
   Setting.create(key: 'facebook_app_secret', value: fb_app_secret)
 end
 
+desc 'IRb.'
+task 'irb' do
+  require_relative 'app'
+  ARGV.clear
+  App.irb
+end
+
+desc 'Serve.'
+task 'serve', [:uri] do |t, args|
+  require_relative 'app'
+  App.serve
+end
+
 task default: [:install, :'db:migrate', :configure]
