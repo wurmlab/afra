@@ -97,9 +97,4 @@ task 'configure' do
   Setting.create(key: 'facebook_app_secret', value: fb_app_secret)
 end
 
-desc 'Test auto-check'
-task 'auto-check' do
-
-end
-
 task default: [:install, :'db:migrate', :configure]
