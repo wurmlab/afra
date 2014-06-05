@@ -17,7 +17,7 @@ define(['JBrowse/Browser']
         }
     };
 
-    return ['$http', '$q', '$cookieStore', function (http, q, cookie) {
+    return ['$http', '$q', '$cookieStore', '$location', function (http, q, cookie, location) {
         this.browser = new Browser(config);
 
         this.sidebar_visible = true;
@@ -79,15 +79,31 @@ define(['JBrowse/Browser']
                 cookie.remove('task');
                 $('#thanks').modal();
             });
-        }
+        };
 
-        $('#thanks').on('hidden.bs.modal', function () {
-            jbrowse.clear_edits()
-            get()
-            .then(function (task) {
-                jbrowse.load(task);
-            });
-        });
+        this.contribute_more = function () {
+            var handler = function () {
+                console.log('contribute more');
+                jbrowse.clear_edits();
+                get()
+                .then(function (task) {
+                    jbrowse.load(task);
+                });
+                $(this).off('hidden.bs.modal', handler);
+            };
+            $('#thanks').modal('hide').on('hidden.bs.modal', handler);
+        };
+
+        this.go_back_to_dashboard = function () {
+            var scope = this;
+            var handler = function () {
+                scope.$apply(function () {
+                    location.path('/');
+                });
+                $(this).off('hidden.bs.modal', handler);
+            };
+            $('#thanks').modal('hide').on('hidden.bs.modal', handler);
+        }
 
         // initialize
         q.when(cookie.get('task'))

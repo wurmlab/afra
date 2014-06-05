@@ -196,7 +196,7 @@
     </div>
   </div>
 
-  <div class="modal fade" id="thanks" data-backdrop="false">
+  <div class="modal fade" id="thanks">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
@@ -208,17 +208,16 @@
           </p>
         </div>
         <div class="modal-footer">
-          <a
-            href="#"
-            data-dismiss="modal"
+          <button
+            ng-click="contribute_more()"
             class="btn btn-primary">
             Contribute more
-          </a>
-          <a
-            href='/'
+          </button>
+          <button
+            ng-click="go_back_to_dashboard()"
             class="btn btn-primary">
             Go back to Dashboard
-          </a>
+          </button>
         </div>
       </div>
     </div>
