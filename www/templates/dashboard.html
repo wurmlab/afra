@@ -62,6 +62,32 @@
 
       <h3>Contribution Activity</h3>
       <div
+        ng-if="!has_contributions()">
+        <h3 class="contribution-activity">
+          <div class="inner">
+            Welcome
+          </div>
+        </h3>
+        <ul
+          class="list-group">
+          <li
+            class="list-group-item">
+            <p class="list-group-item-text">
+              <span
+                class="label label-success">
+              </span>
+              &nbsp;&nbsp;
+              Pick a challenge above and start contributing!
+              <span
+                am-time-ago="contribution.attempted_at"
+                class="time pull-right">
+                {{user.joined_on | amDateFormat: 'MMMM Do, YYYY'}}
+              </span>
+            </p>
+          </li>
+        </ul>
+      </div>
+      <div
         ng-repeat="(task_type, contributions) in contributions">
         <h3 class="contribution-activity">
           <div class="inner">
@@ -77,7 +103,8 @@
             {{task_type}}
           </div>
         </h3>
-        <ul class="list-group">
+        <ul
+          class="list-group">
           <li
             ng-repeat="contribution in contributions | orderBy:'-attempted_at'"
             class="list-group-item">

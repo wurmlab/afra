@@ -14,6 +14,9 @@ function () {
             });
 
             scope.contributions = contributions;
+            scope.has_contributions = function () {
+                return !$.isEmptyObject(scope.contributions);
+            }
         });
     }];
 });
