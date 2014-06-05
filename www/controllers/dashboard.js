@@ -13,13 +13,6 @@ function () {
                 return contribution.task_type;
             });
 
-            // DUMMY DATA
-            contributions['Review'] = [{
-                status: 'submitted',
-                description: 'foo bar'
-            }];
-            // DUMMY DATA
-
             scope.contributions = contributions;
         });
     }];
