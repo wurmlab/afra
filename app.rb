@@ -103,13 +103,6 @@ module App
     exit
   end
 
-  def current_migration(**options)
-    init_config **options
-    init_db
-    Sequel.extension :migration
-    Sequel::IntegerMigrator.new(db, File.expand_path('migrations')).current
-  end
-
   def gff2jbrowse(**options)
     init_config **options
     puts   "Converting GFF to JBrowse ..."

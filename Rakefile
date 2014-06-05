@@ -62,15 +62,6 @@ task 'db:migrate', [:version] do |t, args|
   App.migrate version: version
 end
 
-desc 'Reset database.'
-task 'db:reinit'  do
-  require_relative 'app'
-  migration_first = 3
-  migration_last  = App.current_migration
-  App.migrate version: migration_first
-  App.migrate version: migration_last
-end
-
 desc 'Configure.'
 task 'configure' do
   require_relative 'app'
