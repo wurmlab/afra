@@ -1133,6 +1133,7 @@ var EditTrack = declare(DraggableFeatureTrack,
     insertTranscripts: function (transcripts) {
         if (transcripts.length < 1) return;
 
+        this.backupStore();
         _.each(transcripts, dojo.hitch(this, function (t) {
             this.markNonCanonicalSites(t, function () {
                 this.store.insert(t);
@@ -1144,6 +1145,7 @@ var EditTrack = declare(DraggableFeatureTrack,
     deleteTranscripts: function (transcripts) {
         if (transcripts.length < 1) return;
 
+        this.backupStore();
         _.each(transcripts, dojo.hitch(this, function (t) {
             this.store.deleteFeatureById(t.id());
             this.changed();
@@ -1164,6 +1166,17 @@ var EditTrack = declare(DraggableFeatureTrack,
             });
         }));
         this.changed();
+    },
+
+    undo: function () {
+        var tmp = this.store.features;
+        this.store.features = this.lastStoreState;
+        this.lastStoreState = $.extend({}, tmp);
+        this.changed();
+    },
+
+    backupStore: function () {
+        this.lastStoreState = $.extend({}, this.store.features);
     },
 
     updateMenu: function() {
