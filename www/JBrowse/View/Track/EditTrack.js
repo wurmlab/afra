@@ -759,18 +759,12 @@ var EditTrack = declare(DraggableFeatureTrack,
     },
 
     setTranslationStart: function(transcript, coordinate) {
-        var cdsStart = coordinate;
-        var cdsStop  = this.getWholeCDSCoordinate(transcript)[1];
-
-        var newTranscript = this.insertCDS(transcript, cdsStart, cdsStop);
+        var newTranscript = this.setCDS(transcript, {start: coordinate});
         return newTranscript;
     },
 
     setTranslationStop: function(transcript, coordinate) {
-        var cdsStart = this.getWholeCDSCoordinate(transcript)[0];
-        var cdsStop  = coordinate;
-
-        var newTranscript = this.insertCDS(transcript, cdsStart, cdsStop);
+        var newTranscript = this.setCDS(transcript, {stop: coordinate});
         return newTranscript;
     },
 
@@ -842,7 +836,7 @@ var EditTrack = declare(DraggableFeatureTrack,
                         //console.log(orfStart, orfStop);
                         //console.log(transcript.get('start'), transcript.get('end'), transcript.get('strand'));
 
-                        var newTranscript = this.insertCDS(transcript, orfStart, orfStop);
+                        var newTranscript = this.setCDS(transcript, {start: orfStart, stop: orfStop});
                         this.replaceTranscripts([transcript], [newTranscript]);
                     }));
             }
@@ -919,7 +913,7 @@ var EditTrack = declare(DraggableFeatureTrack,
         return feature;
     },
 
-    getWholeCDSCoordinate: function (transcript) {
+    getCDSCoordinates: function (transcript) {
         var cdsStart, cdsStop;
         var cdsFeatures = _.select(transcript.get('subfeatures'), function (f) {
             return f.get('type') === 'CDS';
@@ -939,61 +933,53 @@ var EditTrack = declare(DraggableFeatureTrack,
         return [cdsStart, cdsStop];
     },
 
-    /* Takes a transcript (JB feature with exons and CDS) and returns a tuple of
-     * 1. coordinate of translation start site
-     * 2. translation start sequence
-     */
-    getTranslationStart: function (transcript, sequence) {
-        var offset = transcript.get('start');
-        var strand = transcript.get('strand');
+    getCDS: function (transcript, sequence) {
+        var cdsCoordinates = this.getCDSCoordinates(transcript);
 
-        var firstCDS, translationStartSequence, translationStartCoordinate;
-        if (strand === 1) {
-            firstCDS = _.find(transcript.get('subfeatures'), function (f) {
-                return f.get('type') == 'CDS';
-            });
-            translationStartCoordinate = firstCDS.get('start');
-            translationStartSequence   = sequence.slice(translationStartCoordinate - offset, translationStartCoordinate - offset + 3);
+        if (transcript.get('strand') === -1) {
+            cdsCoordinates.reverse();
         }
-        else if (strand === -1) {
-            firstCDS = _.find(transcript.get('subfeatures').slice().reverse(), function (f) {
-                return f.get('type') == 'CDS';
-            });
-            translationStartCoordinate = firstCDS.get('end') - 3,
-            translationStartSequence   = Util.complement(sequence).slice(translationStartCoordinate - offset, translationStartCoordinate - offset + 3).split('').reverse().join('');
+
+        var offset = transcript.get('start');
+        cdsCoordinates = _.map(cdsCoordinates, function (c) {
+            return c - offset;
+        })
+
+        var cds = sequence.slice(cdsCoordinates[0], cdsCoordinates[1] + 1);
+        if (transcript.get('strand') === -1) {
+            cds = Util.reverseComplement(cds);
         }
-        return [translationStartCoordinate, translationStartSequence];
+
+        return cds;
     },
 
-    getTranslationStop: function (transcript, sequence) {
-        var offset = transcript.get('start');
-        var strand = transcript.get('strand');
+    getStartCodon: function (transcript, sequence) {
+        var cds = this.getCDS(transcript, sequence);
+        return cds.slice(0, 3);
+    },
 
-        var lastCDS, translationStopSequence, translationStopCoordinate;
-        if (strand === 1) {
-            lastCDS = _.find(transcript.get('subfeatures').slice().reverse(), function (f) {
-                return f.get('type') == 'CDS';
-            });
-            translationStopCoordinate = lastCDS.get('end') - 3;
-            translationStopSequence   = sequence.slice(translationStopCoordinate - offset, translationStopCoordinate - offset + 3);
-        }
-        else if (strand === -1) {
-            lastCDS = _.find(transcript.get('subfeatures'), function (f) {
-                return f.get('type') == 'CDS';
-            });
-            translationStopCoordinate = lastCDS.get('start');
-            translationStopSequence   = Util.complement(sequence).slice(translationStopCoordinate - offset, translationStopCoordinate - offset + 3);
-            translationStopSequence   = Util.reverse(translationStopSequence);
-        }
-        return [translationStopCoordinate, translationStopSequence];
+    getStopCodon: function (transcript, sequence) {
+        var cds = this.getCDS(transcript, sequence);
+        return cds.slice(-3);
+    },
+
+    getTranslationStart: function (transcript, sequence) {
+        return this.getCDSCoordinates(transcript)[0];
+    },
+
+    getTranslationStop: function (transcript) {
+        return this.getCDSCoordinates(transcript)[1] - 3;
     },
 
     // Insert CDS into a transcript replacing the old one if needed.
-    insertCDS: function (transcript, cdsStart, cdsStop) {
-        // reject existing CDS, if any
+    setCDS: function (transcript, cdsCoordinates) {
+        // filter out existing CDS, if any
         var subfeatures = _.reject(transcript.get('subfeatures'), function (f) {
             return f.get('type') === 'CDS';
         });
+
+        var cdsStart = cdsCoordinates['start'] || this.getCDSCoordinates(transcript)[0];
+        var cdsStop  = cdsCoordinates['stop']  || this.getCDSCoordinates(transcript)[1];
 
         // insert new CDS
         if (transcript.get('strand') == -1) {
@@ -1092,17 +1078,17 @@ var EditTrack = declare(DraggableFeatureTrack,
     },
 
     markNonCanonicalTranslationStartSite: function (transcript, sequence) {
-        // remove non-canonical translation start site from before
         var subfeatures = _.reject(transcript.get('subfeatures'), function (f) {
             return f.get('type') === 'non_canonical_translation_start_site';
         });
 
-        var translationStart = this.getTranslationStart(transcript, sequence);
-        if (translationStart[1].toLowerCase() !== CodonTable.START_CODON) {
+        var startCodon = this.getStartCodon(transcript, sequence);
+        var translationStart = this.getTranslationStart(transcript);
+        if (startCodon.toLowerCase() !== CodonTable.START_CODON) {
             subfeatures.push(new SimpleFeature({
                 data: {
-                    start: translationStart[0],
-                    end:   translationStart[0] + 3,
+                    start: translationStart,
+                    end:   translationStart + 3,
                     type:  'non_canonical_translation_start_site',
                     seq_id: transcript.get('seq_id'),
                     strand: transcript.get('strand')
@@ -1120,12 +1106,13 @@ var EditTrack = declare(DraggableFeatureTrack,
             return f.get('type') == 'non_canonical_translation_stop_site';
         });
 
-        var translationStop = this.getTranslationStop(transcript, sequence);
-        if (!_.contains(CodonTable.STOP_CODONS, translationStop[1].toLowerCase())) {
+        var stopCodon = this.getStopCodon(transcript, sequence);
+        var translationStop = this.getTranslationStop(transcript);
+        if (!_.contains(CodonTable.STOP_CODONS, stopCodon.toLowerCase())) {
             subfeatures.push(new SimpleFeature({
                 data: {
-                    start: translationStop[0],
-                    end:   translationStop[0] + 3,
+                    start: translationStop,
+                    end:   translationStop + 3,
                     type:  'non_canonical_translation_stop_site',
                     seq_id: transcript.get('seq_id'),
                     strand: transcript.get('strand')
