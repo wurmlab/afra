@@ -1151,8 +1151,19 @@ var EditTrack = declare(DraggableFeatureTrack,
     },
 
     replaceTranscripts: function(transcriptsToReplace, transcriptsToInsert) {
-        this.deleteTranscripts(transcriptsToReplace);
-        this.insertTranscripts(transcriptsToInsert);
+        if (transcriptsToReplace.length < 1) return;
+        if (transcriptsToInsert.length < 1) return;
+
+        this.backupStore();
+        _.each(transcriptsToReplace, dojo.hitch(this, function (t) {
+            this.store.deleteFeatureById(t.id());
+        }));
+        _.each(transcriptsToInsert, dojo.hitch(this, function (t) {
+            this.markNonCanonicalSites(t, function () {
+                this.store.insert(t);
+            });
+        }));
+        this.changed();
     },
 
     updateMenu: function() {
