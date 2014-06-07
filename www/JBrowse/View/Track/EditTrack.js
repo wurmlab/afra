@@ -764,7 +764,7 @@ var EditTrack = declare(DraggableFeatureTrack,
     },
 
     setTranslationStop: function(transcript, coordinate) {
-        var newTranscript = this.setCDS(transcript, {stop: coordinate});
+        var newTranscript = this.setCDS(transcript, {end: coordinate});
         return newTranscript;
     },
 
@@ -836,7 +836,7 @@ var EditTrack = declare(DraggableFeatureTrack,
                         //console.log(orfStart, orfStop);
                         //console.log(transcript.get('start'), transcript.get('end'), transcript.get('strand'));
 
-                        var newTranscript = this.setCDS(transcript, {start: orfStart, stop: orfStop});
+                        var newTranscript = this.setCDS(transcript, {start: orfStart, end: orfStop});
                         this.replaceTranscripts([transcript], [newTranscript]);
                     }));
             }
@@ -914,23 +914,23 @@ var EditTrack = declare(DraggableFeatureTrack,
     },
 
     getCDSCoordinates: function (transcript) {
-        var cdsStart, cdsStop;
+        var cdsStart, cdsEnd;
         var cdsFeatures = _.select(transcript.get('subfeatures'), function (f) {
             return f.get('type') === 'CDS';
         });
 
         // we know the subfeatures are sorted by their coordinates, so
         var cdsStart = cdsFeatures[0].get('start');
-        var cdsStop  = cdsFeatures[cdsFeatures.length - 1].get('end')
+        var cdsEnd = cdsFeatures[cdsFeatures.length - 1].get('end')
 
         if (transcript.get('strand') == -1) {
             // simply swap start and stop
             var temp = cdsStart;
-            cdsStart = cdsStop;
-            cdsStop  = temp;
+            cdsStart = cdsEnd;
+            cdsEnd  = temp;
         }
 
-        return [cdsStart, cdsStop];
+        return [cdsStart, cdsEnd];
     },
 
     getCDS: function (transcript, sequence) {
@@ -979,18 +979,18 @@ var EditTrack = declare(DraggableFeatureTrack,
         });
 
         var cdsStart = cdsCoordinates['start'] || this.getCDSCoordinates(transcript)[0];
-        var cdsStop  = cdsCoordinates['stop']  || this.getCDSCoordinates(transcript)[1];
+        var cdsEnd = cdsCoordinates['end'] || this.getCDSCoordinates(transcript)[1];
 
         // insert new CDS
         if (transcript.get('strand') == -1) {
             // simply swap start and stop
             var temp = cdsStart;
-            cdsStart = cdsStop;
-            cdsStop  = temp;
+            cdsStart = cdsEnd;
+            cdsEnd  = temp;
         }
         _.each(subfeatures, dojo.hitch(this, function (f) {
             if (f.get('type') === 'exon') {
-                if (f.get('start') >= cdsStart && f.get('end') <= cdsStop) {
+                if (f.get('start') >= cdsStart && f.get('end') <= cdsEnd) {
                     // exon containing CDS only
                     subfeatures.push(this.copyFeature(f, {type: 'CDS'}));
                 }
@@ -998,13 +998,13 @@ var EditTrack = declare(DraggableFeatureTrack,
                     // exon with a 5' UTR
                     subfeatures.push(this.copyFeature(f, {type: 'CDS', start: cdsStart}));
                 }
-                else if (f.get('start') < cdsStop && f.get('end') > cdsStop) {
+                else if (f.get('start') < cdsEnd && f.get('end') > cdsEnd) {
                     // exon with a 3' UTR
-                    subfeatures.push(this.copyFeature(f, {type: 'CDS', end: cdsStop}));
+                    subfeatures.push(this.copyFeature(f, {type: 'CDS', end: cdsEnd}));
                 }
-                else if (f.get('start') < cdsStop && f.get('end') <= cdsStop) {
+                else if (f.get('start') < cdsEnd && f.get('end') <= cdsEnd) {
                     // this exon contains the entire CDS - will never happen in practice
-                    subfeatures.push(this.copyFeature(f, {type: 'CDS', start: cdsStart, end: cdsStop}));
+                    subfeatures.push(this.copyFeature(f, {type: 'CDS', start: cdsStart, end: cdsEnd}));
                 }
                 else {
                     // exon lies completely out of UTR
