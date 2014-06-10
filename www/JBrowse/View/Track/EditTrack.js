@@ -1057,6 +1057,9 @@ var EditTrack = declare(DraggableFeatureTrack,
             for (var i = 0; i < nonCanonicalSpliceSites.length; i++)
             nonCanonicalSpliceSites[i] = sequence.length - nonCanonicalSpliceSites[i];
         }
+        if (!nonCanonicalSpliceSites) {
+            nonCanonicalSpliceSites = [];
+        }
         for (var i = 0; i < nonCanonicalSpliceSites.length; i++) {
             var non_canonical_splice_site = nonCanonicalSpliceSites[i];
             subfeatures.push(new SimpleFeature({
