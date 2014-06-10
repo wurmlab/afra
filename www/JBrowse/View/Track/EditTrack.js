@@ -150,7 +150,7 @@ var EditTrack = declare(DraggableFeatureTrack,
                     autohide: false,
                     grid: gridvals,
 
-                    stop: function(event, ui)  {
+                    stop: function (event, ui)  {
                         var exon      = ui.originalElement[0].subfeature;
                         var parent    = exon.parent();
                         var children  = parent.children();
@@ -167,10 +167,14 @@ var EditTrack = declare(DraggableFeatureTrack,
                         var rightDeltaBases  = Math.round(track.gview.pxToBp(rightDeltaPixels));
 
                         if (leftExon && (exon.get('start') + leftDeltaBases) <= leftExon.get('end')) {
-                            track.mergeExons(parent, leftExon, exon);
+                            var newTranscript = track.mergeExons(parent, leftExon, exon);
+                            newTranscript.set('name', parent.get('name'));
+                            track.replaceTranscripts([parent], [newTranscript]);
                         }
                         else if (rightExon && (exon.get('end') + rightDeltaBases) >= rightExon.get('start')) {
-                            track.mergeExons(parent, exon, rightExon);
+                            var newTranscript = track.mergeExons(parent, exon, rightExon);
+                            newTranscript.set('name', parent.get('name'));
+                            track.replaceTranscripts([parent], [newTranscript]);
                         }
                         else {
                             track.resizeExon(parent, exon, leftDeltaBases, rightDeltaBases);
