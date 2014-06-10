@@ -119,35 +119,53 @@ my %commands = (
                          '--subfeatureClasses' => '{"match_part": "CDS"}',
                          '--type' => 'match:snap_masked',
                        ],
+
     augustus        => [ '--key' => "Augustus",
                          '--className' => 'transcript',
                          '--subfeatureClasses' => '{"match_part": "CDS"}',
                          '--type' => 'match:augustus',
                        ],
+
     augustus_masked => [ '--key' => "Augustus",
                          '--className' => 'transcript',
                          '--subfeatureClasses' => '{"match_part": "CDS"}',
                          '--type' => 'match:augustus_masked',
                        ],
+
     genemark        => [ '--key' => "GeneMark",
                          '--className' => 'transcript',
                          '--subfeatureClasses' => '{"match_part": "CDS"}',
                          '--type' => 'match:genemark',
                        ],
+
     genemark_masked => [ '--key' => "GeneMark",
                          '--className' => 'transcript',
                          '--subfeatureClasses' => '{"match_part": "CDS"}',
                          '--type' => 'match:genemark_masked',
                        ],
+
     fgenesh         => [ '--key' => "FGENESH",
                          '--className' => 'transcript',
                          '--subfeatureClasses' => '{"match_part": "CDS"}',
                          '--type' => 'match:fgenesh',
                        ],
+
     fgenesh_masked  => [ '--key' => "FGENESH",
                          '--className' => 'transcript',
                          '--subfeatureClasses' => '{"match_part": "CDS"}',
                          '--type' => 'match:fgenesh_masked',
+                       ],
+
+    pred_gff        => [ '--key' => "Predictions",
+                         '--className' => 'transcript',
+                         '--subfeatureClasses' => '{"match_part": "match_part"}',
+                         '--type' => 'match:pred_gff',
+                       ],
+
+    model_gff       => [ '--key' => "Models",
+                         '--className' => 'transcript',
+                         '--subfeatureClasses' => '{"match_part": "match_part"}',
+                         '--type' => 'match:model_gff',
                        ],
 
     #evidence alignments
@@ -182,16 +200,41 @@ my %commands = (
                          '--type' => 'expressed_sequence_match:cdna2genome',
                        ],
 
+    est_gff         => [ '--key' => "ESTs",
+                         '--className' => 'generic_parent',
+                         '--subfeatureClasses' => '{"match_part": "est2genome_part"}',
+                         '--type' => 'expressed_sequence_match:est_gff',
+                       ],
+
+    protein_gff     => [ '--key' =>  "Proteins",
+                         '--className' => 'generic_parent',
+                         '--subfeatureClasses' => '{"match_part": "protein2genome_part"}',
+                         '--type' => 'protein_match:protein_gff',
+                       ],
+
+    altest_gff      => [ '--key' =>  "altESTs",
+                         '--className' => 'generic_parent',
+                         '--subfeatureClasses' => '{"match_part": "cdna2genome_part"}',
+                         '--type' => 'expressed_sequence_match:altest_gff',
+                       ],
+
     #repeats
     repeatmasker   =>  [ '--key'        =>  "RepeatMasker",
                          '--className'  => 'generic_parent',
                          '--subfeatureClasses' => '{"match_part": "match_part"}',
                          '--type' => 'match:repeatmasker',
                        ],
+
     repeatrunner  =>   [ '--key' =>  "RepeatRunner",
                          '--className' => 'generic_parent',
                          '--subfeatureClasses' => '{"match_part": "match_part"}',
                          '--type' => 'protein_match:repeatrunner',
+                       ],
+
+    repeat_gff    =>   [ '--key' =>  "Repeats",
+                         '--className' => 'generic_parent',
+                         '--subfeatureClasses' => '{"match_part": "repeat_part"}',
+                         '--type' => 'protein_match:repeat_gff',
                        ],
 
     # derived from GFF of Acromyrmex echinatior/3.8.gff from antgenomes.org
