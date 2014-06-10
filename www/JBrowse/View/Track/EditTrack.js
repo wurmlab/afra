@@ -177,7 +177,9 @@ var EditTrack = declare(DraggableFeatureTrack,
                             track.replaceTranscripts([parent], [newTranscript]);
                         }
                         else {
-                            track.resizeExon(parent, exon, leftDeltaBases, rightDeltaBases);
+                            var newTranscript = track.resizeExon(parent, exon, leftDeltaBases, rightDeltaBases);
+                            newTranscript.set('name', parent.get('name'));
+                            this.replaceTranscripts([parent], [newTranscript]);
                         }
                     }
                 });
@@ -635,28 +637,20 @@ var EditTrack = declare(DraggableFeatureTrack,
     },
 
     resizeExon: function (transcript, exon, leftDelta, rightDelta) {
-        var subfeatures = transcript.get('subfeatures');
-        var exonIndex   = _.indexOf(subfeatures, exon);
-
-        exon = this.copyFeature(exon, {
-            start: exon.get('start') + leftDelta,
-            end:   exon.get('end') + rightDelta
-        });
-        subfeatures[exonIndex] = exon;
+        var subfeatures = _.map(transcript.get('subfeatures'), dojo.hitch(this, function (f) {
+            if (f.get('start') === exon.get('start') && f.get('end') === exon.get('end')) {
+                return this.copyFeature(f, {
+                    start: f.get('start') + leftDelta,
+                    end:   f.get('end') + rightDelta
+                });
+            }
+            else {
+                return f;
+            }
+        }));
 
         var newTranscript = this.createTranscript(subfeatures, transcript.get('name'));
-        this.markNonCanonicalSites(newTranscript, function () {
-            this.store.deleteFeatureById(transcript.id());
-            this.store.insert(newTranscript);
-            this.changed();
-
-            var resizedExon = _.find(newTranscript.get('subfeatures'), function (f) {
-                return f.get('start') === exon.get('start') &&
-                    f.get('end') === exon.get('end');
-            });
-            var featdiv = this.getFeatDiv(resizedExon);
-            $(featdiv).trigger('mousedown');
-        });
+        return newTranscript;
     },
 
     mergeExons: function(transcript, leftExon, rightExon) {
