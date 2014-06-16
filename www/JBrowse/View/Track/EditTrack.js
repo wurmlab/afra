@@ -179,7 +179,7 @@ var EditTrack = declare(DraggableFeatureTrack,
                         else {
                             var newTranscript = track.resizeExon(parent, exon, leftDeltaBases, rightDeltaBases);
                             newTranscript.set('name', parent.get('name'));
-                            this.replaceTranscripts([parent], [newTranscript]);
+                            track.replaceTranscripts([parent], [newTranscript]);
                         }
                     }
                 });
