@@ -700,7 +700,7 @@ var EditTrack = declare(DraggableFeatureTrack,
         else {
             // delete selected exon from transcript
             var subfeatures = _.reject(transcript.get('subfeatures'), function (f) {
-                return f.id() == exon.id();
+                return f.get('start') === exon.get('start') && f.get('end') === exon.get('end');
             });
             var newTranscript = this.createTranscript(subfeatures, transcript.get('name'));
             return newTranscript;
