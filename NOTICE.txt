@@ -6,7 +6,7 @@ Parts of Afra may be considered a derivative work of JBrowse (JB) and WebApollo
 2. WA is distributed under BSD license.
 
 Afra is ditributed under Apache Publice License (APL) 2.0 which is compatible
-with both AL 2.0 (under section 4.c.ii of AL) and BSD license. Thus all of
+with both AL 2.0 (under section 4.c.ii of AL) and BSD license. Thus the use of
 Afra, including the parts that may be considered derivative work of JB and WA
 shall be governed by APL 2.0.
 
@@ -23,8 +23,9 @@ www/JBrowse/View/Track/EditTrack.js
 www/JBrowse/Store/SeqFeature/ScratchPad.js
 
 All files in the directory www/JBrowse, except those listed above have been
-derived from JB. Unless stated otherwise in the source file, these files are
-Copyright (c) 2000-2006, The Perl Foundation.
+derived (copied as it is or copied and modified) from JB. Unless stated
+otherwise in the source file, these files are Copyright (c) 2000-2006, The Perl
+Foundation.
 
 Modifications to the files derived from JB and WA and the derivative work as a
 whole is Copyright (c) 2013-2014 Queen Mary, University of London.
