@@ -10,6 +10,25 @@ with both AL 2.0 (under section 4.c.ii of AL) and BSD license. Thus all of
 Afra, including the parts that may be considered derivative work of JB and WA
 shall be governed by APL 2.0.
 
+Following files have been derived (copied as it is or copied and modified) from
+WA. Unless stated otherwise in the source file, these files are Copyright (c)
+2010, Regents of the University of California.
+
+www/JBrowse/FeatureEdgeMatchManager.js
+www/JBrowse/FeatureSelectionManager.js
+www/JBrowse/SequenceOntologyUtils.js
+www/JBrowse/View/Track/DraggableHTMLFeatures.js
+www/JBrowse/View/Track/DraggableHTMLAlignments.js
+www/JBrowse/View/Track/EditTrack.js
+www/JBrowse/Store/SeqFeature/ScratchPad.js
+
+All files in the directory www/JBrowse, except those listed above have been
+derived from JB. Unless stated otherwise in the source file, these files are
+Copyright (c) 2000-2006, The Perl Foundation.
+
+Modifications to the files derived from JB and WA and the derivative work as a
+whole is Copyright (c) 2013-2014 Queen Mary, University of London.
+
 To fully comply with the use of JB under AL 2.0, a list of changes made to the
 original source code of JB must be made available publicly. This shall be done
 on completion of the project or earlier on the request of a competent
