@@ -130,25 +130,6 @@ constructor: function(params) {
     FeatureEdgeMatchManager.addSelectionManager(this.featSelectionManager);
     FeatureEdgeMatchManager.addSelectionManager(this.annotSelectionManager);
 
-    // Register track types from WebApollo so that the open-file dialog and
-    // other things will have them as options.
-    // FIXME: should do this elsewhere or avoid it completely
-    this.registerTrackType({
-        type:                 'View/Track/DraggableHTMLFeatures',
-        defaultForStoreTypes: ['JBrowse/Store/SeqFeature/NCList', 'JBrowse/Store/SeqFeature/GFF3'],
-        label: 'WebApollo Features'
-    });
-    this.registerTrackType({
-        type:                 'View/Track/DraggableAlignments',
-        defaultForStoreTypes: ['JBrowse/Store/SeqFeature/BAM'],
-        label: 'WebApollo Alignments'
-    });
-    this.registerTrackType({
-        type:                 'View/Track/SequenceTrack',
-        defaultForStoreTypes: ['JBrowse/Store/Sequence/StaticChunked'],
-        label: 'WebApollo Sequence'
-    });
-
     dojo.addOnLoad( function() {
         thisB.loadConfig().then( function() {
             // initialize our highlight if one was set in the config
