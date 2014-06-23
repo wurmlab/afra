@@ -13,5 +13,7 @@ https://github.com/yeban/afra/wiki
 <p align="center">
 Photo courtesy: http://www.highdefdiscnews.com/
 <br/>
-Afra is copyright (©) 2013 Queen Mary, University of London. All rights reserved.
+Afra is Copyright (©) 2013 Queen Mary, University of London.
+<br/>
+Parts of Afra are forked from or inspired by <a href="http://jbrowse.org/">JBrowse</a> and <a href="http://genomearchitect.org/">WebApollo</a>.
 </p>
