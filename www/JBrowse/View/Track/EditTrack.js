@@ -1170,27 +1170,34 @@ var EditTrack = declare(DraggableFeatureTrack,
     },
 
     undo: function () {
-        var tmp = this.store.features;
-        this.store.features = this.lastStoreState;
-        this.lastStoreState = $.extend({}, tmp);
+        this.redoState = $.extend({}, this.store.features);
+        this.store.features = this.undoState;
+        this.undoState = null;
+        this.changed();
+    },
+
+    redo: function () {
+        this.backupStore();
+        this.store.features = this.redoState;
+        this.redoState = null;
         this.changed();
     },
 
     backupStore: function () {
-        this.lastStoreState = $.extend({}, this.store.features);
+        this.undoState = $.extend({}, this.store.features);
     },
 
     updateMenu: function() {
         this.updateMergeMenuItem();
         this.updateSplitTranscriptMenuItem();
         this.updateMakeIntronMenuItem();
-        //this.updateUndoMenuItem();
-        //this.updateRedoMenuItem();
         this.updateDuplicateMenuItem();
         this.updateFlipStrandMenuItem();
         this.updateSetTranslationStartMenuItem();
         this.updateSetTranslationStopMenuItem();
         this.updateSetLongestORFMenuItem();
+        this.updateUndoMenuItem();
+        this.updateRedoMenuItem();
     },
 
     updateSetTranslationStartMenuItem: function () {
@@ -1271,23 +1278,22 @@ var EditTrack = declare(DraggableFeatureTrack,
     },
 
     updateUndoMenuItem: function() {
-        var menuItem = this.getMenuItem("undo");
-        var selected = this.selectionManager.getSelection();
-        if (selected.length > 1) {
-            menuItem.set("disabled", true);
+        var menuItem = $("#contextmenu-undo");
+        if (this.undoState) {
+            menuItem.removeClass("disabled");
             return;
         }
-        menuItem.set("disabled", false);
+        menuItem.addClass("disabled");
     },
 
     updateRedoMenuItem: function() {
-        var menuItem = this.getMenuItem("redo");
-        var selected = this.selectionManager.getSelection();
-        if (selected.length > 1) {
-            menuItem.set("disabled", true);
+        var menuItem = $("#contextmenu-redo");
+        if (this.redoState) {
+            console.log(this.redoState);
+            menuItem.removeClass("disabled");
             return;
         }
-        menuItem.set("disabled", false);
+        menuItem.addClass("disabled");
     },
 
     updateDuplicateMenuItem: function() {

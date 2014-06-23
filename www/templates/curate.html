@@ -314,15 +314,17 @@
       <li role="presentation" class="divider"></li>
 
       <li
-        role="presentation">
+        role="presentation"
+        id="contextmenu-undo">
         <a role="menuitem" tabindex="-1" ng-click="browser.getEditTrack().undo()">
           <i class="fa fa-undo"></i>
           Undo
         </a>
       </li>
       <li
-        role="presentation">
-        <a role="menuitem" tabindex="-1" ng-click="browser.getEditTrack().undo()">
+        role="presentation"
+        id="contextmenu-redo">
+        <a role="menuitem" tabindex="-1" ng-click="browser.getEditTrack().redo()">
           <i class="fa fa-repeat"></i>
           Redo
         </a>
