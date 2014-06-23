@@ -1287,7 +1287,6 @@ var EditTrack = declare(DraggableFeatureTrack,
     updateRedoMenuItem: function() {
         var menuItem = $("#contextmenu-redo");
         if (this.redoState) {
-            console.log(this.redoState);
             menuItem.removeClass("disabled");
             return;
         }
