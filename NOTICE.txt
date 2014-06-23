@@ -1,9 +1,16 @@
-Parts of Afra may be considered a derivative work of JBrowse.  JBrowse is
-dual-licensed: GNU Lesser Public License (LGPL) 2.1 or above, Artistic License
-(AL) 2.0. We choose to use JBrowse under AL 2.0 and the use of Apache Public
-License (APL) for Afra complies with section 4.c.ii of AL. Thus all of Afra,
-including the derivative work of JBrowse that forms a part of Afra, is covered
-by APL.
+Parts of Afra may be considered a derivative work of JBrowse (JB) and WebApollo
+(WA).
 
-A list of changes made to the original JBrowse source code will be made
-available by the author(s) on request or on completion of the project.
+1. JB is multi-licensed under GNU Lesser Public License (LGPL) 2.1 and above,
+   and Artistic License (AL) 2.0. We choose to use JB under AL 2.0.
+2. WA is distributed under BSD license.
+
+Afra is ditributed under Apache Publice License (APL) 2.0 which is compatible
+with both AL 2.0 (under section 4.c.ii of AL) and BSD license. Thus all of
+Afra, including the parts that may be considered derivative work of JB and WA
+shall be governed by APL 2.0.
+
+To fully comply with the use of JB under AL 2.0, a list of changes made to the
+original source code of JB must be made available publicly. This shall be done
+on completion of the project or earlier on the request of a competent
+authority.
