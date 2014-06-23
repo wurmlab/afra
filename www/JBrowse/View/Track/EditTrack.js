@@ -1181,7 +1181,6 @@ var EditTrack = declare(DraggableFeatureTrack,
     },
 
     updateMenu: function() {
-        //this.updateSetTranslationStartMenuItem();
         this.updateMergeMenuItem();
         this.updateSplitTranscriptMenuItem();
         this.updateMakeIntronMenuItem();
@@ -1189,26 +1188,39 @@ var EditTrack = declare(DraggableFeatureTrack,
         //this.updateRedoMenuItem();
         this.updateDuplicateMenuItem();
         this.updateFlipStrandMenuItem();
+        this.updateSetTranslationStartMenuItem();
+        this.updateSetTranslationStopMenuItem();
+        this.updateSetLongestORFMenuItem();
     },
 
-    updateSetTranslationStartMenuItem: function() {
-        var menuItem = this.getMenuItem("set_translation_start");
+    updateSetTranslationStartMenuItem: function () {
+        var menuItem = $('#contextmenu-set-translation-start');
         var selected = this.selectionManager.getSelection();
         if (selected.length > 1) {
-            menuItem.set("disabled", true);
+            menuItem.addClass('disabled')
             return;
         }
-        menuItem.set("disabled", false);
-        var selectedFeat = selected[0].feature;
-        if (selectedFeat.parent()) {
-            selectedFeat = selectedFeat.parent();
+        menuItem.removeClass('disabled');
+    },
+
+    updateSetTranslationStopMenuItem: function () {
+        var menuItem = $('#contextmenu-set-translation-stop');
+        var selected = this.selectionManager.getSelection();
+        if (selected.length > 1) {
+            menuItem.addClass('disabled')
+            return;
         }
-        if (selectedFeat.get('manuallySetTranslationStart')) {
-            menuItem.set("label", "Unset translation start");
+        menuItem.removeClass('disabled');
+    },
+
+    updateSetLongestORFMenuItem: function () {
+        var menuItem = $('#contextmenu-set-longest-orf');
+        var selected = this.selectionManager.getSelection();
+        if (selected.length > 1) {
+            menuItem.addClass('disabled')
+            return;
         }
-        else {
-            menuItem.set("label", "Set translation start");
-        }
+        menuItem.removeClass('disabled');
     },
 
     updateMergeMenuItem: function() {
