@@ -88,6 +88,18 @@ task 'configure' do
   Setting.create(key: 'facebook_app_secret', value: fb_app_secret)
 end
 
+desc 'Import'
+task 'import', [:annotations_file] do |t, args|
+  require_relative 'app'
+  App.init_config
+  App.load_services
+  annotations_file = args[:annotations_file]
+  puts
+  puts
+  puts "Importing #{annotations_file}"
+  Importer.new(annotations_file).run
+end
+
 desc 'IRb.'
 task 'irb' do
   require_relative 'app'
