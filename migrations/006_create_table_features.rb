@@ -21,7 +21,8 @@ Sequel.migration do
         null:      false
 
       Integer     :start,
-        null:      false
+        null:      false,
+        index:     true
 
       Integer     :end,
         null:      false
@@ -40,6 +41,7 @@ Sequel.migration do
 
   down do
     drop_constraint_validations_for table: :features
+    drop_index :features, :start
     drop_table :features
   end
 end

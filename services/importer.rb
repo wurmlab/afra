@@ -35,36 +35,41 @@ class Importer
   def create_curation_tasks
     puts "Creating tasks ..."
 
-    # Select feature id, start and end coordinates grouped by ref.
-    features =
-      Feature.order(Sequel.asc(:start)).
-      select(Sequel.function(:array_agg, :id).as(:id),
-             Sequel.function(:array_agg, :start).as(:start),
-             Sequel.function(:array_agg, :end).as(:end),
-             :ref).
-             group(:ref)
+    # Feature loci on all refs, sorted and grouped by ref.
+    # [{ref: ..., id: [], start: [], end: []}, ...]
+    loci_all_ref = App.db.select(
+      Sequel.function(:array_agg, :id).as(:feature_ids),
+      Sequel.function(:array_agg, :start).as(:feature_start_coordinates),
+      Sequel.function(:array_agg, :end).as(:feature_end_coordinates),
+      :ref).group(:ref).from(Feature.select(:id, :ref, :start, :end).order(Sequel.asc(:start)))
 
-    features.each do |f|
-      ref = f.ref
-      f.id.zip(f.start, f.end).each_cons(2) do |f1, f2|
-        if f2[1] <= f1[2] # features overlap
-          start = f1[1]
-          stop  = [f1[2], f2[2]].max # in case f2 is contained in f1
-          t = CurationTask.create(ref: ref, start: start, end: stop)
-          t.add_feature Feature.with_pk(f1[0])
-          t.add_feature Feature.with_pk(f2[0])
-          t.save
-          puts "#{t.id} #{f.ref}:#{start}..#{stop}"
+    loci_all_ref.each do |loci_this_ref|
+      # Ref being processed.
+      ref = loci_this_ref[:ref]
+
+      # Group overlapping loci together.
+      #
+      # About overlapping genes: http://www.biomedcentral.com/1471-2164/9/169.
+      groups = [] # [{start: , end: , feature_ids: []}, ...]
+      loci_this_ref[:feature_ids].each_with_index do |feature_id, i|
+        start = loci_this_ref[:feature_start_coordinates][i]
+        _end = loci_this_ref[:feature_end_coordinates][i]
+
+        if not groups.empty? and start < groups.last[:end] # overlap
+          groups.last[:feature_ids] << feature_id
+          groups.last[:end] = [groups.last[:end], _end].max
         else
-          start = f1[1]
-          stop  = f1[2]
-          t = CurationTask.create(ref: ref, start: start, end: stop)
-          t.add_feature Feature.with_pk(f1[0])
-          t.save
+          groups << {ref: ref, start: start, end: _end, feature_ids: [feature_id]}
         end
-        # FIXME: last feature of each ref seq gets ignored.
-        # FIXME: this approach assumes only two genes will overlap, however,
-        # that need not be the case.
+      end
+
+      # Create tasks.
+      groups.each do |group|
+        feature_ids = group.delete :feature_ids
+        t = CurationTask.create group
+        feature_ids.each do |feature_id|
+          t.add_feature feature_id
+        end
       end
     end
   end
