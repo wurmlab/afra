@@ -113,4 +113,10 @@ task 'serve', [:uri] do |t, args|
   App.serve
 end
 
+desc 'Test.'
+task 'test' do
+  require 'minitest/autorun'
+  Dir.glob('test/test_*.rb').each { |file| require_relative file}
+end
+
 task default: [:install, :'db:migrate', :configure]
