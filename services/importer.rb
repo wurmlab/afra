@@ -70,6 +70,8 @@ class Importer
         feature_ids.each do |feature_id|
           t.add_feature feature_id
         end
+        t.difficuluty = feature_ids.length
+        t.save
       end
     end
   end
