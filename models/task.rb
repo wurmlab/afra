@@ -14,8 +14,9 @@ class Task < Sequel::Model
   class << self
     def give(to: nil)
       raise "Task can only be given 'to' a User" unless to.is_a? User
-      task = where(id: to.tasks.map(&:id)).invert.
-        where(state: 'ready').order(Sequel.desc :priority).first
+      available_tasks = where(id: to.tasks.map(&:id)).invert.where(state: 'ready')
+      available_tasks_with_highest_priority = available_tasks.where(priority: available_tasks.max(:priority))
+      task = available_tasks_with_highest_priority.offset(Sequel.function(:floor, Sequel.function(:random) * available_tasks_with_highest_priority.count)).first
       task.set_running_state
     end
   end
