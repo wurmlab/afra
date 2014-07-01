@@ -44,26 +44,7 @@ class Importer
       :ref).group(:ref).from(Feature.select(:id, :ref, :start, :end).order(Sequel.asc(:start)))
 
     loci_all_ref.each do |loci_this_ref|
-      # Ref being processed.
-      ref = loci_this_ref[:ref]
-
-      # Group overlapping loci together.
-      #
-      # About overlapping genes: http://www.biomedcentral.com/1471-2164/9/169.
-      groups = [] # [{start: , end: , feature_ids: []}, ...]
-      loci_this_ref[:feature_ids].each_with_index do |feature_id, i|
-        start = loci_this_ref[:feature_start_coordinates][i]
-        _end = loci_this_ref[:feature_end_coordinates][i]
-
-        if not groups.empty? and start < groups.last[:end] # overlap
-          groups.last[:feature_ids] << feature_id
-          groups.last[:end] = [groups.last[:end], _end].max
-        else
-          groups << {ref: ref, start: start, end: _end, feature_ids: [feature_id]}
-        end
-      end
-
-      # Create tasks.
+      groups = call_overlaps loci_this_ref
       groups.each do |group|
         feature_ids = group.delete :feature_ids
         t = CurationTask.create group
@@ -74,6 +55,28 @@ class Importer
         t.save
       end
     end
+  end
+
+  # Group overlapping loci together regardless of feature strand.
+  #
+  # About overlapping genes: http://www.biomedcentral.com/1471-2164/9/169.
+  def call_overlaps(loci_this_ref)
+    # Ref being processed.
+    ref = loci_this_ref[:ref]
+
+    groups = [] # [{start: , end: , feature_ids: []}, ...]
+    loci_this_ref[:feature_ids].each_with_index do |feature_id, i|
+      start = loci_this_ref[:feature_start_coordinates][i]
+      _end = loci_this_ref[:feature_end_coordinates][i]
+
+      if not groups.empty? and start < groups.last[:end] # overlap
+        groups.last[:feature_ids] << feature_id
+        groups.last[:end] = [groups.last[:end], _end].max
+      else
+        groups << {ref: ref, start: start, end: _end, feature_ids: [feature_id]}
+      end
+    end
+    groups
   end
 
   def run
