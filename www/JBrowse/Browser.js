@@ -1183,7 +1183,7 @@ navigateToLocation: function( location ) {
                                    location.end );
             this._updateLocationCookies( location );
 
-            this.showTracks( curTracks );
+            //this.showTracks( curTracks );
         }
     }));
 },
