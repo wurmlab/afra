@@ -4,6 +4,7 @@ define(['jquery'], function ($) {
             var that, val, tmp;
 
             that = this;
+            val  = this.val();
 
             (function ping () {
                 tmp = that.val();
