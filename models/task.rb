@@ -24,11 +24,11 @@ class Task < Sequel::Model
   def register_submission(submission, from: nil)
     yield
     register_user_contribution from
-    if contributions.count == 3 # and type == 'curation'
-      set_
-    else
+    #if contributions.count == 3 # and type == 'curation'
+      #set_
+    #else
       increment_priority and set_ready_state and save
-    end
+    #end
   end
 
   def auto_check
