@@ -40,16 +40,19 @@ class Task < Sequel::Model
 
   def set_ready_state
     self.state = 'ready'
+    self.save
     self
   end
 
   def set_running_state
     self.state = 'running'
+    self.save
     self
   end
 
   def increment_priority
     self.priority += 1
+    self.save
     self
   end
 
