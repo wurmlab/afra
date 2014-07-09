@@ -36,15 +36,23 @@ class Importer
     puts "Creating tasks ..."
 
     # Feature loci on all refs, sorted and grouped by ref.
-    # [{ref: ..., id: [], start: [], end: []}, ...]
-    loci_all_ref = App.db.select(
-      Sequel.function(:array_agg, :id).as(:feature_ids),
-      Sequel.function(:array_agg, :start).as(:feature_start_coordinates),
-      Sequel.function(:array_agg, :end).as(:feature_end_coordinates),
-      :ref).group(:ref).from(Feature.select(:id, :ref, :start, :end).order(Sequel.asc(:start)))
+    # [
+    #   {
+    #     ref: ...,
+    #     feature_ids: [],
+    #     feature_start_coordinates: [],
+    #     feature_end_coordinates: []
+    #   },
+    #   ...
+    # ]
+    loci_all_ref = Feature.select(
+      Sequel.function(:array_agg, Sequel.lit('"id" ORDER BY "start"')).as(:feature_ids),
+      Sequel.function(:array_agg, Sequel.lit('"start" ORDER BY "start"')).as(:feature_start_coordinates),
+      Sequel.function(:array_agg, Sequel.lit('"end" ORDER BY "start"')).as(:feature_end_coordinates),
+      :ref).group(:ref)
 
-    loci_all_ref.each do |loci_this_ref|
-      groups = call_overlaps loci_this_ref
+    loci_all_ref.each do |loci_one_ref|
+      groups = call_overlaps loci_one_ref
       groups.each do |group|
         feature_ids = group.delete :feature_ids
         t = CurationTask.create group
@@ -60,14 +68,14 @@ class Importer
   # Group overlapping loci together regardless of feature strand.
   #
   # About overlapping genes: http://www.biomedcentral.com/1471-2164/9/169.
-  def call_overlaps(loci_this_ref)
+  def call_overlaps(loci_one_ref)
     # Ref being processed.
-    ref = loci_this_ref[:ref]
+    ref = loci_one_ref[:ref]
 
     groups = [] # [{start: , end: , feature_ids: []}, ...]
-    loci_this_ref[:feature_ids].each_with_index do |feature_id, i|
-      start = loci_this_ref[:feature_start_coordinates][i]
-      _end = loci_this_ref[:feature_end_coordinates][i]
+    loci_one_ref[:feature_ids].each_with_index do |feature_id, i|
+      start = loci_one_ref[:feature_start_coordinates][i]
+      _end = loci_one_ref[:feature_end_coordinates][i]
 
       if not groups.empty? and start < groups.last[:end] # overlap
         groups.last[:feature_ids] << feature_id
