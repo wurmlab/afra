@@ -1,5 +1,7 @@
 class JBrowse < App::Routes
 
+  use Rack::Sendfile
+
   def data_dir
     @data_dir ||= File.expand_path 'data/jbrowse'
   end
