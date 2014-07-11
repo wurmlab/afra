@@ -1,3 +1,6 @@
+require 'yaml'
+require 'date'
+
 class Task < Sequel::Model
 
   many_to_many  :features
@@ -69,6 +72,10 @@ class CurationTask < Task
 
   def register_submission(submission, from: nil)
     super do
+      ### MEGA HACK!!
+      File.write(".submissions/#{from.id}_#{DateTime.now}.yml", YAML.dump(submission))
+      ### MEGA HACK!!
+
       # The id of the submissions can be ignored. And assuming the submission
       # comprises only one gene model.
       submission = submission.values.first.values.first
