@@ -53,7 +53,7 @@ module App
 
   def init_config(**config)
     defaults = {
-      db_uri: 'postgres://localhost',
+      db_uri: 'postgres://localhost/afra',
       binds:  ['tcp://localhost:9292']
     }
     @config = defaults.update config

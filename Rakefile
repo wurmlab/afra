@@ -55,11 +55,21 @@ done_message "" "As a first troubleshooting step, make sure development librarie
   system("npm run-script amdify-jquery")
 end
 
+desc 'Create database.'
+task 'db:init', [:name] do |t, args|
+  system "createdb -e #{args[:name] || 'afra'}"
+end
+
 desc 'Migrate database.'
 task 'db:migrate', [:version] do |t, args|
   require_relative 'app'
   version = Integer(args[:version]) rescue nil
   App.migrate version: version
+end
+
+desc 'Delete database.'
+task 'db:drop', [:name] do |t, args|
+  system "dropdb -e #{args[:name] || 'afra'}"
 end
 
 desc 'Configure.'
