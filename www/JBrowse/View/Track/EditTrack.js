@@ -353,7 +353,7 @@ var EditTrack = declare(DraggableFeatureTrack,
         this.selectionManager.clearSelection();
     },
 
-    setTranslationStartForSelectedTranscripts: function () {
+    setTranslationStartForSelectedTranscript: function () {
         var selected = this.selectionManager.getSelectedFeatures()[0];
         var transcript = selected.parent() ? selected.parent() : selected;
         var coordinate = this.gview.absXtoBp($('#contextmenu').position().left);
@@ -362,7 +362,7 @@ var EditTrack = declare(DraggableFeatureTrack,
         this.selectionManager.clearSelection();
     },
 
-    setTranslationStopForSelectedTranscripts: function () {
+    setTranslationStopForSelectedTranscript: function () {
         var selected = this.selectionManager.getSelectedFeatures()[0];
         var transcript = selected.parent() ? selected.parent() : selected;
         var coordinate = this.gview.absXtoBp($('#contextmenu').position().left);
@@ -371,13 +371,10 @@ var EditTrack = declare(DraggableFeatureTrack,
         this.selectionManager.clearSelection();
     },
 
-    setLongestORFForSelectedFeatures: function () {
-        var selection = this.selectionManager.getSelectedFeatures();
+    setLongestORFForSelectedTranscript: function () {
+        var transcript = this.selectionManager.getSelectedFeatures()[0];
         this.selectionManager.clearSelection();
-        for (var i in selection)  {
-            var annot = EditTrack.getTopLevelAnnotation(selection[i]);
-            this.setLongestORF(annot);
-        }
+        this.setLongestORF(transcript);
     },
 
     flipStrandForSelectedFeatures: function ()  {
@@ -1200,8 +1197,8 @@ var EditTrack = declare(DraggableFeatureTrack,
 
     updateSetTranslationStartMenuItem: function () {
         var menuItem = $('#contextmenu-set-translation-start');
-        var selected = this.selectionManager.getSelection();
-        if (selected.length > 1) {
+        var selected = this.selectionManager.getSelectedFeatures();
+        if (selected.length > 1 || selected[0].parent()) {
             menuItem.addClass('disabled')
             return;
         }
@@ -1210,8 +1207,8 @@ var EditTrack = declare(DraggableFeatureTrack,
 
     updateSetTranslationStopMenuItem: function () {
         var menuItem = $('#contextmenu-set-translation-stop');
-        var selected = this.selectionManager.getSelection();
-        if (selected.length > 1) {
+        var selected = this.selectionManager.getSelectedFeatures();
+        if (selected.length > 1 || selected[0].parent()) {
             menuItem.addClass('disabled')
             return;
         }
@@ -1220,8 +1217,8 @@ var EditTrack = declare(DraggableFeatureTrack,
 
     updateSetLongestORFMenuItem: function () {
         var menuItem = $('#contextmenu-set-longest-orf');
-        var selected = this.selectionManager.getSelection();
-        if (selected.length > 1) {
+        var selected = this.selectionManager.getSelectedFeatures();
+        if (selected.length > 1 || selected[0].parent()) {
             menuItem.addClass('disabled')
             return;
         }
