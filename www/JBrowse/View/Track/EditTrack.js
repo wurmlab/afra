@@ -1079,7 +1079,7 @@ var EditTrack = declare(DraggableFeatureTrack,
                         transcript = this.markNonCanonicalSpliceSites(transcript, sequence);
                         transcript = this.markNonCanonicalTranslationStartSite(transcript, sequence);
                         transcript = this.markNonCanonicalTranslationStopSite(transcript, sequence);
-                        callback.apply(this, transcript);
+                        callback.apply(this, [transcript]);
                     }));
             }
         }));
@@ -1215,8 +1215,8 @@ var EditTrack = declare(DraggableFeatureTrack,
             this.store.deleteFeatureById(t.id());
         }));
         _.each(transcriptsToInsert, dojo.hitch(this, function (t) {
-            this.markNonCanonicalSites(t, function () {
-                this.store.insert(t);
+            this.markNonCanonicalSites(t, function (n) {
+                this.store.insert(n);
             });
         }));
         this.changed();
