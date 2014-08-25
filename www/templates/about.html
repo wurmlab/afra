@@ -92,14 +92,32 @@
     </div>
 
     <div class="col-md-4 col-md-offset-2">
-      <div class="auth">
-        <div>
+      <div class="auth" ng-switch on="location.hash()">
+        <div ng-switch-when="login">
           <a
             class="btn btn-primary btn-lg btn-block"
             ng-click="signin_fb()">
             <i class="fa fa-lg fa-facebook-square"></i>
             Login with Facebook
           </a>
+        </div>
+        <div ng-switch-default>
+          <p
+            class="text-justify">
+            <strong>
+              Update
+            </strong>
+            <br>
+            We have entred alpha stage and are using Afra in-house to curate
+            fire ant genome. We are prepping for a release by November-end.
+            <br>
+            <br>
+            Please email
+            <a
+              href="mailto:a.priyam@qmul.ac.uk">a.priyam@qmul.ac.uk
+            </a>
+            if you would like a demo or have questions.
+          </p>
         </div>
       </div>
     </div>
