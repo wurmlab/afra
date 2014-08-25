@@ -203,6 +203,7 @@ var EditTrack = declare(DraggableFeatureTrack,
             accept: ".selected-feature",
             drop:   function (event, ui) {
                 var features = track.browser.featSelectionManager.getSelectedFeatures();
+                //console.log(features);
                 track.addDraggedFeatures(features);
             }
         });
@@ -836,6 +837,62 @@ var EditTrack = declare(DraggableFeatureTrack,
         }));
     },
 
+    setORF: function (transcript, refSeqFeature) {
+        var seq = refSeqFeature.get('seq')
+            , offset = refSeqFeature.get('start');
+
+        var cdna   = [];
+        var island = []; // coordinate range on mRNA (spliced) mapped to offset from start of pre-mRNA (non-spliced)
+        var lastEnd, i = 0;
+        _.each(transcript.children(), function (f) {
+            if (f.get('type') === 'exon') {
+                var start = f.get('start') - offset
+                    , end = f.get('end') - offset;
+                cdna.push(seq.slice(start, end));
+
+                if (!lastEnd) { // first exon
+                    island.push([end - start, 0]);
+                }
+                else { // second exon onwards
+                    island.push([island[i - 1][0] + end - start, island[i - 1][1] + start - lastEnd])
+                }
+                lastEnd = end;
+                i++;
+            }
+        });
+        cdna = cdna.join('').toLowerCase();
+        if (transcript.get('strand') == -1) {
+            cdna = Util.reverseComplement(cdna);
+        }
+
+        var orfStart, orfStop, readingFrame;
+        orfStart = this.getTranslationStart(transcript);
+        orfStart = orfStart - offset;
+        orfStart = orfStart - _.find(island, function (i) { if ((orfStart - i[1]) <= i[0]) return i; })[1];
+        if (transcript.get('strand') == -1) {
+            orfStart = cdna.length - orfStart;
+        }
+        orfStop      = orfStart;
+        readingFrame = cdna.slice(orfStart);
+        _.every(readingFrame.match(/.{1,3}/g), function (codon) {
+            orfStop += 3;
+            if (CodonTable.STOP_CODONS.indexOf(codon) !== -1) {
+                return false;
+            }
+            return true;
+        });
+
+        if (transcript.get('strand') === -1) {
+            orfStart = cdna.length - orfStart;
+            orfStop  = cdna.length - orfStop;
+        }
+        orfStart = orfStart + offset + _.find(island, function (i) { if (i[0] >= orfStart) return i; })[1];
+        orfStop = orfStop + offset + _.find(island, function (i) { if (i[0] >= orfStop) return i; })[1];
+
+        var newTranscript = this.setCDS(transcript, {start: orfStart, end: orfStop});
+        return newTranscript;
+    },
+
     flipStrand: function (transcript) {
         if (transcript.parent()) {
             // can't flips strand for subfeatures
@@ -1018,6 +1075,7 @@ var EditTrack = declare(DraggableFeatureTrack,
                     {ref: this.refSeq.name, start: transcript.get('start'), end: transcript.get('end')},
                     dojo.hitch(this, function (refSeqFeature) {
                         var sequence = refSeqFeature.get('seq');
+                        transcript = this.setORF(transcript, refSeqFeature);
                         transcript = this.markNonCanonicalSpliceSites(transcript, sequence);
                         transcript = this.markNonCanonicalTranslationStartSite(transcript, sequence);
                         transcript = this.markNonCanonicalTranslationStopSite(transcript, sequence);
