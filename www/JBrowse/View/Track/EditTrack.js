@@ -202,9 +202,8 @@ var EditTrack = declare(DraggableFeatureTrack,
         $(this.div).droppable({
             accept: ".selected-feature",
             drop:   function (event, ui) {
-                var features = track.browser.featSelectionManager.getSelectedFeatures();
-                //console.log(features);
-                track.addDraggedFeatures(features);
+                var selection = track.browser.featSelectionManager.getSelection();
+                track.addDraggedFeatures(selection);
             }
         });
     },
@@ -212,11 +211,11 @@ var EditTrack = declare(DraggableFeatureTrack,
     /* Initializing view, including wiring it to the controller ends here. */
 
     /* CONTROLLERS - bridge between the view and model layer */
-    processDraggedFeatures: function (features) {
+    processDraggedFeatures: function (selection) {
         var transcripts = [];
         var subfeatures = [];
-        for (var i in features)  {
-            var feature = features[i];
+        for (var i in selection)  {
+            var feature = this.normalizeFeature(selection[i].feature, selection[i].track);
             if (feature.parent()) {
                 subfeatures = subfeatures.concat(
                     _.select(feature.parent().children(), function (f) {
@@ -928,39 +927,78 @@ var EditTrack = declare(DraggableFeatureTrack,
         });
     },
 
-    createTranscript: function(subfeatures, name) {
-        var track = this;
-        var types = {
+    normalizeFeature: function (feature, track) {
+        var mapping    = {
             'match_part': 'exon',
             'exon'      : 'exon',
             'CDS'       : 'CDS'
+        };
+
+        // transcript -> [exons]
+        var transcript = new SimpleFeature({
+            data: {
+                type:   'transcript',
+                name:   feature.get('name'),
+                seq_id: feature.get('seq_id'),
+                strand: feature.get('strand'),
+                start:  feature.get('start'),
+                end:    feature.get('end'),
+                subfeatures: _.map(feature.get('subfeatures'), function (f) {
+                    return {
+                        type:   mapping[f.get('type')],
+                        name:   f.get('name'),
+                        seq_id: f.get('seq_id'),
+                        strand: f.get('strand'),
+                        start:  f.get('start'),
+                        end:    f.get('end'),
+                    };
+                })
+            }
+        });
+
+        // transcript -> [exons, CDS]
+        if (!this.hasCDS(transcript) && track.config.style.className === 'transcript') {
+            transcript = this.setCDS(transcript, {
+                start: transcript.get('start'),
+                end:   transcript.get('end')
+            });
         }
-        var feature = new SimpleFeature({
+
+        return transcript;
+    },
+
+    createTranscript: function (subfeatures, name) {
+        var transcript = new SimpleFeature({
             data: {
                 type:   'transcript',
                 name:   name,
                 seq_id: subfeatures[0].get('seq_id'),
-                strand: subfeatures[0].get('strand')
+                strand: subfeatures[0].get('strand'),
+                subfeatures: _.map(subfeatures, function (f) {
+                    return {
+                        type:   f.get('type'),
+                        name:   f.get('name'),
+                        seq_id: f.get('seq_id'),
+                        strand: f.get('strand'),
+                        start:  f.get('start'),
+                        end:    f.get('end'),
+                    };
+                })
             }
         });
-        var subfeatures = _.map(subfeatures, function (f) {
-            return track.copyFeature(f, {parent: feature, type: types[f.get('type')]});
-        });
-        var hasCDS = _.find(subfeatures, function (f) {
+
+        subfeatures = transcript.get('subfeatures');
+        subfeatures = this.sortAnnotationsByLocation(subfeatures);
+        transcript.set('start', subfeatures[0].get('start'));
+        transcript.set('end',   subfeatures[subfeatures.length - 1].get('end'));
+        transcript.set('subfeatures', subfeatures);
+        return transcript;
+    },
+
+    hasCDS: function (transcript) {
+        return !!_.find(transcript.get('subfeatures'), function (f) {
             return f.get('type') === 'CDS';
         });
-        if (!hasCDS) {
-            _.each(subfeatures, function (f) {
-                if (f.get('type') === 'exon') {
-                    subfeatures.push(track.copyFeature(f, {type: 'CDS'}));
-                }
-            });
-        }
-        subfeatures = this.sortAnnotationsByLocation(subfeatures);
-        feature.set('start', subfeatures[0].get('start'));
-        feature.set('end', subfeatures[subfeatures.length - 1].get('end'));
-        feature.set('subfeatures', subfeatures);
-        return feature;
     },
 
     getCDSCoordinates: function (transcript) {
