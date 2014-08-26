@@ -837,6 +837,10 @@ var EditTrack = declare(DraggableFeatureTrack,
     },
 
     setORF: function (transcript, refSeqFeature) {
+        if (!this.hasCDS(transcript)) {
+            return transcript;
+        }
+
         var seq = refSeqFeature.get('seq')
             , offset = refSeqFeature.get('start');
 
@@ -1007,6 +1011,10 @@ var EditTrack = declare(DraggableFeatureTrack,
             return f.get('type') === 'CDS';
         });
 
+        if (cdsFeatures.length === 0) {
+            return [undefined, undefined];
+        }
+
         // we know the subfeatures are sorted by their coordinates, so
         var cdsStart = cdsFeatures[0].get('start');
         var cdsEnd = cdsFeatures[cdsFeatures.length - 1].get('end')
@@ -1056,7 +1064,7 @@ var EditTrack = declare(DraggableFeatureTrack,
     },
 
     getTranslationStop: function (transcript) {
-        return this.getCDSCoordinates(transcript)[1] - 3;
+        return this.getCDSCoordinates(transcript)[1];
     },
 
     // Insert CDS into a transcript replacing the old one if needed.
@@ -1176,7 +1184,7 @@ var EditTrack = declare(DraggableFeatureTrack,
 
         var startCodon = this.getStartCodon(transcript, sequence);
         var translationStart = this.getTranslationStart(transcript);
-        if (startCodon.toLowerCase() !== CodonTable.START_CODON) {
+        if (startCodon && translationStart && (startCodon.toLowerCase() !== CodonTable.START_CODON)) {
             subfeatures.push(new SimpleFeature({
                 data: {
                     start: translationStart,
@@ -1200,7 +1208,7 @@ var EditTrack = declare(DraggableFeatureTrack,
 
         var stopCodon = this.getStopCodon(transcript, sequence);
         var translationStop = this.getTranslationStop(transcript);
-        if (!_.contains(CodonTable.STOP_CODONS, stopCodon.toLowerCase())) {
+        if (stopCodon && translationStop && !_.contains(CodonTable.STOP_CODONS, stopCodon.toLowerCase())) {
             subfeatures.push(new SimpleFeature({
                 data: {
                     start: translationStop,
