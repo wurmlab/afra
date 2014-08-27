@@ -1159,11 +1159,10 @@ var EditTrack = declare(DraggableFeatureTrack,
                     {ref: this.refSeq.name, start: transcript.get('start'), end: transcript.get('end')},
                     dojo.hitch(this, function (refSeqFeature) {
                         var sequence = refSeqFeature.get('seq');
-                        transcript = this.setORF(transcript, refSeqFeature);
                         transcript = this.markNonCanonicalSpliceSites(transcript, sequence);
                         transcript = this.markNonCanonicalTranslationStartSite(transcript, sequence);
                         transcript = this.markNonCanonicalTranslationStopSite(transcript, sequence);
-                        callback.apply(this, [transcript]);
+                        callback.apply(this, [transcript, refSeqFeature]);
                     }));
             }
         }));
@@ -1298,7 +1297,8 @@ var EditTrack = declare(DraggableFeatureTrack,
         if (!transcriptToReplace || !transcriptToInsert) { return; }
         this.backupStore();
         var render = this.renderAfter(1);
-        this.markNonCanonicalSites(transcriptToInsert, function (n) {
+        this.markNonCanonicalSites(transcriptToInsert, function (n, r) {
+            n = this.setORF(n, r);
             n.id(transcriptToReplace.id());
             this.store.replace(n);
             render();
