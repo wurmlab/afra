@@ -168,17 +168,17 @@ var EditTrack = declare(DraggableFeatureTrack,
                         if (leftExon && (exon.get('start') + leftDeltaBases) <= leftExon.get('end')) {
                             var newTranscript = track.mergeExons(parent, leftExon, exon);
                             newTranscript.set('name', parent.get('name'));
-                            track.replaceTranscripts([parent], [newTranscript]);
+                            track.replaceTranscript(parent, newTranscript);
                         }
                         else if (rightExon && (exon.get('end') + rightDeltaBases) >= rightExon.get('start')) {
                             var newTranscript = track.mergeExons(parent, exon, rightExon);
                             newTranscript.set('name', parent.get('name'));
-                            track.replaceTranscripts([parent], [newTranscript]);
+                            track.replaceTranscript(parent, newTranscript);
                         }
                         else {
                             var newTranscript = track.resizeExon(parent, exon, leftDeltaBases, rightDeltaBases);
                             newTranscript.set('name', parent.get('name'));
-                            track.replaceTranscripts([parent], [newTranscript]);
+                            track.replaceTranscript(parent, newTranscript);
                         }
                     }
                 });
@@ -267,7 +267,7 @@ var EditTrack = declare(DraggableFeatureTrack,
 
                 if (f.get('strand') === transcript.get('strand')) {
                     var mergedTranscript = this.mergeTranscripts(transcript, f);
-                    this.replaceTranscripts([transcript], [mergedTranscript]);
+                    this.replaceTranscript(transcript, mergedTranscript);
                 }
             }
         }
@@ -289,7 +289,7 @@ var EditTrack = declare(DraggableFeatureTrack,
             if (feature.parent()) {
                 var newTranscript = this.deleteExon(feature.parent(), feature);
                 if (newTranscript) {
-                    this.replaceTranscripts([feature.parent()], [newTranscript]);
+                    this.replaceTranscript(feature.parent(), newTranscript);
                 }
                 else {
                     this.deleteTranscripts([feature.parent()]);
@@ -313,7 +313,7 @@ var EditTrack = declare(DraggableFeatureTrack,
         if (leftAnnot.parent() && rightAnnot.parent() && leftAnnot.parent() == rightAnnot.parent()) {
             newTranscript = this.mergeExons(leftAnnot.parent(), leftAnnot, rightAnnot);
             this.markNonCanonicalSites(newTranscript, function () {
-                this.replaceTranscripts([leftAnnot.parent()], [newTranscript]);
+                this.replaceTranscript(leftAnnot.parent(), newTranscript);
                 // FIXME: the code below doesn't seem to have desired effect
                 //var newMergedExon = _.find(newTranscript.get('subfeatures'), function (f) {
                     //return f.get('start') === mergedExon.get('start') &&
@@ -345,7 +345,7 @@ var EditTrack = declare(DraggableFeatureTrack,
         var exon = this.selectionManager.getSelectedFeatures()[0];
         var coordinate = this.gview.absXtoBp($('#contextmenu').position().left);
         var newTranscript = this.makeIntron(exon.parent(), exon, coordinate);
-        this.replaceTranscripts([exon.parent()], [newTranscript]);
+        this.replaceTranscript(exon.parent(), newTranscript);
         this.selectionManager.clearSelection();
     },
 
@@ -354,7 +354,7 @@ var EditTrack = declare(DraggableFeatureTrack,
         var transcript = selected.parent() ? selected.parent() : selected;
         var coordinate = this.gview.absXtoBp($('#contextmenu').position().left);
         var newTranscript = this.setTranslationStart(transcript, coordinate);
-        this.replaceTranscripts([transcript], [newTranscript]);
+        this.replaceTranscript(transcript, newTranscript);
         this.selectionManager.clearSelection();
     },
 
@@ -363,7 +363,7 @@ var EditTrack = declare(DraggableFeatureTrack,
         var transcript = selected.parent() ? selected.parent() : selected;
         var coordinate = this.gview.absXtoBp($('#contextmenu').position().left);
         var newTranscript = this.setTranslationStop(transcript, coordinate);
-        this.replaceTranscripts([transcript], [newTranscript]);
+        this.replaceTranscript(transcript, newTranscript);
         this.selectionManager.clearSelection();
     },
 
@@ -1268,26 +1268,41 @@ var EditTrack = declare(DraggableFeatureTrack,
 
     /* VIEW HELPERS - update the view based on controller events */
 
+    renderAfter: function (count) {
+        return _.after(count, _.bind(function () { this.changed(); }, this));
+    },
+
     insertTranscripts: function (transcripts) {
         if (transcripts.length < 1) return;
-
         this.backupStore();
-        _.each(transcripts, dojo.hitch(this, function (t) {
-            this.markNonCanonicalSites(t, function () {
-                this.store.insert(t);
-                this.changed();
+        var render = this.renderAfter(transcripts.length);
+        _.each(transcripts, _.bind(function (t) {
+            this.markNonCanonicalSites(t, function (n) {
+                this.store.insert(n);
+                render();
             });
-        }));
+        }, this));
     },
 
     deleteTranscripts: function (transcripts) {
         if (transcripts.length < 1) return;
-
         this.backupStore();
-        _.each(transcripts, dojo.hitch(this, function (t) {
-            this.store.deleteFeatureById(t.id());
-            this.changed();
-        }));
+        var render = this.renderAfter(transcripts.length);
+        _.each(transcripts, _.bind(function (t) {
+            this.store.remove(t);
+            render();
+        }, this));
+    },
+
+    replaceTranscript: function (transcriptToReplace, transcriptToInsert) {
+        if (!transcriptToReplace || !transcriptToInsert) { return; }
+        this.backupStore();
+        var render = this.renderAfter(1);
+        this.markNonCanonicalSites(transcriptToInsert, function (n) {
+            n.id(transcriptToReplace.id());
+            this.store.replace(n);
+            render();
+        });
     },
 
     replaceTranscripts: function(transcriptsToReplace, transcriptsToInsert) {
