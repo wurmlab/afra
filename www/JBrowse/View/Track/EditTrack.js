@@ -29,6 +29,7 @@ define([
                  Bionode) {
 
 var counter = 1;
+
 var EditTrack = declare(DraggableFeatureTrack,
 {
     constructor: function( args ) {
@@ -931,14 +932,74 @@ var EditTrack = declare(DraggableFeatureTrack,
         });
     },
 
+    /* Returns a transcript that lends itself to easy editing.
+     *
+     * Transcript returned by this method will always have exons, but may not
+     * have CDS. If the track the feature is from was configured to use
+     * 'transcript' style for parent element (true for MAKER, AUGUSTUS, SNAP,
+     * etc.) the resulting transcript will contain CDS.
+     *
+     * Subfeatures are converted into transcript. So an exon will be returned
+     * as a transcript with one exon, and optionally a CDS depending on which
+     * track the subfeature comes from.
+     *
+     * Transcripts can only contain exons and CDS. UTRs are implied. Non-CDS
+     * exonic regions are UTR.
+     */
     normalizeFeature: function (feature, track) {
-        var mapping    = {
-            'match_part': 'exon',
-            'exon'      : 'exon',
-            'CDS'       : 'CDS'
-        };
+        if (feature.parent()) {
+            var subfeatures = _.select(feature.parent().children(), function (f) {
+                if (f.get('start') >= feature.get('start') &&
+                    f.get('end') <= feature.get('end')) {
+                    return f;
+                }
+            });
+            return this.normalizeFeature(this.createTranscript(subfeatures), track);
+        }
 
-        // transcript -> [exons]
+        var subfeatures = this.sortAnnotationsByLocation(feature.get('subfeatures'))
+            , data      = [];
+
+        _.each(subfeatures, function (f) {
+            var l = data[data.length - 1];
+            if (l && (f.get('start') - l['end'] <= 1)) { // we are looking for introns
+                l['end'] = Math.max(l['end'], f.get('end'));
+            }
+            else {
+                data.push({
+                    type:   'exon',
+                    name:   f.get('name'),
+                    seq_id: f.get('seq_id'),
+                    strand: f.get('strand'),
+                    start:  f.get('start'),
+                    end:    f.get('end'),
+                });
+            }
+        });
+
+        if (track.config.style.className === 'transcript') {
+            var subfeatureClasses = track.config.style.subfeatureClasses;
+            var cdsTerm = _.find(_.keys(subfeatureClasses), function (k) {
+                if (subfeatureClasses[k] === 'CDS') {
+                    return true;
+                }
+            });
+            if (cdsTerm) {
+                _.each(subfeatures, function (f) {
+                    if (f.get('type') === cdsTerm) {
+                        data.push({
+                            type:   'CDS',
+                            name:   f.get('name'),
+                            seq_id: f.get('seq_id'),
+                            strand: f.get('strand'),
+                            start:  f.get('start'),
+                            end:    f.get('end'),
+                        });
+                    }
+                });
+            }
+        }
+
         var transcript = new SimpleFeature({
             data: {
                 type:   'transcript',
@@ -947,27 +1008,9 @@ var EditTrack = declare(DraggableFeatureTrack,
                 strand: feature.get('strand'),
                 start:  feature.get('start'),
                 end:    feature.get('end'),
-                subfeatures: _.map(feature.get('subfeatures'), function (f) {
-                    return {
-                        type:   mapping[f.get('type')],
-                        name:   f.get('name'),
-                        seq_id: f.get('seq_id'),
-                        strand: f.get('strand'),
-                        start:  f.get('start'),
-                        end:    f.get('end'),
-                    };
-                })
+                subfeatures: data
             }
         });
-
-        // transcript -> [exons, CDS]
-        if (!this.hasCDS(transcript) && track.config.style.className === 'transcript') {
-            transcript = this.setCDS(transcript, {
-                start: transcript.get('start'),
-                end:   transcript.get('end')
-            });
-        }
-
         return transcript;
     },
 
