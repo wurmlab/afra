@@ -98,8 +98,8 @@ var EditTrack = declare(DraggableFeatureTrack,
 
                 drop:       function (event, ui) {
                     var transcript = featDiv.feature;
-                    var features = track.browser.featSelectionManager.getSelectedFeatures();
-                    track.addToTranscript(transcript, features);
+                    var selection = track.browser.featSelectionManager.getSelection();
+                    track.addToTranscript(transcript, selection);
                     event.stopPropagation();
                 }
             });
@@ -216,19 +216,14 @@ var EditTrack = declare(DraggableFeatureTrack,
         var transcripts = [];
         var subfeatures = [];
         for (var i in selection)  {
-            var feature = this.normalizeFeature(selection[i].feature, selection[i].track);
-            if (feature.parent()) {
-                subfeatures = subfeatures.concat(
-                    _.select(feature.parent().children(), function (f) {
-                    if (f.get('start') >= feature.get('start') &&
-                        f.get('end') <= feature.get('end')) {
-                        return f;
-                    }
-                }));
+            var hadParent  = !!selection[i].feature.parent();
+            var transcript = this.normalizeFeature(selection[i].feature, selection[i].track);
+            if (hadParent) {
+                subfeatures = subfeatures.concat(transcript.get('subfeatures'));
             }
             else {
-                var newTranscript = this.createTranscript(feature.get('subfeatures'), this.generateName(feature))
-                transcripts.push(newTranscript);
+                transcript.set('name', this.generateName(transcript));
+                transcripts.push(transcript);
             }
         }
 
@@ -254,15 +249,15 @@ var EditTrack = declare(DraggableFeatureTrack,
         return transcripts;
     },
 
-    addDraggedFeatures: function (features) {
-        var transcripts = this.processDraggedFeatures(features);
+    addDraggedFeatures: function (selection) {
+        var transcripts = this.processDraggedFeatures(selection);
         if (transcripts.length > 0) {
             this.insertTranscripts(transcripts);
         }
     },
 
-    addToTranscript: function (transcript, features) {
-        var transcripts = this.processDraggedFeatures(features);
+    addToTranscript: function (transcript, selection) {
+        var transcripts = this.processDraggedFeatures(selection);
         if (transcripts.length === 1) {
             var f = transcripts[0];
             if (!(f.get('start') > transcript.get('start') &&
