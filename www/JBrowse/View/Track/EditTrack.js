@@ -1067,19 +1067,20 @@ var EditTrack = declare(DraggableFeatureTrack,
         return [cdsStart, cdsEnd];
     },
 
-    getCDS: function (transcript, sequence) {
-        var cdsCoordinates = this.getCDSCoordinates(transcript);
+    getCDS: function (transcript, refSeq) {
+        var seq    = refSeq.get('seq');
+        var offset = refSeq.get('start');
 
-        if (transcript.get('strand') === -1) {
-            cdsCoordinates.reverse();
-        }
+        var cds = [];
+        _.each(transcript.get('subfeatures'), function (f) {
+            if (f.get('type') === 'CDS') {
+                var start = f.get('start') - offset
+                var end   = f.get('end')   - offset;
+                cds.push(seq.slice(start, end));
+            }
+        });
+        cds = cds.join('');
 
-        var offset = transcript.get('start');
-        cdsCoordinates = _.map(cdsCoordinates, function (c) {
-            return c - offset;
-        })
-
-        var cds = sequence.slice(cdsCoordinates[0], cdsCoordinates[1] + 1);
         if (transcript.get('strand') === -1) {
             cds = Util.reverseComplement(cds);
         }
@@ -1087,17 +1088,17 @@ var EditTrack = declare(DraggableFeatureTrack,
         return cds;
     },
 
-    getStartCodon: function (transcript, sequence) {
-        var cds = this.getCDS(transcript, sequence);
+    getStartCodon: function (transcript, refSeq) {
+        var cds = this.getCDS(transcript, refSeq);
         return cds.slice(0, 3);
     },
 
-    getStopCodon: function (transcript, sequence) {
-        var cds = this.getCDS(transcript, sequence);
+    getStopCodon: function (transcript, refSeq) {
+        var cds = this.getCDS(transcript, refSeq);
         return cds.slice(-3);
     },
 
-    getTranslationStart: function (transcript, sequence) {
+    getTranslationStart: function (transcript) {
         return this.getCDSCoordinates(transcript)[0];
     },
 
@@ -1158,18 +1159,18 @@ var EditTrack = declare(DraggableFeatureTrack,
                 refSeqStore.getFeatures(
                     {ref: this.refSeq.name, start: transcript.get('start'), end: transcript.get('end')},
                     dojo.hitch(this, function (refSeqFeature) {
-                        var sequence = refSeqFeature.get('seq');
-                        transcript = this.markNonCanonicalSpliceSites(transcript, sequence);
-                        transcript = this.markNonCanonicalTranslationStartSite(transcript, sequence);
-                        transcript = this.markNonCanonicalTranslationStopSite(transcript, sequence);
+                        transcript = this.markNonCanonicalSpliceSites(transcript, refSeqFeature);
+                        transcript = this.markNonCanonicalTranslationStartSite(transcript, refSeqFeature);
+                        transcript = this.markNonCanonicalTranslationStopSite(transcript, refSeqFeature);
                         callback.apply(this, [transcript, refSeqFeature]);
                     }));
             }
         }));
     },
 
-    markNonCanonicalSpliceSites: function (transcript, sequence) {
-        var offset = transcript.get('start')
+    markNonCanonicalSpliceSites: function (transcript, refSeq) {
+        var seq    = refSeq.get('seq');
+        var offset = refSeq.get('start');
         var cds_ranges  = [];
 
         // remove non-canonical splice sites from before
@@ -1186,12 +1187,12 @@ var EditTrack = declare(DraggableFeatureTrack,
         var strand = transcript.get('strand');
         var nonCanonicalSpliceSites;
         if (strand === 1) {
-            nonCanonicalSpliceSites = Bionode.findNonCanonicalSplices(sequence, cds_ranges);
+            nonCanonicalSpliceSites = Bionode.findNonCanonicalSplices(seq, cds_ranges);
         }
         else if (strand === -1) {
-            nonCanonicalSpliceSites = Bionode.findNonCanonicalSplices(Util.reverseComplement(sequence), Bionode.reverseExons(cds_ranges, sequence.length));
+            nonCanonicalSpliceSites = Bionode.findNonCanonicalSplices(Util.reverseComplement(seq), Bionode.reverseExons(cds_ranges, seq.length));
             for (var i = 0; i < nonCanonicalSpliceSites.length; i++)
-            nonCanonicalSpliceSites[i] = sequence.length - nonCanonicalSpliceSites[i];
+            nonCanonicalSpliceSites[i] = seq.length - nonCanonicalSpliceSites[i];
         }
         if (!nonCanonicalSpliceSites) {
             nonCanonicalSpliceSites = [];
@@ -1214,12 +1215,12 @@ var EditTrack = declare(DraggableFeatureTrack,
         return transcript;
     },
 
-    markNonCanonicalTranslationStartSite: function (transcript, sequence) {
+    markNonCanonicalTranslationStartSite: function (transcript, refSeq) {
         var subfeatures = _.reject(transcript.get('subfeatures'), function (f) {
             return f.get('type') === 'non_canonical_translation_start_site';
         });
 
-        var startCodon = this.getStartCodon(transcript, sequence);
+        var startCodon = this.getStartCodon(transcript, refSeq);
         var translationStart = this.getTranslationStart(transcript);
         if (startCodon && translationStart && (startCodon.toLowerCase() !== CodonTable.START_CODON)) {
             subfeatures.push(new SimpleFeature({
@@ -1238,12 +1239,12 @@ var EditTrack = declare(DraggableFeatureTrack,
         return transcript;
     },
 
-    markNonCanonicalTranslationStopSite: function (transcript, sequence) {
+    markNonCanonicalTranslationStopSite: function (transcript, refSeq) {
         var subfeatures = _.reject(transcript.get('subfeatures'), function (f) {
             return f.get('type') == 'non_canonical_translation_stop_site';
         });
 
-        var stopCodon = this.getStopCodon(transcript, sequence);
+        var stopCodon = this.getStopCodon(transcript, refSeq);
         var translationStop = this.getTranslationStop(transcript);
         if (stopCodon && translationStop && !_.contains(CodonTable.STOP_CODONS, stopCodon.toLowerCase())) {
             subfeatures.push(new SimpleFeature({
