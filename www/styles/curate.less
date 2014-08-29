@@ -772,50 +772,41 @@ div.transcript-hist {
 }
 
 div.sequence {
-    position: absolute;
-    left: 0px;
-    z-index: 7;
-    pointer-events: none;
-}
-div.sequence .revcom {
-    color: red;
+  display: table;
 }
 
-div.sequence .aa-residues  {
-    color: black;
-    z-index: 5;
-    white-space: nowrap;
+div.sequence > div {
+  display: table-row;
 }
 
-div.sequence .aa-residues.frame0 {
-    background-color: #999999; 
-    z-index: 5;
+div.sequence > div > span {
+  display: table-cell;
 }
 
-div.sequence .aa-residues.frame1 {
-    background-color: #BBBBBB; 
-    z-index: 5;
+div.sequence .aa.frame0 {
+    background-color: #999999;
 }
 
-div.sequence .aa-residues.frame2 {
-    background-color: #DDDDDD; 
-    z-index: 5;
+div.sequence .aa.frame1 {
+    background-color: #BBBBBB;
 }
 
-.acid, .base {
-    display: inline-block;
-    text-align: center;
-    z-index: 2000;
+div.sequence .aa.frame2 {
+    background-color: #DDDDDD;
+}
+
+span.aa, span.nt {
     color: black;
     font-family: monospace;
     font-size: 10px;
+    text-align: center;
 }
 
-.acid_\* {
+.aa_\* {
   background: #B35252;
 }
 
-.acid_M {
+.aa_M {
   background: #51A251;
 }
 

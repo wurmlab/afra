@@ -1,16 +1,16 @@
-define( [
-            'dojo/_base/declare',
-            'JBrowse/View/Track/BlockBased',
-            'JBrowse/View/Track/ExportMixin',
-            'JBrowse/Util',
-            'JBrowse/CodonTable'
-        ],
-        function(declare, BlockBased, ExportMixin, Util, CodonTable) {
+define([
+    'dojo/_base/declare',
+    'JBrowse/View/Track/BlockBased',
+    'JBrowse/View/Track/ExportMixin',
+    'JBrowse/Util',
+    'JBrowse/CodonTable'
+],
+function(declare, BlockBased, ExportMixin, Util, CodonTable) {
 
-return declare( [BlockBased, ExportMixin],
- /**
-  * @lends JBrowse.View.Track.Sequence.prototype
-  */
+return declare([BlockBased, ExportMixin],
+/**
+ * @lends JBrowse.View.Track.Sequence.prototype
+ */
 {
     /**
      * Track to display the underlying reference sequence, when zoomed in
@@ -19,11 +19,11 @@ return declare( [BlockBased, ExportMixin],
      * @constructs
      * @extends JBrowse.View.Track.BlockBased
      */
-    constructor: function( args ) {
+    constructor: function (args) {
         this.trackPadding = 0;
     },
 
-    _defaultConfig: function() {
+    _defaultConfig: function () {
         return {
             trackPadding: 0,
             maxExportSpan: 500000,
@@ -31,17 +31,17 @@ return declare( [BlockBased, ExportMixin],
             showProteinTranslation: true
         };
     },
-    _exportFormats: function() {
+
+    _exportFormats: function () {
         return [{name: 'FASTA', label: 'FASTA', fileExt: 'fasta'}];
     },
 
-    endZoom: function(destScale, destBlockBases) {
+    endZoom: function (destScale, destBlockBases) {
         this.clear();
     },
 
-    setViewInfo:function(genomeView, heightUpdate, numBlocks,
-                         trackDiv,
-                         widthPct, widthPx, scale) {
+    setViewInfo: function (genomeView, heightUpdate, numBlocks,
+                           trackDiv, widthPct, widthPx, scale) {
         this.inherited( arguments );
         this.show();
     },
@@ -64,9 +64,7 @@ return declare( [BlockBased, ExportMixin],
                 ref: this.refSeq.name,
                 start: leftBase - 2,
                 end: rightBase + 2
-            },
-            dojo.hitch(this, '_fillBlock', block),
-            function() {});
+            }, dojo.hitch(this, '_fillBlock', block), function () {});
             this.heightUpdate(charSize.h * 8, blockIndex);
         }
         // otherwise, hide the track
@@ -85,12 +83,12 @@ return declare( [BlockBased, ExportMixin],
         // Pad with blanks if the sequence does not extend all the way across
         // our range.
         if (start < this.refSeq.start) {
-            while( seq.length < (end-start) ) {
-                seq = this.nbsp+seq;
+            while (seq.length < (end-start)) {
+                seq = this.nbsp + seq;
             }
         }
         else if (end > this.refSeq.end) {
-            while( seq.length < (end-start) ) {
+            while (seq.length < (end-start)) {
                 seq += this.nbsp;
             }
         }
@@ -103,128 +101,125 @@ return declare( [BlockBased, ExportMixin],
 
         var blockStart = start + 2;
         var blockEnd = end - 2;
-        var blockResidues = seq.substring(2, seq.length-2);
+        var blockResidues = seq.substring(2, seq.length - 2);
         var blockLength = blockResidues.length;
         var extendedStart = start;
         var extendedEnd = end;
-        var extendedStartResidues = seq.substring(0, seq.length-2);
+        var extendedStartResidues = seq.substring(0, seq.length - 2);
         var extendedEndResidues = seq.substring(2);
 
         // show translation for forward strand
         if (this.config.showProteinTranslation) {
-            var framedivs = [];
-            for (var i=0; i<3; i++) {
-                // var tstart = start + i;
+            var aaDivs = [];
+            for (var i = 0; i <= 2; i++) {
                 var tstart = blockStart + i;
-                var frame = tstart % 3;
-                var transProtein = this.renderTranslation(extendedEndResidues, i, blockLength);
-                $(transProtein).addClass("frame" + frame);
-                framedivs[frame] = transProtein;
+                var frame  = tstart % 3;
+                var aaDiv  = this._aaDiv(extendedEndResidues, i, blockLength);
+                aaDiv.className += (" frame" + frame);
+                aaDivs[frame] = aaDiv;
+                seqNode.appendChild(aaDiv);
             }
-            for (var i=2; i>=0; i--) {
-                var transProtein = framedivs[i];
-                seqNode.appendChild(transProtein);
-                //$(transProtein).bind("mousedown", this.residuesMouseDown);
-                //blockHeight += proteinHeight;
+            for (var i = 2; i >= 0; i--) {
+                var aaDiv = aaDivs[i];
+                seqNode.appendChild(aaDiv);
             }
         }
 
         // show forward strand
-        seqNode.appendChild(this._renderSeqDiv(blockResidues));
+        var ntDiv = this._ntDiv(blockResidues);
+        ntDiv.className += ' forward';
+        seqNode.appendChild(ntDiv);
 
         // and the reverse strand
         if (this.config.showReverseStrand) {
-            var comp = this._renderSeqDiv(Util.complement(blockResidues));
-            comp.className = 'revcom';
-            seqNode.appendChild( comp );
+            var ntDiv = this._ntDiv(Util.complement(blockResidues));
+            ntDiv.className += ' reverse';
+            seqNode.appendChild(ntDiv);
         }
 
         // show translation for reverse strand
         if (this.config.showProteinTranslation && this.config.showReverseStrand) {
-            var extendedReverseComp = Util.reverseComplement(extendedStartResidues);
-            var framedivs = [];
-            for (var i=0; i<3; i++) {
+            var aaDivs = [];
+            for (var i = 0; i < 3; i++) {
                 var tstart = blockStart + i;
-                var frame = (this.refSeq.length - blockEnd + i) % 3;
+                var frame  = (this.refSeq.length - blockEnd + i) % 3;
                 frame = (Math.abs(frame - 2) + (this.refSeq.length % 3)) % 3;
-                var transProtein = this.renderTranslation(extendedStartResidues, i, blockLength, true);
-                $(transProtein).addClass("frame" + frame);
-                framedivs[frame] = transProtein;
+                var aaDiv = this._aaDiv(extendedStartResidues, i, blockLength, true);
+                aaDiv.className += (" frame" + frame);
+                aaDivs[frame] = aaDiv;
             }
-            for (var i=0; i<3; i++) {
-                var transProtein = framedivs[i];
-                seqNode.appendChild(transProtein);
-                //$(transProtein).bind("mousedown", track.residuesMouseDown);
-                //blockHeight += proteinHeight;
+            for (var i = 0; i < 3; i++) {
+                var aaDiv = aaDivs[i];
+                seqNode.appendChild(aaDiv);
             }
         }
     },
 
     /**
-     * Given the start and end coordinates, and the sequence bases,
-     * makes a div containing the sequence.
+     * Given nucleotides, returns a div containing the sequence.
      * @private
      */
-    _renderSeqDiv: function (seq) {
+    _ntDiv: function (seq) {
+        var showChar  = this._shouldShowChar();
         var container = document.createElement('div');
-        var charWidth = 100/seq.length+"%";
-        var showBase = this._shouldShowBase();
-        for( var i=0; i < seq.length; i++ ) {
-            var base = document.createElement('span');
-            base.className = 'base';
-            base.style.width = charWidth;
-            base.innerHTML = showBase ? seq.charAt(i) : '&nbsp;';
-            container.appendChild(base);
+        container.className = 'nt';
+        for (var i = 0; i < seq.length; i++) {
+            var ch = seq.charAt(i);
+            var nt = document.createElement('span');
+            nt.className = 'nt nt_' + ch;
+            nt.innerHTML = showChar ? ch : '&nbsp;';
+            container.appendChild(nt);
         }
         return container;
     },
 
-    renderTranslation: function (input_seq, offset, blockLength, reverse) {
-        var seq;
+    /**
+     * Given nucleotides, return a div containing amino acide sequence in the
+     * desired frame.
+     * @private
+     */
+    _aaDiv: function (seq, offset, blockLength, reverse) {
         if (reverse) {
-            seq = Util.reverseComplement(input_seq);
+            seq = Util.reverseComplement(seq);
         }
-        else  {
-            seq = input_seq;
-        }
-        var container  = document.createElement("div");
-        $(container).addClass("aa-residues");
-        //$(container).addClass("offset" + offset);
+
         var prefix = "";
         var suffix = "";
-        for (var i=0; i<offset; i++) { prefix += this.nbsp; }
-        for (var i=0; i<(2-offset); i++) { suffix += this.nbsp; }
+        for (var i = 0; i < offset; i++) {
+            prefix += this.nbsp;
+        }
+        for (var i = 0; i < (2 - offset); i++) {
+            suffix += this.nbsp;
+        }
 
         var extra_bases = (seq.length - offset) % 3;
         var dnaRes = seq.substring(offset, seq.length - extra_bases);
         var aaResidues = dnaRes.replace(/(...)/gi,  function(codon) {
             var aa = CodonTable[codon];
-            // if no mapping and blank in codon, return blank
-            // if no mapping and no blank in codon,  return "?"
             if (!aa) {
-                if (codon.indexOf(this.nbsp) >= 0) { aa = this.nbsp; }
-                else  { aa = "?"; }
+                // If no mapping and blank in codon, return blank. If no
+                // mapping and no blank in codon, return "?".
+                aa = (codon.indexOf(this.nbsp) >= 0) ?  aa = this.nbsp : "?";
             }
             return prefix + aa + suffix;
         });
-        var trimmedAaResidues = aaResidues.substring(0, blockLength);
-        aaResidues = trimmedAaResidues;
-        if (reverse) {
-            var revAaResidues = Util.reverse(aaResidues);
-            aaResidues = revAaResidues;
-            while (aaResidues.length < blockLength)  {
-                aaResidues = this.nbsp + aaResidues;
-            }
+        aaResidues = aaResidues.substring(0, blockLength);
+        while (aaResidues.length < blockLength)  {
+            aaResidues = aaResidues + this.nbsp;
         }
-        var charWidth = 100/blockLength+"%";
-        var showBase = this._shouldShowBase()
-        for (var i=0; i < aaResidues.length; i++) {
-            var base = document.createElement('span');
-            var aa = aaResidues.charAt(i)
-            base.className = 'acid' + ' acid_' + aa;
-            base.style.width = charWidth;
-            base.innerHTML = showBase ? aa : '&nbsp;'
-            container.appendChild(base);
+        if (reverse) {
+            aaResidues = Util.reverse(aaResidues);
+        }
+
+        var showChar  = this._shouldShowChar();
+        var container = document.createElement("div");
+        container.className = 'aa';
+        for (var i = 0; i < aaResidues.length; i++) {
+            var ch = aaResidues.charAt(i);
+            var aa = document.createElement('span');
+            aa.className = 'aa aa_' + ch;
+            aa.innerHTML = showChar ? ch : '&nbsp;';
+            container.appendChild(aa);
         }
         return container;
     },
@@ -242,6 +237,7 @@ return declare( [BlockBased, ExportMixin],
     /**
      * Conducts a test with DOM elements to measure sequence text width
      * and height.
+     * @private
      */
     _measureSequenceCharacterSize: function (containerElement) {
         var widthTest = document.createElement("div");
@@ -258,12 +254,15 @@ return declare( [BlockBased, ExportMixin],
         return result;
     },
 
-    _shouldShowBase: function() {
-      var ffpc = this.featureFilterParentComponent
-      var scale = ffpc.zoomLevels[ffpc.curZoom]
-      var charWidthPt = this.getCharacterMeasurements().w
-      var shouldShowBase = scale >= charWidthPt
-      return shouldShowBase
+    /**
+     * @private
+     */
+    _shouldShowChar: function() {
+      var ffpc = this.featureFilterParentComponent;
+      var scale = ffpc.zoomLevels[ffpc.curZoom];
+      var charWidthPt = this.getCharacterMeasurements().w;
+      var shouldShowBase = scale >= charWidthPt;
+      return shouldShowBase;
     }
   });
 });
