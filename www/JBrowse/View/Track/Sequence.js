@@ -143,7 +143,7 @@ return declare([BlockBased, ExportMixin],
             for (var i = 0; i < 3; i++) {
                 var tstart = blockStart + i;
                 var frame  = (this.refSeq.length - blockEnd + i) % 3;
-                frame = (Math.abs(frame - 2) + (this.refSeq.length % 3)) % 3;
+                //frame = (Math.abs(frame - 2) + (this.refSeq.length % 3)) % 3;
                 var aaDiv = this._aaDiv(extendedStartResidues, i, blockLength, true);
                 aaDiv.className += (" frame" + frame);
                 aaDivs[frame] = aaDiv;
