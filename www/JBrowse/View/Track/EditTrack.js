@@ -11,6 +11,7 @@ define([
             'JBrowse/Util',
             'JBrowse/View/GranularRectLayout',
             'JBrowse/CodonTable',
+            'FileSaver/FileSaver',
             'bionode',
             'jquery.poll.js'
         ],
@@ -26,6 +27,7 @@ define([
                  Util,
                  Layout,
                  CodonTable,
+                 saveAs,
                  Bionode) {
 
 var counter = 1;
@@ -618,6 +620,13 @@ var EditTrack = declare(DraggableFeatureTrack,
                 $('#bp').hide();
             }
         }));
+    },
+
+    downloadSequence: function () {
+        var data = $('#sequence pre').text();
+        var meta = data.split("\n")[0].split(' ');
+        var file = 'afra-' + meta[1].replace(/\:|(\.\.)/g, '_').slice(0, -3) + '-' + meta[2] + '.fa';
+        saveAs(new Blob([data], {type: 'text/plain'}), file);
     },
 
     /* end CONTROLLERS - bridge between the view and model layer */
