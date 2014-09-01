@@ -561,41 +561,6 @@ div.hist {
     -ms-box-sizing: border-box;
 }
 
-.feature,
-.plus-feature,
-.minus-feature {
-    position:absolute;
-    height: 7px;
-    background-repeat: repeat-x;
-    cursor: pointer;
-    min-width: 1px;
-    z-index: 10;
-    background-color: #eee;
-
-    box-sizing: border-box;
-    -moz-box-sizing: border-box;
-    -webkit-box-sizing: border-box;
-    -ms-box-sizing: border-box;
-}
-
-.plus-feature { background-image: url('img/plus-chevron3.png'); }
-.minus-feature { background-image: url('img/minus-chevron3.png'); }
-
-.subfeature,
-.plus-subfeature,
-.minus-subfeature {
-    position:absolute;
-    background-color: #dadada;
-    height: 11px;
-    min-width: 1px;
-    z-index: 12;
-
-    box-sizing: border-box;
-    -moz-box-sizing: border-box;
-    -webkit-box-sizing: border-box;
-    -ms-box-sizing: border-box;
-}
-
 .alignment,
 .plus-alignment,
 .minus-alignment {
@@ -824,6 +789,38 @@ span.aa, span.nt {
     z-index: 2;
 }
 
+.feature,
+.plus-feature,
+.minus-feature {
+    position:absolute;
+    height: 7px;
+    background-repeat: repeat-x;
+    cursor: pointer;
+    min-width: 1px;
+    z-index: 10;
+    background-color: #eee;
+
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    -ms-box-sizing: border-box;
+}
+
+.subfeature,
+.plus-subfeature,
+.minus-subfeature {
+    position:absolute;
+    background-color: #dadada;
+    height: 11px;
+    min-width: 1px;
+    z-index: 12;
+
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    -ms-box-sizing: border-box;
+}
+
 .transcript,
 .plus-transcript,
 .minus-transcript {
@@ -857,13 +854,20 @@ span.aa, span.nt {
 
 .CDS,
 .plus-CDS,
-.minus-CDS {
+.minus-CDS,
+.plus-UTR,
+.minus-UTR,
+.plus-five_prime_UTR,
+.minus-five_prime_UTR,
+.plus-three_prime_UTR,
+.minus-three_prime_UTR {
     position: absolute;
     height: 11px;
     background-color: #B66;
     cursor: pointer;
     z-index: 10;
     min-width: 1px;
+    pointer-events: none;
 }
 
 .plus-exon,
@@ -876,11 +880,14 @@ span.aa, span.nt {
 .minus-three_prime_UTR {
     position: absolute;
     height: 11px;
-    background-color: transparent;
-    z-index: 8;
+    /*background-color: transparent;*/
+    background-color: #dadada;
+    /*z-index: 11;*/
+    z-index: 9;
     min-width: 1px;
     cursor: pointer;
 }
+
 
 .non-canonical-splice-site,
 .plus-non-canonical-splice-site,
