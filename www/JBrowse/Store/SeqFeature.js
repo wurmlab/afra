@@ -1,9 +1,10 @@
 define( [
             'dojo/_base/declare',
+            'dojo/_base/lang',
             'JBrowse/Store',
             'JBrowse/Store/LRUCache'
         ],
-        function( declare, Store, LRUCache ) {
+        function( declare, lang, Store, LRUCache ) {
 
 /**
  * Base class for JBrowse data backends that hold sequences and
@@ -131,7 +132,50 @@ return declare( Store,
      */
     getFeatures: function( query, featureCallback, endCallback, errorCallback ) {
         endCallback();
-    }
+    },
 
+    /**
+     * Given a plain query object, call back with a single sequence
+     * string that is the naively-assembled sequence for that region,
+     * assembled from the 'residues' or 'seq' attributes of the
+     * features that come back from the store.  Add
+     * "reference_sequences_only: true" to the query it send to the
+     * store.
+     */
+    getReferenceSequence: function( query, seqCallback, errorCallback ) {
+
+        // insert the `replacement` string into `str` at the given
+        // `offset`, putting in `length` characters.
+        function replaceAt( str, offset, replacement ) {
+            var rOffset = 0;
+            if( offset < 0 ) {
+                rOffset = -offset;
+                offset = 0;
+            }
+
+            var length = Math.min( str.length - offset, replacement.length - rOffset );
+
+            return str.substr( 0, offset ) + replacement.substr( rOffset, length ) + str.substr( offset + length );
+        }
+
+        // pad with spaces at the beginning of the string if necessary
+        var len = query.end - query.start;
+        var sequence = '';
+        while( sequence.length < len )
+            sequence += ' ';
+
+        var thisB = this;
+        this.getFeatures( lang.mixin({ reference_sequences_only: true }, query ),
+                          function( f ) {
+                              var seq = f.get('residues') || f.get('seq');
+                              if( seq )
+                                  sequence = replaceAt( sequence, f.get('start')-query.start, seq );
+                          },
+                          function() {
+                              seqCallback( sequence );
+                          },
+                          errorCallback
+                        );
+    }
 });
 });
