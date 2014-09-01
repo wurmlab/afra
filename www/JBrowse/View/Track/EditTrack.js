@@ -1495,60 +1495,61 @@ var EditTrack = declare(DraggableFeatureTrack,
                            });
     },
 
-    selectionAdded: function (rec, smanager) {
-        var feat = rec.feature;
-        this.inherited( arguments );
+    selectionAdded: function (selection) {
+        this.inherited(arguments);
 
-        var track = this;
-
-        var topfeat = EditTrack.getTopLevelAnnotation(feat);
-        var featdiv = track.getFeatDiv(topfeat);
-        if (featdiv)  {
-            var strand = topfeat.get('strand');
-            var selectionYPosition = $(featdiv).position().top;
-            var scale = track.gview.bpToPx(1);
-            var charSize = this.browser.getSequenceTrack().getCharacterMeasurements();
-            if (scale >= charSize.w && track.useResiduesOverlay)  {
+        var feature = EditTrack.getTopLevelAnnotation(selection.feature);
+        var featureDiv = this.getFeatDiv(feature);
+        var seqTrack = this.browser.getSequenceTrack();
+        if (featureDiv)  {
+            var strand = feature.get('strand');
+            var featureTop = $(featureDiv).position().top;
+            var scale = this.gview.bpToPx(1);
+            var charSize = seqTrack.getCharacterMeasurements();
+            if (scale >= charSize.w && this.useResiduesOverlay)  {
                 for (var bindex = this.firstAttached; bindex <= this.lastAttached; bindex++)  {
                     var block = this.blocks[bindex];
                     this.browser.getSequenceTrack().store.getFeatures(
                         {ref: this.refSeq.name, start: block.startBase, end: block.endBase},
-                        function(feat) {
-                            var seq = feat.get('seq');
-                            var start = feat.get('start');
-                            var end = feat.get('end');
+                        function (refSeqFeature) {
+                            var seq = refSeqFeature.get('seq');
+                            var top = featureTop - 2; // -2 hardwired adjustment to center
+                            var addBP = true;
+                            $('div.sequence', block.domNode).each(function () {
+                                if ($(this).position().top === top) {
+                                    return (addBP = false);
+                                }
+                            });
 
-                            // -2 hardwired adjustment to center
-                            var ypos = selectionYPosition - 2;
+                            if (addBP) {
+                                // make a div to contain the sequences
+                                var seqNode = document.createElement("div");
+                                seqNode.className = "sequence";
+                                seqNode.style.width = "100%";
+                                seqNode.style.top = top + "px";
 
-                            // make a div to contain the sequences
-                            var seqNode = document.createElement("div");
-                            seqNode.className = "sequence";
-                            seqNode.style.width = "100%";
-                            seqNode.style.top = ypos + "px";
+                                if (strand == '-' || strand == -1)  {
+                                    seq = Util.complement(seq);
+                                }
 
-                            if (strand == '-' || strand == -1)  {
-                                seq = Util.complement(seq);
+                                seqNode.appendChild(seqTrack._ntDiv(seq));
+                                block.domNode.appendChild(seqNode);
                             }
-
-                            seqNode.appendChild(track._renderSeqDiv(seq));
-                            block.domNode.appendChild(seqNode);
-
                         });
                 }
             }
         }
+
         this.updateMenu();
     },
 
-    selectionRemoved: function(selected_record, smanager)  {
-        this.inherited( arguments );
-        var track = this;
-        if (selected_record.track === track)  {
-            var feat = selected_record.feature;
-            var featdiv = this.getFeatDiv(feat);
-            $("div.sequence", track.div).remove();
+    selectionRemoved: function (selection)  {
+        this.inherited(arguments);
+
+        if (selection.track === this)  {
+            $("div.sequence", this.div).remove();
         }
+
         $('.ui-resizable').resizable('destroy');
     },
 
@@ -1567,24 +1568,6 @@ var EditTrack = declare(DraggableFeatureTrack,
             //     (in case zoomed in to base pair resolution and the residues overlay is being displayed)
             $("div.sequence", this.div).css('display', 'none');
         }
-    },
-
-    /**
-     * Given the start and end coordinates, and the sequence bases,
-     * makes a div containing the sequence.
-     * @private
-     */
-    _renderSeqDiv: function (seq) {
-        var container = document.createElement('div');
-        var charWidth = 100/seq.length+"%";
-        for( var i=0; i < seq.length; i++ ) {
-            var base = document.createElement('span');
-            base.className = 'base base_'+seq.charAt([i]).toLowerCase();
-            base.style.width = charWidth;
-            base.innerHTML = seq.charAt(i);
-            container.appendChild(base);
-        }
-        return container;
     }
 });
 
