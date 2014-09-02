@@ -316,19 +316,12 @@ var EditTrack = declare(DraggableFeatureTrack,
             newTranscript = this.mergeExons(leftAnnot.parent(), leftAnnot, rightAnnot);
             this.markNonCanonicalSites(newTranscript, function () {
                 this.replaceTranscript(leftAnnot.parent(), newTranscript);
-                // FIXME: the code below doesn't seem to have desired effect
-                //var newMergedExon = _.find(newTranscript.get('subfeatures'), function (f) {
-                    //return f.get('start') === mergedExon.get('start') &&
-                        //f.get('end') === mergedExon.get('end');
-                //});
-                //var featdiv = this.getFeatDiv(newMergedExon);
-                //$(featdiv).trigger('mousedown');
             });
         }
         else {
             newTranscript = this.mergeTranscripts(leftAnnot, rightAnnot);
             this.markNonCanonicalSites(newTranscript, function () {
-                this.replaceTranscripts([leftAnnot, rightAnnot], [newTranscript]);
+                this.replaceMergedTranscripts([leftAnnot, rightAnnot], newTranscript);
             });
         }
 
@@ -339,7 +332,7 @@ var EditTrack = declare(DraggableFeatureTrack,
         var transcript = this.selectionManager.getSelectedFeatures()[0];
         var coordinate = this.gview.absXtoBp($('#contextmenu').position().left);
         var newTranscripts = this.splitTranscript(transcript, coordinate);
-        this.replaceTranscripts([transcript], newTranscripts);
+        this.replaceSplitTranscript(transcript, newTranscripts);
         this.selectionManager.clearSelection();
     },
 
@@ -1275,54 +1268,116 @@ var EditTrack = declare(DraggableFeatureTrack,
         return _.after(count, _.bind(function () { this.changed(); }, this));
     },
 
+    insertTranscript: function (transcript) {
+        this.insertTranscripts([transcript]);
+    },
+
     insertTranscripts: function (transcripts) {
         if (transcripts.length < 1) return;
-        this.backupStore();
         var render = this.renderAfter(transcripts.length);
-        _.each(transcripts, _.bind(function (t) {
-            this.markNonCanonicalSites(t, function (n) {
-                this.store.insert(n);
-                render();
-            });
-        }, this));
+        this.backupStore();
+        try {
+            _.each(transcripts, _.bind(function (t) {
+                this.markNonCanonicalSites(t, function (n) {
+                    this.store.insert(n);
+                    render();
+                });
+            }, this));
+        }
+        catch (e) {
+            console.error(e, e.stack);
+            this.undo();
+        }
+    },
+
+    deleteTranscript: function (transcript) {
+        this.deleteTranscripts([transcript]);
     },
 
     deleteTranscripts: function (transcripts) {
         if (transcripts.length < 1) return;
-        this.backupStore();
         var render = this.renderAfter(transcripts.length);
-        _.each(transcripts, _.bind(function (t) {
-            this.store.remove(t);
-            render();
-        }, this));
+        this.backupStore();
+        try {
+            _.each(transcripts, _.bind(function (t) {
+                this.store.remove(t);
+                render();
+            }, this));
+        }
+        catch (e) {
+            console.error(e, e.stack);
+            this.undo();
+        }
     },
 
-    replaceTranscript: function (transcriptToReplace, transcriptToInsert) {
-        if (!transcriptToReplace || !transcriptToInsert) { return; }
-        this.backupStore();
-        var render = this.renderAfter(1);
-        this.markNonCanonicalSites(transcriptToInsert, function (n, r) {
-            n = this.setORF(n, r);
-            n.id(transcriptToReplace.id());
-            this.store.replace(n);
-            render();
-        });
+    replaceTranscript: function (transcriptToRemove, transcriptToInsert) {
+        this.replaceTranscripts([transcriptToRemove], [transcriptToInsert]);
     },
 
-    replaceTranscripts: function(transcriptsToReplace, transcriptsToInsert) {
-        if (transcriptsToReplace.length < 1) return;
-        if (transcriptsToInsert.length < 1) return;
+    replaceTranscripts: function (transcriptsToRemove, transcriptsToInsert) {
+        if (transcriptsToRemove.length !== transcriptsToInsert.length) {
+            throw "Number of old and new transcripts should be the same.";
+        }
+        if (transcriptsToRemove.length < 1) return;
 
+        var render = this.renderAfter(transcriptsToRemove.length);
         this.backupStore();
-        _.each(transcriptsToReplace, dojo.hitch(this, function (t) {
-            this.store.deleteFeatureById(t.id());
-        }));
-        _.each(transcriptsToInsert, dojo.hitch(this, function (t) {
-            this.markNonCanonicalSites(t, function (n) {
+        try {
+            _.each(_.zip(transcriptsToRemove, transcriptsToInsert),
+                   _.bind(function (pair) {
+                       var toRemove = pair[0];
+                       var toInsert = pair[1];
+                       this.markNonCanonicalSites(toInsert, function (n, r) {
+                           n = this.setORF(n, r);
+                           n.id(toRemove.id());
+                           this.store.replace(n);
+                           render();
+                       });
+                   }, this));
+        }
+        catch (e) {
+            console.error(e, e.stack);
+            this.undo();
+        }
+    },
+
+    replaceSplitTranscript: function (transcriptToRemove, transcriptsToInsert) {
+        if (!transcriptToRemove || transcriptsToInsert.length < 1) return;
+        var render = this.renderAfter(transcriptsToInsert.length);
+        this.backupStore();
+        try {
+            this.store.remove(transcriptToRemove);
+            _.each(transcriptsToInsert, _.bind(function (t) {
+                this.markNonCanonicalSites(t, function (n, r) {
+                    n = this.setORF(n, r);
+                    this.store.insert(n);
+                    render();
+                });
+            }, this));
+        }
+        catch (e) {
+            console.error(e, e.stack);
+            this.undo();
+        }
+    },
+
+    replaceMergedTranscripts: function (transcriptsToRemove, transcriptToInsert) {
+        if (transcriptsToRemove.length < 1 || !transcriptToInsert) return;
+        this.backupStore();
+        try {
+            _.each(transcriptsToRemove, _.bind(function (t) {
+                this.store.remove(t);
+            }, this));
+            this.markNonCanonicalSites(transcriptToInsert, function (n) {
+                n.id(transcriptsToRemove[0].id());
                 this.store.insert(n);
+                this.changed();
             });
-        }));
-        this.changed();
+        }
+        catch (e) {
+            console.error(e, e.stack);
+            this.undo();
+        }
     },
 
     undo: function () {
