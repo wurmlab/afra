@@ -806,11 +806,12 @@ var EditTrack = declare(DraggableFeatureTrack,
                         while (startIndex >= 0) {
                             var runningORF = 0;
                             var readingFrame = cdna.slice(startIndex);
-                            _.each(readingFrame.match(/.{1,3}/g), function(codon) {
+                            _.every(readingFrame.match(/.{1,3}/g), function (codon) {
                                 runningORF += 3;
                                 if (CodonTable.STOP_CODONS.indexOf(codon) !== -1) {
-                                    return;
+                                    return false;
                                 }
+                                return true;
                             });
                             if (runningORF > longestORF) {
                                 orfStart   = startIndex;
@@ -820,22 +821,15 @@ var EditTrack = declare(DraggableFeatureTrack,
                             startIndex = cdna.indexOf(CodonTable.START_CODON, startIndex + 1);
                         }
 
-                        //console.log(island);
-                        //console.log(orfStart, orfStop);
+                        if (transcript.get('strand') == -1) {
+                            orfStart = cdna.length - orfStart;
+                            orfStop  = cdna.length - orfStop;
+                        }
                         orfStart = orfStart + offset + _.find(island, function (i) { if (i[0] >= orfStart) return i; })[1];
                         orfStop = orfStop + offset + _.find(island, function (i) { if (i[0] >= orfStop) return i; })[1];
 
-                        if (transcript.get('strand') == -1) {
-                            // simply swap start and stop
-                            var temp = orfStart;
-                            orfStart = orfStop;
-                            orfStop  = temp;
-                        }
-                        //console.log(orfStart, orfStop);
-                        //console.log(transcript.get('start'), transcript.get('end'), transcript.get('strand'));
-
                         var newTranscript = this.setCDS(transcript, {start: orfStart, end: orfStop});
-                        this.replaceTranscripts([transcript], [newTranscript]);
+                        this.replaceTranscript(transcript, newTranscript);
                     }));
             }
         }));
