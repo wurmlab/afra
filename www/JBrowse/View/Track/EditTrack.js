@@ -314,15 +314,11 @@ var EditTrack = declare(DraggableFeatureTrack,
         var newTranscript;
         if (leftAnnot.parent() && rightAnnot.parent() && leftAnnot.parent() == rightAnnot.parent()) {
             newTranscript = this.mergeExons(leftAnnot.parent(), leftAnnot, rightAnnot);
-            this.markNonCanonicalSites(newTranscript, function () {
-                this.replaceTranscript(leftAnnot.parent(), newTranscript);
-            });
+            this.replaceTranscript(leftAnnot.parent(), newTranscript);
         }
         else {
             newTranscript = this.mergeTranscripts(leftAnnot, rightAnnot);
-            this.markNonCanonicalSites(newTranscript, function () {
-                this.replaceMergedTranscripts([leftAnnot, rightAnnot], newTranscript);
-            });
+            this.replaceMergedTranscripts([leftAnnot, rightAnnot], newTranscript);
         }
 
         this.selectionManager.clearSelection();
@@ -370,11 +366,12 @@ var EditTrack = declare(DraggableFeatureTrack,
 
     flipStrandForSelectedFeatures: function ()  {
         var selected = this.selectionManager.getSelectedFeatures();
+        this.selectionManager.clearSelection();
         var modified = _.map(selected, dojo.hitch(this, function (transcript) {
             return this.flipStrand(transcript);
         }));
 
-        this.replaceTranscripts(selected, modified);
+        this.replaceTranscripts(selected, modified, this.highlightFeatures);
     },
 
     showSequenceDialog: function () {
@@ -828,13 +825,12 @@ var EditTrack = declare(DraggableFeatureTrack,
         }));
     },
 
-    setORF: function (transcript, refSeqFeature) {
+    setORF: function (transcript, refSeq) {
         if (!this.hasCDS(transcript)) {
             return transcript;
         }
 
-        var seq = refSeqFeature.get('seq')
-            , offset = refSeqFeature.get('start');
+        var offset = transcript.get('start');
 
         var cdna   = [];
         var island = []; // coordinate range on mRNA (spliced) mapped to offset from start of pre-mRNA (non-spliced)
@@ -843,7 +839,7 @@ var EditTrack = declare(DraggableFeatureTrack,
             if (f.get('type') === 'exon') {
                 var start = f.get('start') - offset
                     , end = f.get('end') - offset;
-                cdna.push(seq.slice(start, end));
+                cdna.push(refSeq.slice(start, end));
 
                 if (!lastEnd) { // first exon
                     island.push([end - start, 0]);
@@ -1064,15 +1060,14 @@ var EditTrack = declare(DraggableFeatureTrack,
     },
 
     getCDS: function (transcript, refSeq) {
-        var seq    = refSeq.get('seq');
-        var offset = refSeq.get('start');
+        var offset = transcript.get('start');
 
         var cds = [];
         _.each(transcript.get('subfeatures'), function (f) {
             if (f.get('type') === 'CDS') {
-                var start = f.get('start') - offset
-                var end   = f.get('end')   - offset;
-                cds.push(seq.slice(start, end));
+                var start = f.get('start');
+                var end   = f.get('end');
+                cds.push(refSeq.slice(start, end));
             }
         });
         cds = cds.join('');
@@ -1148,25 +1143,29 @@ var EditTrack = declare(DraggableFeatureTrack,
         return this.createTranscript(subfeatures, transcript.get('name'));
     },
 
-    /* MODEL VALIDATIONS */
-    markNonCanonicalSites: function(transcript, callback) {
-        this.browser.getStore('refseqs', dojo.hitch(this, function(refSeqStore) {
+    getRefSeq: function (callback) {
+        this.browser.getStore('refseqs', _.bind(function(refSeqStore) {
             if (refSeqStore) {
                 refSeqStore.getFeatures(
-                    {ref: this.refSeq.name, start: transcript.get('start'), end: transcript.get('end')},
-                    dojo.hitch(this, function (refSeqFeature) {
-                        transcript = this.markNonCanonicalSpliceSites(transcript, refSeqFeature);
-                        transcript = this.markNonCanonicalTranslationStartSite(transcript, refSeqFeature);
-                        transcript = this.markNonCanonicalTranslationStopSite(transcript, refSeqFeature);
-                        callback.apply(this, [transcript, refSeqFeature]);
-                    }));
+                    {ref: this.refSeq.name, start: this.refSeq.start, end: this.refSeq.end},
+                    _.bind(function (refSeqFeature) {
+                        callback.apply(this, [refSeqFeature.get('seq')]);
+                    }, this));
             }
-        }));
+        }, this));
+    },
+
+    /* MODEL VALIDATIONS */
+    markNonCanonicalSites: function (transcript, refSeq) {
+        transcript = this.markNonCanonicalSpliceSites(transcript, refSeq);
+        transcript = this.markNonCanonicalTranslationStartSite(transcript, refSeq);
+        transcript = this.markNonCanonicalTranslationStopSite(transcript, refSeq);
+        return transcript;
     },
 
     markNonCanonicalSpliceSites: function (transcript, refSeq) {
-        var seq    = refSeq.get('seq');
-        var offset = refSeq.get('start');
+        var seq    = refSeq.slice(transcript.get('start'), transcript.get('end'));
+        var offset = transcript.get('start');
         var cds_ranges  = [];
 
         // remove non-canonical splice sites from before
@@ -1264,25 +1263,39 @@ var EditTrack = declare(DraggableFeatureTrack,
 
     /* VIEW HELPERS - update the view based on controller events */
 
-    renderAfter: function (count) {
-        return _.after(count, _.bind(function () { this.changed(); }, this));
+    highlightFeature: function (feature) {
+        var div = this.getFeatDiv(feature);
+        $(div).trigger('mousedown');
     },
 
-    insertTranscript: function (transcript) {
-        this.insertTranscripts([transcript]);
+    highlightFeatures: function () {
+        var features = Array.prototype.slice.call(arguments);
+        _.each(features, _.bind(function (feature) {
+            this.highlightFeature(feature);
+        }, this));
     },
 
-    insertTranscripts: function (transcripts) {
+    insertTranscript: function (transcript, callback) {
+        this.insertTranscripts([transcript], callback);
+    },
+
+    insertTranscripts: function (transcripts, callback) {
         if (transcripts.length < 1) return;
-        var render = this.renderAfter(transcripts.length);
+
         this.backupStore();
         try {
-            _.each(transcripts, _.bind(function (t) {
-                this.markNonCanonicalSites(t, function (n) {
-                    this.store.insert(n);
-                    render();
-                });
-            }, this));
+            this.getRefSeq(function (refSeq) {
+                var inserted = [];
+                _.each(transcripts, _.bind(function (toInsert) {
+                    toInsert = this.markNonCanonicalSites(toInsert, refSeq);
+                    this.store.insert(toInsert);
+                    inserted.push(toInsert);
+                }, this));
+                this.changed();
+                if (callback) {
+                    callback.apply(this, inserted);
+                }
+            });
         }
         catch (e) {
             console.error(e, e.stack);
@@ -1290,19 +1303,24 @@ var EditTrack = declare(DraggableFeatureTrack,
         }
     },
 
-    deleteTranscript: function (transcript) {
-        this.deleteTranscripts([transcript]);
+    deleteTranscript: function (transcript, callback) {
+        this.deleteTranscripts([transcript], callback);
     },
 
-    deleteTranscripts: function (transcripts) {
+    deleteTranscripts: function (transcripts, callback) {
         if (transcripts.length < 1) return;
-        var render = this.renderAfter(transcripts.length);
+
         this.backupStore();
         try {
+            var removed = [];
             _.each(transcripts, _.bind(function (t) {
                 this.store.remove(t);
-                render();
+                removed.push(t);
             }, this));
+            this.changed();
+            if (callback) {
+                callback.apply(this, removed);
+            }
         }
         catch (e) {
             console.error(e, e.stack);
@@ -1310,30 +1328,34 @@ var EditTrack = declare(DraggableFeatureTrack,
         }
     },
 
-    replaceTranscript: function (transcriptToRemove, transcriptToInsert) {
-        this.replaceTranscripts([transcriptToRemove], [transcriptToInsert]);
+    replaceTranscript: function (transcriptToRemove, transcriptToInsert, callback) {
+        this.replaceTranscripts([transcriptToRemove], [transcriptToInsert], callback);
     },
 
-    replaceTranscripts: function (transcriptsToRemove, transcriptsToInsert) {
+    replaceTranscripts: function (transcriptsToRemove, transcriptsToInsert, callback) {
         if (transcriptsToRemove.length !== transcriptsToInsert.length) {
             throw "Number of old and new transcripts should be the same.";
         }
         if (transcriptsToRemove.length < 1) return;
 
-        var render = this.renderAfter(transcriptsToRemove.length);
         this.backupStore();
         try {
-            _.each(_.zip(transcriptsToRemove, transcriptsToInsert),
-                   _.bind(function (pair) {
-                       var toRemove = pair[0];
-                       var toInsert = pair[1];
-                       this.markNonCanonicalSites(toInsert, function (n, r) {
-                           n = this.setORF(n, r);
-                           n.id(toRemove.id());
-                           this.store.replace(n);
-                           render();
-                       });
-                   }, this));
+            this.getRefSeq(function (refSeq) {
+                var inserted = [];
+                _.each(_.zip(transcriptsToRemove, transcriptsToInsert), _.bind(function (pair) {
+                    var toRemove = pair[0];
+                    var toInsert = pair[1];
+                    toInsert = this.setORF(toInsert, refSeq);
+                    toInsert = this.markNonCanonicalSites(toInsert, refSeq);
+                    toInsert.id(toRemove.id());
+                    this.store.replace(toInsert);
+                    inserted.push(toInsert);
+                }, this));
+                this.changed();
+                if (callback) {
+                    callback.apply(this, inserted);
+                }
+            });
         }
         catch (e) {
             console.error(e, e.stack);
@@ -1341,19 +1363,24 @@ var EditTrack = declare(DraggableFeatureTrack,
         }
     },
 
-    replaceSplitTranscript: function (transcriptToRemove, transcriptsToInsert) {
+    replaceSplitTranscript: function (transcriptToRemove, transcriptsToInsert, callback) {
         if (!transcriptToRemove || transcriptsToInsert.length < 1) return;
-        var render = this.renderAfter(transcriptsToInsert.length);
         this.backupStore();
         try {
             this.store.remove(transcriptToRemove);
-            _.each(transcriptsToInsert, _.bind(function (t) {
-                this.markNonCanonicalSites(t, function (n, r) {
-                    n = this.setORF(n, r);
-                    this.store.insert(n);
-                    render();
-                });
-            }, this));
+            this.getRefSeq(function (refSeq) {
+                var inserted = [];
+                _.each(transcriptsToInsert, _.bind(function (toInsert) {
+                    toInsert = this.setORF(toInsert, refSeq);
+                    toInsert = this.markNonCanonicalSites(toInsert, refSeq);
+                    this.store.insert(toInsert);
+                    inserted.push(toInsert);
+                }, this));
+                this.changed();
+                if (callback) {
+                    callback.apply(this, inserted);
+                }
+            });
         }
         catch (e) {
             console.error(e, e.stack);
@@ -1361,17 +1388,21 @@ var EditTrack = declare(DraggableFeatureTrack,
         }
     },
 
-    replaceMergedTranscripts: function (transcriptsToRemove, transcriptToInsert) {
+    replaceMergedTranscripts: function (transcriptsToRemove, transcriptToInsert, callback) {
         if (transcriptsToRemove.length < 1 || !transcriptToInsert) return;
         this.backupStore();
         try {
             _.each(transcriptsToRemove, _.bind(function (t) {
                 this.store.remove(t);
             }, this));
-            this.markNonCanonicalSites(transcriptToInsert, function (n) {
-                n.id(transcriptsToRemove[0].id());
-                this.store.insert(n);
+            this.getRefSeq(function (refSeq) {
+                transcriptToInsert = this.markNonCanonicalSites(transcriptToInsert, refSeq);
+                transcriptToInsert.id(transcriptsToRemove[0].id());
+                this.store.insert(transcriptToInsert);
                 this.changed();
+                if (callback) {
+                    callback.apply(this, [transcriptToInsert]);
+                }
             });
         }
         catch (e) {
@@ -1381,21 +1412,21 @@ var EditTrack = declare(DraggableFeatureTrack,
     },
 
     undo: function () {
-        this.redoState = $.extend({}, this.store.features);
+        this.redoState = this.store.features.slice();
         this.store.features = this.undoState;
         this.undoState = null;
         this.changed();
     },
 
     redo: function () {
-        this.backupStore();
+        this.undoState = this.store.features.slice();
         this.store.features = this.redoState;
         this.redoState = null;
         this.changed();
     },
 
     backupStore: function () {
-        this.undoState = $.extend({}, this.store.features);
+        this.undoState = this.store.features.slice();
     },
 
     updateMenu: function() {
