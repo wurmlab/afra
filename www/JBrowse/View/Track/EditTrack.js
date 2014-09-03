@@ -1197,7 +1197,7 @@ var EditTrack = declare(DraggableFeatureTrack,
             subfeatures.push(new SimpleFeature({
                 data: {
                     start: non_canonical_splice_site + offset,
-                    end:   non_canonical_splice_site + offset + 1,
+                    end:   non_canonical_splice_site + offset,
                     type:  'non_canonical_splice_site',
                     seq_id: transcript.get('seq_id'),
                     strand: transcript.get('strand')
@@ -1221,7 +1221,7 @@ var EditTrack = declare(DraggableFeatureTrack,
             subfeatures.push(new SimpleFeature({
                 data: {
                     start: translationStart,
-                    end:   translationStart + 3,
+                    end:   translationStart,
                     type:  'non_canonical_translation_start_site',
                     seq_id: transcript.get('seq_id'),
                     strand: transcript.get('strand')
@@ -1245,7 +1245,7 @@ var EditTrack = declare(DraggableFeatureTrack,
             subfeatures.push(new SimpleFeature({
                 data: {
                     start: translationStop,
-                    end:   translationStop + 3,
+                    end:   translationStop,
                     type:  'non_canonical_translation_stop_site',
                     seq_id: transcript.get('seq_id'),
                     strand: transcript.get('strand')
