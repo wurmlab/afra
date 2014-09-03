@@ -1022,10 +1022,10 @@ var EditTrack = declare(DraggableFeatureTrack,
         });
 
         subfeatures = transcript.get('subfeatures');
-        subfeatures = this.sortAnnotationsByLocation(subfeatures);
-        transcript.set('start', subfeatures[0].get('start'));
-        transcript.set('end',   subfeatures[subfeatures.length - 1].get('end'));
-        transcript.set('subfeatures', subfeatures);
+        var fmin = _.min(_.map(subfeatures, function (f) { return f.get('start'); }));
+        var fmax = _.max(_.map(subfeatures, function (f) { return f.get('end');   }));
+        transcript.set('start', fmin);
+        transcript.set('end',   fmax);
         return transcript;
     },
 
@@ -1036,7 +1036,6 @@ var EditTrack = declare(DraggableFeatureTrack,
     },
 
     getCDSCoordinates: function (transcript) {
-        var cdsStart, cdsEnd;
         var cdsFeatures = _.select(transcript.get('subfeatures'), function (f) {
             return f.get('type') === 'CDS';
         });
@@ -1045,18 +1044,17 @@ var EditTrack = declare(DraggableFeatureTrack,
             return [undefined, undefined];
         }
 
-        // we know the subfeatures are sorted by their coordinates, so
-        var cdsStart = cdsFeatures[0].get('start');
-        var cdsEnd = cdsFeatures[cdsFeatures.length - 1].get('end')
+        var cdsMin = _.min(_.map(cdsFeatures, function (f) { return f.get('start'); }));
+        var cdsMax = _.max(_.map(cdsFeatures, function (f) { return f.get('end');   }));
 
         if (transcript.get('strand') == -1) {
             // simply swap start and stop
-            var temp = cdsStart;
-            cdsStart = cdsEnd;
-            cdsEnd  = temp;
+            var temp = cdsMin;
+            cdsMin = cdsMax;
+            cdsMax = temp;
         }
 
-        return [cdsStart, cdsEnd];
+        return [cdsMin, cdsMax];
     },
 
     getCDS: function (transcript, refSeq) {
