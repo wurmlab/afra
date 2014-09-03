@@ -12,8 +12,7 @@ define([
             'JBrowse/View/GranularRectLayout',
             'JBrowse/CodonTable',
             'FileSaver/FileSaver',
-            'bionode',
-            'jquery.poll.js'
+            'bionode'
         ],
         function(declare,
                  $,
@@ -57,12 +56,6 @@ var EditTrack = declare(DraggableFeatureTrack,
 
         this.gview.browser.setGlobalKeyboardShortcut(8,  this, 'deleteSelectedFeatures', true);
         this.gview.browser.setGlobalKeyboardShortcut(46, this, 'deleteSelectedFeatures', true);
-
-        $('#sequence input[type=number]')
-        .poll()
-        .change(dojo.hitch(this, function (e) {
-            this.getGenomicSequenceForSelectedFeature();
-        }));
     },
 
     _defaultConfig: function() {
@@ -395,248 +388,76 @@ var EditTrack = declare(DraggableFeatureTrack,
     },
 
     showSequenceDialog: function () {
-        if ($("#sequence pre").data('id') === this.selectionManager.getSelectedFeatures()[0].id()) {
-            $("#sequence").modal();
-        }
-        else {
-            this.getGenomicSequenceForSelectedFeature();
-            $("#sequence .active").removeClass('active');
-            $("#sequence .sequence-type-default").addClass('active');
-        }
-    },
+        setTimeout(_.bind(function () {
+            var features     = this.selectionManager.getSelectedFeatures();
+            var sequenceType = $("#sequence .active").attr('data-sequence-type');
 
-    getGenomicSequenceForSelectedFeature: function () {
-        var coord = $('#sequence #bp input[type=number]').val();
-        if (coord) {
-            coord = parseInt(coord);
-        }
-        else {
-            coord = 0;
-        }
-
-        var features = this.selectionManager.getSelectedFeatures();
-        this.browser.getStore('refseqs', dojo.hitch(this, function (refSeqStore) {
-            if (refSeqStore) {
-                var fasta = [];
-                _.each(features, function (feature) {
-                    refSeqStore.getFeatures(
-                        {ref: feature.get('seq_id'), start: feature.get('start') - coord, end: feature.get('end') + coord},
-                        dojo.hitch(this, function (refSeqFeature) {
-                            var seq = refSeqFeature.get('seq');
-                            var region = {
-                                ref:    feature.get('seq_id'),
-                                start:  feature.get('start') - coord,
-                                end:    feature.get('end') + coord,
-                                strand: feature.get('strand'),
-                                type:   'genomic'
-                            };
-
-                            if (feature.get('strand') == -1) {
-                                seq = Util.reverseComplement(seq)
-                            }
-
-                            var f_fasta = '>' + (feature.get('name') ? (feature.get('name') + ' ') : '')
-                            + Util.assembleLocString(region)
-                            + (region.type ? ' '+region.type : '')
-                            + ' ' + seq.length + 'bp'
-                            + "\n"
-                            + seq;
-
-                            fasta.push(f_fasta);
-                        }));
-                });
-                fasta = fasta.join("\n");
-                $('#sequence pre').html(fasta);//.data('sequence_id', feature.id());
-                $('#sequence').modal();
-                $('#bp').show();
-            }
-        }));
-    },
-
-    getCDNASequenceForSelectedFeature: function () {
-        var features = this.selectionManager.getSelectedFeatures();
-
-        this.browser.getStore('refseqs', dojo.hitch(this, function (refSeqStore) {
-            if (refSeqStore) {
+            this.getRefSeq(function (refSeq) {
                 var fasta = [];
 
-                _.each(features, dojo.hitch(this, function (feature) {
-                    var transcript = EditTrack.getTopLevelAnnotation(feature);
-                    var fmin = feature.get('start')
-                        , fmax = feature.get('end');
+                _.each(features, _.bind(function (f) {
+                    var name   = f.get('name');
+                    var ref    = f.get('seq_id');
+                    var strand = f.get('strand');
 
-                    refSeqStore.getFeatures(
-                        {ref: feature.get('seq_id'), start: feature.get('start'), end: feature.get('end')},
-                        dojo.hitch(this, function (refSeqFeature) {
-                            var seq = refSeqFeature.get('seq')
-                                , offset = refSeqFeature.get('start');
+                    var seq, coords;
+                    switch (sequenceType) {
+                        case 'genomic':
+                            var flank = $('#sequence #bp input[type=number]').val();
+                            flank = flank ? parseInt(flank) : 0;
 
-                            var cdna = [];
-                            _.each(transcript.children(), function (f) {
-                                if (f.get('type') === 'exon' && f.get('start') >= fmin && f.get('end') <= fmax) {
-                                    var start = f.get('start') - offset
-                                        , end = f.get('end') - offset;
-                                    cdna.push(seq.slice(start, end));
-                                }
-                            });
-                            cdna = cdna.join('');
+                            seq    = this.getSequence(refSeq, f, flank);
+                            coords = [this.getCoordinates(f, {flank: flank, ignoreStrand: true})];
+                            break;
+                        case 'cDNA':
+                            seq    = this.getCDNA(refSeq, f);
+                            coords = this.getCDNACoordinates(f, {ignoreStrand: true});
+                            break;
+                        case 'CDS':
+                            seq    = this.getCDS(refSeq, f);
+                            coords = this.getCDSCoordinates(f, {ignoreStrand: true});
+                            break;
+                        case 'protein':
+                            seq    = this.getProtein(refSeq, f);
+                            coords = this.getCDSCoordinates(f, {ignoreStrand: true});
+                            break;
+                    };
 
-                            var region = {
-                                ref:    feature.get('seq_id'),
-                                start:  feature.get('start'),
-                                end:    feature.get('end'),
-                                strand: feature.get('strand'),
-                                type:   'cDNA'
-                            };
+                    if (seq) {
+                        var _fasta = '>' + (name ? (name + ' ') : '')                                       // identifier    |
+                        + ref + ':' + _.map(coords, function (c) { return c[0] + '..' + c[1]; }).join(',')  // coordinates   |
+                        + '(' + (strand === 1 ? '+' : '-') + ')'                                            // strand        | defline
+                        + ' ' + sequenceType                                                                // sequence type |
+                        + ' ' + seq.length + (sequenceType === 'protein' ? 'aa' : 'bp')                     // length        |
+                        + "\n"
+                        + seq;
 
-                            if (feature.get('strand') == -1) {
-                                cdna = Util.reverseComplement(cdna);
-                            }
+                        fasta.push(_fasta);
+                    }
+                }, this));
 
-                            var f_fasta = '>' + (feature.get('name') ? (feature.get('name') + ' ') : '')
-                            + Util.assembleLocString(region)
-                            + (region.type ? ' '+region.type : '')
-                            + ' ' + cdna.length + 'bp'
-                            + "\n"
-                            + cdna;
-
-                            fasta.push(f_fasta);
-                        }));
-                }));
-                fasta = fasta.join("\n");
-                $('#sequence pre').html(fasta);//.data('id', feature.id());
                 $('#sequence').modal();
-                $('#bp').hide();
-            }
-        }));
-    },
+                $('#sequence pre').html(fasta.join("\n"));
+                sequenceType === 'genomic' ? $('#bp').show() : $('#bp').hide();
+                fasta.length === 0 ? $('#download').addClass('disabled') : $('#download').removeClass('disabled');
+            });
+        }, this), 0);
 
-    getCDSSequenceForSelectedFeature: function () {
-        var features = this.selectionManager.getSelectedFeatures();
-        this.browser.getStore('refseqs', dojo.hitch(this, function (refSeqStore) {
-            if (refSeqStore) {
-                var fasta = [];
-
-                _.each(features, dojo.hitch(this, function (feature) {
-                    var transcript = EditTrack.getTopLevelAnnotation(feature);
-                    var fmin = feature.get('start')
-                        , fmax = feature.get('end');
-
-                    refSeqStore.getFeatures(
-                        {ref: feature.get('seq_id'), start: feature.get('start'), end: feature.get('end')},
-                        dojo.hitch(this, function (refSeqFeature) {
-                            var seq = refSeqFeature.get('seq')
-                                , offset = refSeqFeature.get('start');
-
-                            var cds = [];
-                            _.each(transcript.children(), function (f) {
-                                if (f.get('type') === 'CDS' && f.get('start') >= fmin && f.get('end') <= fmax) {
-                                    var start = f.get('start') - offset
-                                        , end = f.get('end') - offset;
-                                    cds.push(seq.slice(start, end));
-                                }
-                            });
-                            cds = cds.join('');
-
-                            var region = {
-                                ref:    feature.get('seq_id'),
-                                start:  feature.get('start'),
-                                end:    feature.get('end'),
-                                strand: feature.get('strand'),
-                                type:   'CDS'
-                            };
-
-                            if (feature.get('strand') == -1) {
-                                cds = Util.reverseComplement(cds);
-                            }
-
-                            var f_fasta = '>' + (feature.get('name') ? (feature.get('name') + ' ') : '')
-                            + Util.assembleLocString(region)
-                            + (region.type ? ' '+region.type : '')
-                            + ' ' + cds.length + 'bp'
-                            + "\n"
-                            + cds;
-
-                            fasta.push(f_fasta);
-                        }));
-                }));
-                fasta = fasta.join("\n");
-                $('#sequence pre').html(fasta);//.data('id', feature.id());
-                $('#sequence').modal();
-                $('#bp').hide();
-            }
-        }));
-    },
-
-    getProteinSequenceForSelectedFeature: function () {
-        var features = this.selectionManager.getSelectedFeatures();
-        this.browser.getStore('refseqs', dojo.hitch(this, function (refSeqStore) {
-            if (refSeqStore) {
-                var fasta = [];
-
-                _.each(features, dojo.hitch(this, function (feature) {
-                    var transcript = EditTrack.getTopLevelAnnotation(feature);
-                    var fmin = feature.get('start')
-                        , fmax = feature.get('end');
-
-                    refSeqStore.getFeatures(
-                        {ref: feature.get('seq_id'), start: feature.get('start'), end: feature.get('end')},
-                        dojo.hitch(this, function (refSeqFeature) {
-                            var seq = refSeqFeature.get('seq')
-                                , offset = refSeqFeature.get('start');
-
-                            var cds = [];
-                            _.each(transcript.children(), function (f) {
-                                if (f.get('type') === 'CDS' && f.get('start') >= fmin && f.get('end') <= fmax) {
-                                    var start = f.get('start') - offset
-                                        , end = f.get('end') - offset;
-                                    cds.push(seq.slice(start, end));
-                                }
-                            });
-                            cds = cds.join('');
-
-                            if (feature.get('strand') == -1) {
-                                cds = Util.reverseComplement(cds)
-                            }
-
-                            var protein = cds.replace(/(...)/gi,  function(codon) {
-                                var aa = CodonTable[codon];
-                                if (!aa) {
-                                    aa = "?";
-                                }
-                                return aa;
-                            });
-
-                            var region = {
-                                ref:    feature.get('seq_id'),
-                                start:  feature.get('start'),
-                                end:    feature.get('end'),
-                                strand: feature.get('strand'),
-                                type:   'protein'
-                            };
-
-                            var f_fasta = '>' + (feature.get('name') ? (feature.get('name') + ' ') : '')
-                            + Util.assembleLocString(region)
-                            + (region.type ? ' '+region.type : '')
-                            + ' ' + protein.length + 'bp'
-                            + "\n"
-                            + protein;
-                            fasta.push(f_fasta);
-                        }));
-                }));
-                fasta = fasta.join("\n");
-                $('#sequence pre').html(fasta);//.data('id', feature.id());
-                $('#sequence').modal();
-                $('#bp').hide();
-            }
-        }));
+        if (!this._sequeceDialogInitialized) {
+            $('#sequence input[type=number]').on('input', _.bind(function (e) {
+                this.showSequenceDialog();
+            }, this));
+            this._sequeceDialogInitialized = true;
+        }
     },
 
     downloadSequence: function () {
-        var data = $('#sequence pre').text();
-        var meta = data.split("\n")[0].split(' ');
-        var file = 'afra-' + meta[1].replace(/\:|(\.\.)/g, '_').slice(0, -3) + '-' + meta[2] + '.fa';
-        saveAs(new Blob([data], {type: 'text/plain'}), file);
+        setTimeout(_.bind(function () {
+            var data = $('#sequence pre').text();
+            var type = $("#sequence .active").attr('data-sequence-type');
+            var file = 'afra-' + _.values(this.gview.visibleRegion()).join('_') + '-' + type +  '.fa';
+            saveAs(new Blob([data], {type: 'text/plain'}), file);
+        }, this), 0);
     },
 
     /* end CONTROLLERS - bridge between the view and model layer */
@@ -1079,13 +900,158 @@ var EditTrack = declare(DraggableFeatureTrack,
         return transcript;
     },
 
+    /* ------------------------------------------------------------------------
+     * getXSequence
+     * ------------------------------------------------------------------------
+     */
+
+    /* Get genomic sequence. */
+    getSequence: function (refSeq, feature, flank) {
+        var start = feature.get('start') - flank;
+        var end   = feature.get('end') + flank;
+
+        var seq   = refSeq.slice(start, end);
+        if (feature.get('strand') == -1) {
+            seq = Util.reverseComplement(seq)
+        }
+
+        return seq;
+    },
+
+    /* Get genomic sequence that will be transcribed. */
+    getCDNA: function (refSeq, feature) {
+        var transcript = EditTrack.getTopLevelAnnotation(feature);
+        var fmin = feature.get('start');
+        var fmax = feature.get('end');
+
+        var cdna = [];
+        _.each(transcript.get('subfeatures'), function (f) {
+            if (f.get('type') === 'exon' && f.get('start') >= fmin && f.get('end') <= fmax) {
+                var start = f.get('start');
+                var end   = f.get('end');
+                cdna.push(refSeq.slice(start, end));
+            }
+        });
+        cdna = cdna.join('');
+        if (feature.get('strand') == -1) {
+            cdna = Util.reverseComplement(cdna);
+        }
+
+        return cdna;
+    },
+
+    /* Get genomic sequence that will be translated. */
+    getCDS: function (refSeq, feature) {
+        var transcript = EditTrack.getTopLevelAnnotation(feature);
+        var fmin = feature.get('start');
+        var fmax = feature.get('end');
+
+        var cds = [];
+        _.each(transcript.get('subfeatures'), function (f) {
+            if (f.get('type') === 'CDS' && f.get('start') >= fmin && f.get('end') <= fmax) {
+                var start = f.get('start');
+                var end   = f.get('end');
+                cds.push(refSeq.slice(start, end));
+            }
+        });
+        cds = cds.join('');
+
+        if (transcript.get('strand') === -1) {
+            cds = Util.reverseComplement(cds);
+        }
+
+        return cds;
+    },
+
+    /* Get translated protein sequence. */
+    getProtein: function (refSeq, feature) {
+        var cds = this.getCDS(refSeq, feature);
+
+        return cds.replace(/(...)/gi,  function(codon) {
+            var aa = CodonTable[codon];
+            if (!aa) {
+                aa = "?";
+            }
+            return aa;
+        });
+    },
+
     hasCDS: function (transcript) {
         return !!_.find(transcript.get('subfeatures'), function (f) {
             return f.get('type') === 'CDS';
         });
     },
 
-    getCDSCoordinates: function (transcript) {
+    /* ------------------------------------------------------------------------
+     * getXCoordinates functions below return coordinates on _refSeq_.
+     * ------------------------------------------------------------------------
+     */
+
+    getCoordinates: function (feature, options) {
+        options = options || {};
+        var flank = options.flank;               // coordinates +/- flank
+        var ignoreStrand = options.ignoreStrand; // ignore strand?
+
+        var start = feature.get('start');
+        var end   = feature.get('end');
+        if (flank) {
+            start = start - flank;
+            end   = start + flank;
+        }
+        if (!ignoreStrand && feature.get('strand') === -1) {
+            var temp = start;
+            start = end;
+            end   = temp;
+        }
+
+        return [start, end];
+    },
+
+    getCDNACoordinates: function (feature, options) {
+        options = options || {};
+        var ignoreStrand = options.ignoreStrand;
+
+        var transcript = EditTrack.getTopLevelAnnotation(feature);
+        var fmin = feature.get('start');
+        var fmax = feature.get('end');
+        var subfeatures = this.sortAnnotationsByLocation(transcript.get('subfeatures'));
+
+        var cDNACoordinates = [];
+        _.each(subfeatures, _.bind(function (f) {
+            if (f.get('type') === 'exon' && f.get('start') >= fmin && f.get('end') <= fmax) {
+                cDNACoordinates.push(this.getCoordinates(f, options));
+            }
+        }, this));
+        if (!ignoreStrand && feature.get('strand') === -1) {
+            cDNACoordinates.reverse();
+        }
+
+        return cDNACoordinates;
+    },
+
+    getCDSCoordinates: function (feature, options) {
+        options = options || {};
+        var ignoreStrand = options.ignoreStrand;
+
+        var transcript = EditTrack.getTopLevelAnnotation(feature);
+        var fmin = feature.get('start');
+        var fmax = feature.get('end');
+        var subfeatures = this.sortAnnotationsByLocation(transcript.get('subfeatures'));
+
+        var cdsCoordinates = [];
+        _.each(subfeatures, _.bind(function (f) {
+            if (f.get('type') === 'CDS' && f.get('start') >= fmin && f.get('end') <= fmax) {
+                cdsCoordinates.push(this.getCoordinates(f, options));
+            }
+        }, this));
+        if (!ignoreStrand && feature.get('strand') === -1) {
+            cdsCoordinates.reverse();
+        }
+
+        return cdsCoordinates;
+    },
+
+    getWholeCDSCoordinates: function (transcript) {
         var cdsFeatures = _.select(transcript.get('subfeatures'), function (f) {
             return f.get('type') === 'CDS';
         });
@@ -1107,42 +1073,22 @@ var EditTrack = declare(DraggableFeatureTrack,
         return [cdsMin, cdsMax];
     },
 
-    getCDS: function (transcript, refSeq) {
-        var offset = transcript.get('start');
-
-        var cds = [];
-        _.each(transcript.get('subfeatures'), function (f) {
-            if (f.get('type') === 'CDS') {
-                var start = f.get('start');
-                var end   = f.get('end');
-                cds.push(refSeq.slice(start, end));
-            }
-        });
-        cds = cds.join('');
-
-        if (transcript.get('strand') === -1) {
-            cds = Util.reverseComplement(cds);
-        }
-
-        return cds;
-    },
-
     getStartCodon: function (transcript, refSeq) {
-        var cds = this.getCDS(transcript, refSeq);
+        var cds = this.getCDS(refSeq, transcript);
         return cds.slice(0, 3);
     },
 
     getStopCodon: function (transcript, refSeq) {
-        var cds = this.getCDS(transcript, refSeq);
+        var cds = this.getCDS(refSeq, transcript);
         return cds.slice(-3);
     },
 
     getTranslationStart: function (transcript) {
-        return this.getCDSCoordinates(transcript)[0];
+        return this.getWholeCDSCoordinates(transcript)[0];
     },
 
     getTranslationStop: function (transcript) {
-        return this.getCDSCoordinates(transcript)[1];
+        return this.getWholeCDSCoordinates(transcript)[1];
     },
 
     // Insert CDS into a transcript replacing the old one if needed.
@@ -1152,8 +1098,8 @@ var EditTrack = declare(DraggableFeatureTrack,
             return f.get('type') === 'CDS';
         });
 
-        var cdsStart = cdsCoordinates['start'] || this.getCDSCoordinates(transcript)[0];
-        var cdsEnd = cdsCoordinates['end'] || this.getCDSCoordinates(transcript)[1];
+        var cdsStart = cdsCoordinates['start'] || this.getWholeCDSCoordinates(transcript)[0];
+        var cdsEnd = cdsCoordinates['end'] || this.getWholeCDSCoordinates(transcript)[1];
 
         // insert new CDS
         if (transcript.get('strand') == -1) {

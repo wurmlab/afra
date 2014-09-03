@@ -350,22 +350,26 @@
           <div class="btn-group pull-left" data-toggle="buttons">
             <label
               class="btn btn-default"
-              ng-click="browser.getEditTrack().getProteinSequenceForSelectedFeature()">
+              data-sequence-type="protein"
+              ng-click="browser.getEditTrack().showSequenceDialog()">
               <input type="radio">Protein
             </label>
             <label
               class="btn btn-default"
-              ng-click="browser.getEditTrack().getCDSSequenceForSelectedFeature()">
+              data-sequence-type="CDS"
+              ng-click="browser.getEditTrack().showSequenceDialog()">
               <input type="radio">CDS
             </label>
             <label
               class="btn btn-default"
-              ng-click="browser.getEditTrack().getCDNASequenceForSelectedFeature()">
+              data-sequence-type="cDNA"
+              ng-click="browser.getEditTrack().showSequenceDialog()">
               <input type="radio">cDNA
             </label>
             <label
-              class="btn btn-default active sequence-type-default"
-              ng-click="browser.getEditTrack().getGenomicSequenceForSelectedFeature()">
+              class="btn btn-default active"
+              data-sequence-type="genomic"
+              ng-click="browser.getEditTrack().showSequenceDialog()">
               <input type="radio">Genomic
             </label>
           </div>
@@ -377,7 +381,7 @@
             <input type="number" class="form-control">
           </div>
           <button
-            class="btn btn-default pull-right"
+            class="btn btn-default pull-right" id="download"
             ng-click="browser.getEditTrack().downloadSequence()">
             <i class="fa fa-download"></i>
             Download
