@@ -1680,23 +1680,6 @@ var EditTrack = declare(DraggableFeatureTrack,
 
         $('.ui-resizable').resizable('destroy');
     },
-
-    startZoom: function(destScale, destStart, destEnd) {
-        // would prefer to only try and hide dna residues on zoom if previous scale was at base pair resolution
-        //   (otherwise there are no residues to hide), but by time startZoom is called, pxPerBp is already set to destScale,
-        //    so would require keeping prevScale var around, or passing in prevScale as additional parameter to startZoom()
-        // so for now just always trying to hide residues on a zoom, whether they're present or not
-
-        this.inherited( arguments );
-
-        // console.log("AnnotTrack.startZoom() called");
-        var selected = this.selectionManager.getSelection();
-        if( selected.length > 0 ) {
-            // if selected annotations, then hide residues overlay
-            //     (in case zoomed in to base pair resolution and the residues overlay is being displayed)
-            $("div.sequence", this.div).css('display', 'none');
-        }
-    }
 });
 
 EditTrack.getTopLevelAnnotation = function(annotation) {
