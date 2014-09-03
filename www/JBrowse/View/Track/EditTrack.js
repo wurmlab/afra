@@ -89,8 +89,20 @@ var EditTrack = declare(DraggableFeatureTrack,
 
         if (featDiv && featDiv != null)  {
             $(featDiv).contextmenu({
-                target: '#contextmenu'
-            })
+                target: '#contextmenu',
+                before: function (event, menu) {
+                    $(document).off('keydown', closeEditMenu);
+                    var editMenu = this;
+                    var closeEditMenu = function (e) {
+                        if (e.keyCode === 27) { // escape pressed
+                            editMenu.closemenu();
+                            $(document).off('keydown', closeEditMenu);
+                        }
+                    };
+                    $(document).on('keydown', closeEditMenu);
+                    return true;
+                }
+            });
 
             $(featDiv).droppable ({
                 greedy:     true,
