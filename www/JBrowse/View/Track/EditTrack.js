@@ -180,7 +180,14 @@ var EditTrack = declare(DraggableFeatureTrack,
                         else {
                             var newTranscript = track.resizeExon(parent, exon, leftDeltaBases, rightDeltaBases);
                             newTranscript.set('name', parent.get('name'));
-                            track.replaceTranscript(parent, newTranscript);
+                            track.replaceTranscript(parent, newTranscript, function (t) {
+                                var newExon = _.find(t.get('subfeatures'), _.bind(function (f) {
+                                    if (this.areFeaturesOverlapping(exon, f)) {
+                                        return true;
+                                    }
+                                }, this));
+                                this.highlightFeature(newExon);
+                            });
                         }
                     }
                 });
@@ -624,6 +631,16 @@ var EditTrack = declare(DraggableFeatureTrack,
     /* Model layer */
     generateName: function (feature) {
         return 'afra-' + feature.get('seq_id') + '-mRNA-' + counter++;
+    },
+
+    areFeaturesOverlapping: function (feature1, feature2) {
+        var features = this.sortAnnotationsByLocation([feature1, feature2]);
+        var f1 = features[0];
+        var f2 = features[1];
+        if (f2.get('start') - f1.get('end') < 1) {
+            return true;
+        }
+        return false;
     },
 
     resizeExon: function (transcript, exon, leftDelta, rightDelta) {
