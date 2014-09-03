@@ -288,7 +288,8 @@ var EditTrack = declare(DraggableFeatureTrack,
     duplicateSelectedFeatures: function () {
         var selected = this.selectionManager.getSelectedFeatures();
         this.selectionManager.clearSelection();
-        this.duplicateFeatures(selected);
+        var transcripts = this.duplicateFeatures(selected);
+        this.insertTranscripts(transcripts);
     },
 
     deleteSelectedFeatures: function () {
@@ -674,25 +675,45 @@ var EditTrack = declare(DraggableFeatureTrack,
         return newTranscript;
     },
 
-    duplicateFeatures: function (feats)  {
-        var subfeaturesToAdd = [];
-        var parentFeature;
-        for (var i in feats)  {
-            var feat = feats[i];
-            var is_subfeature = !!feat.parent();
-            if (is_subfeature) {
-                subfeaturesToAdd = subfeaturesToAdd.concat(_.select(feat.parent().children(), function (f) {
-                    return (f.get('start') >= feat.get('start') && f.get('end') <= feat.get('end'));
+    /* Duplicate given transcripts, or create a new transcript from given same
+     * stranded subfeatures.
+     */
+    duplicateFeatures: function (features)  {
+        var transcripts = [];
+        var subfeatures = [];
+        _.each(features, _.bind(function (f) {
+            var parent;
+            if ((parent = f.parent())) {
+                subfeatures = subfeatures.concat(_.select(parent.get('subfeatures'), function (s) {
+                    return (f.get('start') <= s.get('start') && f.get('end') >= s.get('end'));
                 }));
             }
             else {
-                this.insertTranscripts([feats[i]]);
+                var newTranscript = this.createTranscript(f.get('subfeatures'));
+                transcript.set('name', this.generateName(transcript));
+                transcripts.push(newTranscript);
+            }
+        }, this));
+
+        if (subfeatures.length > 0) {
+            var plusStranded = _.filter(subfeatures, function (f) {
+                return f.get('strand') == 1;
+            });
+            var minusStranded = _.filter(subfeatures, function (f) {
+                return f.get('strand') == -1;
+            });
+
+            if (plusStranded.length > 0) {
+                var newTranscript = this.createTranscript(plusStranded, this.generateName(plusStranded[0].parent()));
+                transcripts.push(newTranscript);
+            }
+
+            if (minusStranded.length > 0) {
+                var newTranscript = this.createTranscript(minusStranded, this.generateName(minusStranded[0].parent()));
+                transcripts.push(newTranscript);
             }
         }
-        if (subfeaturesToAdd.length > 0) {
-            var newTranscript = this.createTranscript(subfeaturesToAdd);
-            this.insertTranscripts([newTranscript]);
-        }
+        return transcripts;
     },
 
     deleteExon: function (transcript, exon)  {
@@ -1448,7 +1469,7 @@ var EditTrack = declare(DraggableFeatureTrack,
         this.updateMergeMenuItem();
         this.updateSplitTranscriptMenuItem();
         this.updateMakeIntronMenuItem();
-        this.updateDuplicateMenuItem();
+        //this.updateDuplicateMenuItem();
         this.updateFlipStrandMenuItem();
         this.updateSetTranslationStartMenuItem();
         this.updateSetTranslationStopMenuItem();
@@ -1552,18 +1573,18 @@ var EditTrack = declare(DraggableFeatureTrack,
         menuItem.addClass("disabled");
     },
 
-    updateDuplicateMenuItem: function() {
-        var menuItem = $('contextmenu-duplicate');
-        var selected = this.selectionManager.getSelection();
-        var parent = EditTrack.getTopLevelAnnotation(selected[0].feature);
-        for (var i = 1; i < selected.length; ++i) {
-            if (EditTrack.getTopLevelAnnotation(selected[i].feature) != parent) {
-                menuItem.addClass('disabled')
-                return;
-            }
-        }
-        menuItem.removeClass('disabled')
-    },
+    //updateDuplicateMenuItem: function() {
+        //var menuItem = $('contextmenu-duplicate');
+        //var selected = this.selectionManager.getSelection();
+        //var parent = EditTrack.getTopLevelAnnotation(selected[0].feature);
+        //for (var i = 1; i < selected.length; ++i) {
+            //if (EditTrack.getTopLevelAnnotation(selected[i].feature) != parent) {
+                //menuItem.addClass('disabled')
+                //return;
+            //}
+        //}
+        //menuItem.removeClass('disabled')
+    //},
 
     updateFlipStrandMenuItem: function () {
         var menuItem = $('#contextmenu-flipstrand');
