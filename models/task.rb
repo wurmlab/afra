@@ -78,7 +78,7 @@ class CurationTask < Task
 
       # The id of the submissions can be ignored. And assuming the submission
       # comprises only one gene model.
-      submission = submission.values.first.values.first
+      submission = submission.first.values.first
 
       feature = UserCreatedFeature.new({
         name:        submission['name'],
