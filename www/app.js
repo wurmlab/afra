@@ -1,6 +1,6 @@
 require.config({
     paths: {
-        underscore: 'lib/underscore-amd/underscore',
+        underscore: 'lib/underscore/underscore',
         jquery:     'lib/jquery/jquery',
         bootstrap:  'lib/bootstrap/dist/js/bootstrap',
         contextmenu:'lib/bootstrap-contextmenu/bootstrap-contextmenu',
