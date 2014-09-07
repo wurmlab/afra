@@ -326,21 +326,17 @@ var EditTrack = declare(DraggableFeatureTrack,
 
     mergeSelectedFeatures: function()  {
         var selected = this.selectionManager.getSelectedFeatures();
-        var sortedAnnots = this.sortAnnotationsByLocation(selected);
-        var leftAnnot = sortedAnnots[0];
-        var rightAnnot = sortedAnnots[sortedAnnots.length - 1];
+        this.selectionManager.clearSelection();
 
-        var newTranscript;
-        if (leftAnnot.parent() && rightAnnot.parent() && leftAnnot.parent() == rightAnnot.parent()) {
-            newTranscript = this.mergeExons(leftAnnot.parent(), leftAnnot, rightAnnot);
-            this.replaceTranscript(leftAnnot.parent(), newTranscript);
+        if (this.areSiblings(selected)) {
+            var transcript    = selected[0].parent();
+            var newTranscript = this.mergeExons(transcript, selected);
+            this.replaceTranscript(transcript, newTranscript);
         }
         else {
-            newTranscript = this.mergeTranscripts(leftAnnot, rightAnnot);
-            this.replaceMergedTranscripts([leftAnnot, rightAnnot], newTranscript);
+            var newTranscript = this.mergeTranscripts(selected);
+            this.replaceMergedTranscripts(selected, newTranscript);
         }
-
-        this.selectionManager.clearSelection();
     },
 
     splitSelectedTranscript: function ()  {
@@ -483,8 +479,15 @@ var EditTrack = declare(DraggableFeatureTrack,
         return false;
     },
 
-    getExons: function (transcript) {
-        return _.filter(transcript.get('subfeatures'), function (f) {
+    /*
+     * Select exons from an array of features or subfeatures of the given
+     * feature.
+     */
+    filterExons: function (features) {
+        if (features instanceof SimpleFeature) {
+            features = features.get('subfeatures');
+        }
+        return _.filter(features, function (f) {
             return f.get('type') === 'exon';
         });
     },
@@ -506,16 +509,33 @@ var EditTrack = declare(DraggableFeatureTrack,
         return newTranscript;
     },
 
-    mergeExons: function(transcript, leftExon, rightExon) {
-        var subfeatures = _.reject(transcript.children(), function (f) {
-            return f.id() == leftExon.id() || f.id() == rightExon.id();
-        });
-        var mergedExon = this.copyFeature(leftExon, {
-                end: rightExon.get('end'),
-            }
-        );
-        subfeatures.push(mergedExon);
+    /**
+     * Returns a new transcript with the given exons merged into one. Returns
+     * `undefined` if given exons are not all on the same transcript.
+     */
+    mergeExons: function (transcript, exonsToMerge) {
+        if (!this.areSiblings(exonsToMerge)) {
+            return;
+        }
+
+        var min = _.min(_.map(exonsToMerge, function (exonToMerge) { return exonToMerge.get('start'); }));
+        var max = _.max(_.map(exonsToMerge, function (exonToMerge) { return exonToMerge.get('end');   }));
+        var subfeatures = _.reject(transcript.get('subfeatures'), _.bind(function (f) {
+            return _.find(exonsToMerge, _.bind(function (exonToMerge) {
+                if (this.areFeaturesOverlapping(exonToMerge, f)) {
+                    return true;
+                }
+            }, this));
+        }, this));
+        subfeatures.push(this.copyFeature(exonsToMerge[0], {start: min, end: max}));
+
         var newTranscript = this.createTranscript(subfeatures);
+        // FIXME: we reinsert old CDS, which will later be corrected by setORF.
+        // This function itself should set corrrect CDS.
+        var cdsCoordinates = this.getWholeCDSCoordinates(transcript);
+        if (cdsCoordinates[0]) {
+            newTranscript = this.setCDS(newTranscript, {start: cdsCoordinates[0], end: cdsCoordinates[1]});
+        }
         newTranscript.set('name', transcript.get('name'));
         return newTranscript;
     },
@@ -566,7 +586,7 @@ var EditTrack = declare(DraggableFeatureTrack,
      * `undefined` if transcript contains one exon only.
      */
     deleteExons: function (transcript, exonsToDelete)  {
-        if (this.getExons(transcript).length <= 1) {
+        if (this.filterExons(transcript).length <= 1) {
             return;
         }
         else {
@@ -582,16 +602,44 @@ var EditTrack = declare(DraggableFeatureTrack,
         }
     },
 
-    mergeTranscripts: function(leftTranscript, rightTranscript) {
-        if (leftTranscript.parent())
-            leftTranscript = leftTranscript.parent();
+    /**
+     * Merges given transcripts into a new transcript. Overlapping and adjacent
+     * exons are combined into one. Reading frame of the merged transcript is
+     * calculated from the left most or right most start codon, depending on
+     * the strand.
+     *
+     * Returns a new tranascript. If transcripts are all not on the same strand,
+     * returns `undefined`.
+     */
+    mergeTranscripts: function (transcripts) {
+        if (!this.areOnSameStrand(transcripts)) {
+            return undefined;
+        }
 
-        if (rightTranscript.parent())
-            rightTranscript = rightTranscript.parent();
+        var subfeatures = [];
+        _.each(transcripts, function (transcript) {
+            subfeatures = subfeatures.concat(transcript.get('subfeatures'));
+        });
+        subfeatures = this.sortAnnotationsByLocation(subfeatures);
 
-        var subfeatures =
-            leftTranscript.children().concat(rightTranscript.children());
-        var newTranscript = this.createTranscript(subfeatures);
+        var exons = [];
+        _.each(this.filterExons(subfeatures), _.bind(function (f) {
+            var last = exons[exons.length - 1];
+            if (last && (f.get('start') - last.get('end') <= 1)) { // we are looking for introns
+                exons[exons.length - 1] = this.copyFeature(last, {end: Math.max(last.get('end'), f.get('end'))});
+            }
+            else {
+                exons.push(f);
+            }
+        }, this));
+
+        var newTranscript  = this.createTranscript(exons);
+        // FIXME: we insert CDS of the first transcript which will later be
+        // corrected by setORF. This function itself should set correct CDS.
+        var cdsCoordinates = this.getWholeCDSCoordinates(transcripts[0]);
+        if (cdsCoordinates[0]) {
+            newTranscript = this.setCDS(newTranscript, {start: cdsCoordinates[0], end: cdsCoordinates[1]});
+        }
         newTranscript.set('name', 'afra-' + newTranscript.get('seq_id') + '-mRNA-' + counter++);
         return newTranscript;
     },
@@ -991,12 +1039,6 @@ var EditTrack = declare(DraggableFeatureTrack,
         });
     },
 
-    hasCDS: function (transcript) {
-        return !!_.find(transcript.get('subfeatures'), function (f) {
-            return f.get('type') === 'CDS';
-        });
-    },
-
     /* ------------------------------------------------------------------------
      * getXCoordinates functions below return coordinates on _refSeq_.
      * ------------------------------------------------------------------------
@@ -1164,7 +1206,68 @@ var EditTrack = declare(DraggableFeatureTrack,
         }, this));
     },
 
-    /* MODEL VALIDATIONS */
+    /* ----------------------------- */
+    /* Utility functions.
+    /* ----------------------------- */
+
+    /*
+     * Returns `true` if given transcript has CDS, `false` otherwise.
+     */
+    hasCDS: function (transcript) {
+        return !!_.find(transcript.get('subfeatures'), function (f) {
+            return f.get('type') === 'CDS';
+        });
+    },
+
+    /*
+     * Returns `true` if given features are all on the same strand, `false`
+     * otherwise.
+     */
+    areOnSameStrand: function (features) {
+        var strand = _.map(features, function (feature) {
+            return feature.get('strand');
+        });
+        return _.uniq(strand).length === 1;
+    },
+
+    /*
+     * Returns `true` if given features are all top-level, i.e. they do not
+     * have parent attribute set, `false` otherwise.
+     */
+    areToplevel: function (features) {
+        return _.every(features, function (feature) {
+            return !feature.parent();
+        });
+    },
+
+    /*
+     * Returns `true` if given features are all sub-features, i.e. they have
+     * parent attribute set, `false` otherwise.
+     */
+    areSubfeatures: function (features) {
+        return _.every(features, function (feature) {
+            return !!feature.parent();
+        });
+    },
+
+    /*
+     * Returns `true` if all given features have the same parent, `false`
+     * otherwise.
+     *
+     * Will return `false` if given features don't have parent attribute set.
+     * True for transcripts.
+     */
+    areSiblings: function (features) {
+        var parent_id = _.map(features, function (feature) {
+            return (feature.parent() && feature.parent().id());
+        });
+        parent_id = _.uniq(parent_id);
+        return (parent_id.length === 1 && !!parent_id[0]);
+    },
+
+    /* ----------------------------- */
+    /* Validations.
+    /* ----------------------------- */
     markNonCanonicalSites: function (transcript, refSeq) {
         transcript = this.markNonCanonicalSpliceSites(transcript, refSeq);
         transcript = this.markNonCanonicalTranslationStartSite(transcript, refSeq);
@@ -1267,7 +1370,6 @@ var EditTrack = declare(DraggableFeatureTrack,
         return transcript;
     },
 
-    /* end MODEL VALIDATIONS */
     /* end MODEL */
 
     /* VIEW HELPERS - update the view based on controller events */
@@ -1481,19 +1583,14 @@ var EditTrack = declare(DraggableFeatureTrack,
         menuItem.removeClass('disabled');
     },
 
-    updateMergeMenuItem: function() {
+    updateMergeMenuItem: function () {
         var menuItem = $('#contextmenu-merge');
-        var selected = this.selectionManager.getSelection();
-        if (selected.length < 2) {
+        var selected = this.selectionManager.getSelectedFeatures();
+        if (selected.length < 2 ||
+            (this.areToplevel(selected) && !this.areOnSameStrand(selected)) ||
+            (this.areSubfeatures(selected) && !this.areSiblings(selected))) {
             menuItem.addClass('disabled')
             return;
-        }
-        var strand = selected[0].feature.get('strand');
-        for (var i = 1; i < selected.length; ++i) {
-            if (selected[i].feature.get('strand') != strand) {
-                    menuItem.addClass('disabled')
-                    return;
-            }
         }
         menuItem.removeClass('disabled');
     },
