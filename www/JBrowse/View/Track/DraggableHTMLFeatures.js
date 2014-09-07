@@ -728,7 +728,7 @@ var draggableTrack = declare( HTMLFeatureTrack,
            }
            else {
                // children are auto-deselected by selection manager when parent is selected
-               this.selectionManager.addToSelection({feature: feature, track: this}, true);
+               this.selectionManager.addToSelection({feature: feature, track: this});
            }
        }
        else  {
