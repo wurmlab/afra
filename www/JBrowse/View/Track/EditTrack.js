@@ -264,9 +264,36 @@ var EditTrack = declare(DraggableFeatureTrack,
     },
 
     addDraggedFeatures: function (selection) {
-        var transcripts = this.processDraggedFeatures(selection);
-        if (transcripts.length > 0) {
-            this.insertTranscripts(transcripts);
+        var transcripts = _.map(selection, _.bind(function (s) {
+            return this.normalizeFeature(s.feature, s.track);
+        }, this));
+
+        var whichStrandModal   = $('#which-strand');
+        var whichStrandButtons = $('#which-strand button');
+        var proceedWithStrand  = _.bind(function (eventOrStrand) {
+            whichStrandButtons.off('click', proceedWithStrand);
+            var strand = (eventOrStrand instanceof $.Event) ?
+                parseInt($(eventOrStrand.target).val()) : eventOrStrand;
+
+            if (strand) {
+                _.each(transcripts, _.bind(function (transcript, i) {
+                    if (transcript.get('strand') !== strand) {
+                        transcripts[i] = this.flipStrand(transcript);
+                    }
+                }, this));
+
+                var transcript = this.mergeTranscripts(transcripts);
+                this.insertTranscript(transcript);
+            }
+        }, this);
+
+        if (!this.areOnSameStrand(transcripts)) {
+            whichStrandButtons.on('click', proceedWithStrand);
+            whichStrandModal.modal();
+        }
+        else {
+            var strand = transcripts[0].get('strand');
+            proceedWithStrand.apply(this, [strand]);
         }
     },
 

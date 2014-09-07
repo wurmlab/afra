@@ -337,6 +337,52 @@
     </ul>
   </div>
 
+  <div
+    class="modal" id="which-strand"
+    data-keyboard="false" data-backdrop="static">
+    <div
+      class="modal-dialog">
+      <div
+        class="modal-content">
+        <div
+          class="modal-header">
+          <h4
+            class="modal-title">
+            Which strand?
+          </h4>
+        </div>
+        <div
+          class="modal-body">
+          <p>
+            Features dragged are on opposite strands. Which strand should the resulting feature be on?
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button
+            class="btn btn-default"
+            value="-1"
+            data-dismiss="modal">
+            <i class="fa fa-long-arrow-left"></i>
+            Reverse strand
+          </button>
+          <button
+            class="btn btn-default"
+            value="1"
+            data-dismiss="modal">
+            <i class="fa fa-long-arrow-right"></i>
+            Forward strand
+          </button>
+          <button
+            class="btn btn-danger"
+            value="0"
+            data-dismiss="modal">
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="modal fade" id="sequence" tabindex="-1">
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
