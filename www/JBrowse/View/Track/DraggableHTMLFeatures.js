@@ -709,8 +709,18 @@ var draggableTrack = declare( HTMLFeatureTrack,
            return;
        }
 
+       var parent;
+       if (parent = feature.parent()) {
+           var exons = _.filter(parent.get('subfeatures'), function (f) {
+               return f.get('type') === 'exon';
+           });
+           if (exons.length === 1) {
+               feature = parent;
+           }
+       }
+
        var already_selected = this.selectionManager.isSelected({feature: feature, track: this});
-       var parent_selected  = this.selectionManager.isSelected({feature: feature.parent(), track: this});
+       var parent_selected  = this.selectionManager.isSelected({feature: parent,  track: this});
 
        if (event.shiftKey)  {
            if (already_selected) {
