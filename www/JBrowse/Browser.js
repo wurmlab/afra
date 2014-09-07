@@ -1321,11 +1321,11 @@ globalKeyHandler: function( evt ) {
 
     var shortcut = this.globalKeyboardShortcuts[evt.keyCode || String.fromCharCode(evt.charCode || evt.keyCode)];
     if (shortcut) {
-        shortcut.call( this );
         evt.stopPropagation();
         if (this.globalKeyboardShortcutsPreventDefault[evt.keyCode]) {
             evt.preventDefault();
         }
+        shortcut.call(this);
     }
 },
 
