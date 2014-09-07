@@ -665,16 +665,17 @@ var EditTrack = declare(DraggableFeatureTrack,
                         var orfStart, orfStop, longestORF = 0;
                         var startIndex = cdna.indexOf(CodonTable.START_CODON);
                         while (startIndex >= 0) {
-                            var runningORF = 0;
+                            var runningORF   = 0;
                             var readingFrame = cdna.slice(startIndex);
-                            _.every(readingFrame.match(/.{1,3}/g), function (codon) {
+                            var stopCodon    = !_.every(readingFrame.match(/.{3}/g), function (codon) {
                                 runningORF += 3;
                                 if (CodonTable.STOP_CODONS.indexOf(codon) !== -1) {
                                     return false;
                                 }
                                 return true;
                             });
-                            if (runningORF > longestORF) {
+                            //console.log('reading frame:', startIndex, startIndex + runningORF, runningORF, stopCodon);
+                            if (stopCodon && (runningORF > longestORF)) {
                                 orfStart   = startIndex;
                                 orfStop    = orfStart + runningORF;
                                 longestORF = runningORF;
