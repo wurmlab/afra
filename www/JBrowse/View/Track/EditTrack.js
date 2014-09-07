@@ -299,23 +299,29 @@ var EditTrack = declare(DraggableFeatureTrack,
 
     deleteSelectedFeatures: function () {
         var selected = this.selectionManager.getSelectedFeatures();
-
-        _.each(selected, dojo.hitch(this, function (feature) {
-            if (feature.parent()) {
-                var newTranscript = this.deleteExon(feature.parent(), feature);
-                if (newTranscript) {
-                    this.replaceTranscript(feature.parent(), newTranscript);
-                }
-                else {
-                    this.deleteTranscripts([feature.parent()]);
-                }
-            }
-            else {
-                this.deleteTranscripts([feature]);
-            }
-        }));
-
         this.selectionManager.clearSelection();
+
+        var exonsToRemove       = [];
+        var transcriptsToRemove = [];
+        _.each(selected, _.bind(function (feature) {
+            feature.parent() ? exonsToRemove.push(feature) : transcriptsToRemove.push(feature);
+        }, this));
+
+        if (exonsToRemove) {
+            var newTranscripts = [];
+            var transcriptsToAlter = _.map(exonsToRemove, function (exon) {
+                return exon.parent();
+            });
+            _.each(transcriptsToAlter, _.bind(function (transcript) {
+                var exons = _.filter(exonsToRemove, function (exon) {
+                    return exon.parent() === transcript;
+                });
+                newTranscripts.push(this.deleteExons(transcript, exons));
+            }, this));
+        }
+
+        this.deleteTranscripts(transcriptsToRemove);
+        this.replaceTranscripts(transcriptsToAlter, newTranscripts);
     },
 
     mergeSelectedFeatures: function()  {
@@ -477,6 +483,12 @@ var EditTrack = declare(DraggableFeatureTrack,
         return false;
     },
 
+    getExons: function (transcript) {
+        return _.filter(transcript.get('subfeatures'), function (f) {
+            return f.get('type') === 'exon';
+        });
+    },
+
     resizeExon: function (transcript, exon, leftDelta, rightDelta) {
         var subfeatures = _.map(transcript.get('subfeatures'), dojo.hitch(this, function (f) {
             if (f.get('start') === exon.get('start') && f.get('end') === exon.get('end')) {
@@ -549,20 +561,22 @@ var EditTrack = declare(DraggableFeatureTrack,
         return transcripts;
     },
 
-    deleteExon: function (transcript, exon)  {
-        var subfeatures = transcript.get('subfeatures');
-        var nExons = _.filter(subfeatures, function (f) {
-            return f.get('type') === 'exon';
-        });
-
-        if (nExons.length < 2) {
+    /**
+     * Returns a new transcript with the said exons deleted. Returns
+     * `undefined` if transcript contains one exon only.
+     */
+    deleteExons: function (transcript, exonsToDelete)  {
+        if (this.getExons(transcript).length <= 1) {
             return;
         }
         else {
-            // delete selected exon from transcript
-            var subfeatures = _.reject(transcript.get('subfeatures'), function (f) {
-                return f.get('start') === exon.get('start') && f.get('end') === exon.get('end');
-            });
+            var subfeatures = _.reject(transcript.get('subfeatures'), _.bind(function (f) {
+                return _.find(exonsToDelete, _.bind(function (exonToDelete) {
+                    if (this.areFeaturesOverlapping(exonToDelete, f)) {
+                        return true;
+                    }
+                }, this));
+            }, this));
             var newTranscript = this.createTranscript(subfeatures, transcript.get('name'));
             return newTranscript;
         }
