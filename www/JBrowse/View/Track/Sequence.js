@@ -48,7 +48,7 @@ return declare([BlockBased, ExportMixin],
 
     nbsp: String.fromCharCode(160),
 
-    fillBlock:function( args ) {
+    fillBlock: function (args) {
         var blockIndex = args.blockIndex;
         var block = args.block;
         var leftBase = args.leftBase;
@@ -75,7 +75,7 @@ return declare([BlockBased, ExportMixin],
         args.finishCallback();
     },
 
-    _fillBlock: function(block, feature) {
+    _fillBlock: function (block, feature) {
         var seq = feature.get('seq');
         var start = feature.get('start');
         var end = feature.get('end');
@@ -113,11 +113,10 @@ return declare([BlockBased, ExportMixin],
             var aaDivs = [];
             for (var i = 0; i <= 2; i++) {
                 var tstart = blockStart + i;
-                var frame  = tstart % 3;
+                var frame  = ((tstart % 3) + 3) % 3;
                 var aaDiv  = this._aaDiv(extendedEndResidues, i, blockLength);
                 aaDiv.className += (" frame" + frame);
                 aaDivs[frame] = aaDiv;
-                seqNode.appendChild(aaDiv);
             }
             for (var i = 2; i >= 0; i--) {
                 var aaDiv = aaDivs[i];
@@ -142,8 +141,7 @@ return declare([BlockBased, ExportMixin],
             var aaDivs = [];
             for (var i = 0; i < 3; i++) {
                 var tstart = blockStart + i;
-                var frame  = (this.refSeq.length - blockEnd + i) % 3;
-                //frame = (Math.abs(frame - 2) + (this.refSeq.length % 3)) % 3;
+                var frame  = (((this.refSeq.length - blockEnd + i) % 3) + 3) % 3;
                 var aaDiv = this._aaDiv(extendedStartResidues, i, blockLength, true);
                 aaDiv.className += (" frame" + frame);
                 aaDivs[frame] = aaDiv;
@@ -174,7 +172,7 @@ return declare([BlockBased, ExportMixin],
     },
 
     /**
-     * Given nucleotides, return a div containing amino acide sequence in the
+     * Given nucleotides, return a div containing amino acid sequence in the
      * desired frame.
      * @private
      */
@@ -194,12 +192,18 @@ return declare([BlockBased, ExportMixin],
 
         var extra_bases = (seq.length - offset) % 3;
         var dnaRes = seq.substring(offset, seq.length - extra_bases);
-        var aaResidues = dnaRes.replace(/(...)/gi,  function(codon) {
-            var aa = CodonTable[codon];
+        var nbsp = this.nbsp;
+        var aaResidues = dnaRes.replace(/(...)/gi, function (triplet) {
+            var aa = CodonTable[triplet];
             if (!aa) {
-                // If no mapping and blank in codon, return blank. If no
-                // mapping and no blank in codon, return "?".
-                aa = (codon.indexOf(this.nbsp) >= 0) ?  aa = this.nbsp : "?";
+                /* No mapping in codon table. Two possibilities:
+                 * a. There's whitespace in the triplet, thus it's not really a
+                 *    codon. This can happen at edges due to padding.
+                 * b. We don't know the correct the amino acid translation. For
+                 *    example, if the reference sequence is hard masked and the
+                 *    triplet turns up to be 'NNN'.
+                 */
+                aa = (triplet.indexOf(nbsp) >= 0) ? aa = nbsp : "?";
             }
             return prefix + aa + suffix;
         });
