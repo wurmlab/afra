@@ -58,16 +58,15 @@ var EditTrack = declare(DraggableFeatureTrack,
         this.gview.browser.setGlobalKeyboardShortcut(46, this, 'deleteSelectedFeatures', true);
     },
 
-    _defaultConfig: function() {
+    _defaultConfig: function () {
         var thisConfig = this.inherited(arguments);
         thisConfig.noExport = true;  // turn off default "Save track data" "
         thisConfig.style.centerChildrenVertically = false;
         return thisConfig;
     },
 
-    setViewInfo: function(genomeView, numBlocks, trackDiv, labelDiv, widthPct, widthPx, scale) {
-        this.inherited( arguments );
-        var track = this;
+    setViewInfo: function (genomeView, heightUpdate, numBlocks, trackDiv, widthPct, widthPx, scale) {
+        this.inherited(arguments);
         this.makeTrackDroppable();
         this.hide();
         this.show();
