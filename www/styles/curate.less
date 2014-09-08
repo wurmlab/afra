@@ -278,30 +278,6 @@ div.blank-block {
     z-index: 19;
 }
 
-div.track-label, div.tracklist-label {
-    z-index: 20;
-
-    padding: 1px 6px;
-    overflow: hidden;
-    cursor: pointer;
-
-    border-width: 1px;
-    border-style: solid;
-
-    border-top-color: #999;
-    border-left-color: #999;
-    border-bottom-color: #555;
-    border-right-color: #555;
-
-    border-radius: 6px;
-
-    color: #111;
-    font-weight: bold;
-
-    width: 110px;
-    text-align: center;
-}
-
 /* NOTE: browsers that don't support rgba colors will fall back to all
    track labels being #bcbcbc */
 
@@ -327,25 +303,27 @@ div.track-label, div.tracklist-label {
 }
 
 div.track-label {
-    color: black;
-    margin: 0px 0 0 0px;
-    overflow: show;
-    background: white;
-    padding: 0 5px;
-
     height: 23px;
+    min-width: 110px;
     line-height: 23px;
 
-    z-index: 20;
-    border-color: #eee;
-    opacity: 1.0;
+    margin: 0px 0 0 0px;
+    padding: 0px 5px;
+    overflow: hidden;
+    border: 1px solid #eee;
+    border-radius: 6px;
 
-    /* setting white-space to "nowrap" prevents Chrome-specific bug with
-       label text sometimes disappearing after zoom in Chrome was
-       wrapping track-label text to next line, which falls outside of
-       track-label fixed height and therefore not seen. see chromium
-       bug report for more details on underlying issue:
-       http://code.google.com/p/chromium/issues/detail?id=138918
+    opacity: 1.0;
+    cursor: pointer;
+    z-index: 20;
+
+    color: black;
+    background: white;
+    text-align: center;
+    font-weight: bold;
+
+    /* Chrome-specific bug:
+     * http://code.google.com/p/chromium/issues/detail?id=138918
     */
     white-space: nowrap;
 }
