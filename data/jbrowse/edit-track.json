@@ -11,6 +11,7 @@
          "storeClass" : "JBrowse/Store/SeqFeature/ScratchPad",
          "style" : {
              "className" : "transcript",
+             "renderClassName" : "transcript-overlay",
              "subfeatureClasses" : {
                  "three_prime_UTR" : "three_prime_UTR",
                  "five_prime_UTR"  : "five_prime_UTR",
