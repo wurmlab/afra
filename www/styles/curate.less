@@ -216,6 +216,19 @@ div.track {
     padding: 0;
     margin: 0;
 }
+div.pin_underlay {
+  width: 100%;
+  position: absolute;
+  background: white;
+  z-index: 6;
+
+  -moz-box-shadow: 0 0 10px 0 rgba( 30, 30, 50, 0.9 );
+  -webkit-box-shadow: 0 0 10px 0 rgba( 30, 30, 50, 0.9 );
+  box-shadow: 0 0 10px 0 rgba( 30, 30, 50, 0.9 );
+}
+div.track.pinned {
+  z-index: 20;
+}
 
 .track.dojoDndItemOver {
     cursor: inherit;
@@ -252,11 +265,9 @@ div.gridline {
     border-color: red;
     z-index: 0;
 }
-
 div.gridline_major {
     border-color: #bbb;
 }
-
 div.gridline_minor {
     border-color: #eee;
 }
@@ -278,7 +289,6 @@ div.overview-pos {
     font-family: sans-serif;
     border: 0;
 }
-
 div.overview-pos:first-child {
     margin-left: 1px;
 }
@@ -351,21 +361,6 @@ div.track-label .track-label-text {
 div.track-label .feature-density {
     font-size: 90%;
     font-weight: normal;
-}
-
-.pin_underlay {
-  width: 100%;
-  position: absolute;
-  background: white;
-  z-index: 6;
-
-  -moz-box-shadow: 0 0 10px 0 rgba( 30, 30, 50, 0.9 );
-  -webkit-box-shadow: 0 0 10px 0 rgba( 30, 30, 50, 0.9 );
-  box-shadow: 0 0 10px 0 rgba( 30, 30, 50, 0.9 );
-}
-
-div.track.pinned {
-  z-index: 20;
 }
 
 div.track_edit {
