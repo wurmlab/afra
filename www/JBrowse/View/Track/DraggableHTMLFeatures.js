@@ -1,34 +1,18 @@
-define( [
-            'dojo/_base/declare',
-            'dojo/_base/array',
-            'JBrowse/View/Track/HTMLFeatures',
-            'JBrowse/FeatureSelectionManager',
-            'jquery',
-            'jqueryui/draggable',
-            'JBrowse/Util',
-            'JBrowse/Model/SimpleFeature',
-            'JBrowse/SequenceOntologyUtils'
-        ],
-        function (declare, array, HTMLFeatureTrack, FeatureSelectionManager, $, draggable, Util, SimpleFeature, SeqOnto) {
-
-/*  Subclass of FeatureTrack that allows features to be selected,
-    and dragged and dropped into the annotation track to create annotations.
-
-    WARNING:
-    for selection to work for features that cross block boundaries, z-index of feature style MUST be set, and must be > 0
-    otherwise what happens is:
-          feature div inherits z-order from parent, so same z-order as block
-          so feature div pixels may extend into next block, but next block draws ON TOP OF IT (assuming next block added
-          to parent after current block).  So events over part of feature div that isn't within it's parent block will never
-          reach feature div but instead be triggered on next block
-          This issue will be more obvious if blocks have background color set since then not only will selection not work but
-          part of feature div that extends into next block won't even be visible, since next block background will render over it
- */
+define([
+    'dojo/_base/declare',
+    'dojo/_base/array',
+    'JBrowse/View/Track/HTMLFeatures',
+    'JBrowse/FeatureSelectionManager',
+    'jquery',
+    'jqueryui/draggable',
+    'JBrowse/Util',
+    'JBrowse/Model/SimpleFeature',
+    'JBrowse/SequenceOntologyUtils'
+],
+function (declare, array, HTMLFeatureTrack, FeatureSelectionManager, $, draggable, Util, SimpleFeature, SeqOnto) {
 
 var debugFrame = false;
-
-//var DraggableFeatureTrack = declare( HTMLFeatureTrack,
-var draggableTrack = declare( HTMLFeatureTrack,
+var draggableTrack = declare(HTMLFeatureTrack,
 
 {
     // so is dragging
@@ -36,22 +20,10 @@ var draggableTrack = declare( HTMLFeatureTrack,
 
     _defaultConfig: function() {
         return Util.deepUpdate(
-            dojo.clone( this.inherited(arguments) ),
+            dojo.clone(this.inherited(arguments)),
             {
                 events: {
-                    // need to map click to a null-op, to override default JBrowse click behavior for click on features 
-                    //     (JBrowse default is feature detail popup)
-                    click:     function(event) {
-                        // not quite a null-op, also need to suprress propagation of click recursively up through parent divs,
-                        //    in order to stop default JBrowse behavior for click on tracks (which is to recenter view at click point)
-                        event.stopPropagation();
-                    }
-                    // WebApollo can't set up mousedown --> onFeatureMouseDown() in config.events, 
-                    //     because dojo.on used by JBrowse config-based event setup doesn't play nice with 
-                    //     JQuery event retriggering via _mousedown() for feature drag bootstrapping
-                    // also, JBrowse only sets these events for features, and WebApollo needs them to trigger for subfeatures as well
-                    // , mousedown: dojo.hitch( this, 'onFeatureMouseDown' ),
-                    // , dblclick:  dojo.hitch( this, 'onFeatureDoubleClick' )
+                    click: function (event) { event.stopPropagation(); }
                 }
             }
         );
