@@ -755,7 +755,7 @@ var EditTrack = declare(DraggableFeatureTrack,
                         while (startIndex >= 0) {
                             var runningORF   = 0;
                             var readingFrame = cdna.slice(startIndex);
-                            var stopCodon    = !_.every(readingFrame.match(/.{3}/g), function (codon) {
+                            var stopCodon    = !_.every(readingFrame.match(/.../g), function (codon) {
                                 runningORF += 3;
                                 if (CodonTable.STOP_CODONS.indexOf(codon) !== -1) {
                                     return false;
@@ -797,8 +797,8 @@ var EditTrack = declare(DraggableFeatureTrack,
         var lastEnd, i = 0;
         _.each(transcript.children(), function (f) {
             if (f.get('type') === 'exon') {
-                var start = f.get('start') - offset
-                    , end = f.get('end') - offset;
+                var start = f.get('start');
+                var end = f.get('end');
                 cdna.push(refSeq.slice(start, end));
 
                 if (!lastEnd) { // first exon
@@ -823,15 +823,18 @@ var EditTrack = declare(DraggableFeatureTrack,
         if (transcript.get('strand') == -1) {
             orfStart = cdna.length - orfStart;
         }
-        orfStop      = orfStart;
-        readingFrame = cdna.slice(orfStart);
-        _.every(readingFrame.match(/.{1,3}/g), function (codon) {
+        orfStop       = orfStart;
+        readingFrame  = cdna.slice(orfStart);
+        var stopCodon = !_.every(readingFrame.match(/.../g), function (codon) {
             orfStop += 3;
             if (CodonTable.STOP_CODONS.indexOf(codon) !== -1) {
                 return false;
             }
             return true;
         });
+        if (!stopCodon) {
+            orfStop = cdna.length;
+        }
 
         if (transcript.get('strand') === -1) {
             orfStart = cdna.length - orfStart;
