@@ -1362,7 +1362,7 @@ var EditTrack = declare(DraggableFeatureTrack,
             subfeatures.push(new SimpleFeature({
                 data: {
                     start: translationStart,
-                    end:   translationStart,
+                    end:   translationStart + (2 * transcript.get('strand')),
                     type:  'non_canonical_translation_start_site',
                     seq_id: transcript.get('seq_id'),
                     strand: transcript.get('strand')
@@ -1383,10 +1383,11 @@ var EditTrack = declare(DraggableFeatureTrack,
         var stopCodon = this.getStopCodon(transcript, refSeq);
         var translationStop = this.getTranslationStop(transcript);
         if (stopCodon && translationStop && !_.contains(CodonTable.STOP_CODONS, stopCodon.toLowerCase())) {
+            var coord = translationStop - transcript.get('strand');
             subfeatures.push(new SimpleFeature({
                 data: {
                     start: translationStop,
-                    end:   translationStop,
+                    end:   translationStop - (2 * transcript.get('strand')),
                     type:  'non_canonical_translation_stop_site',
                     seq_id: transcript.get('seq_id'),
                     strand: transcript.get('strand')
