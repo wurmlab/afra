@@ -832,9 +832,9 @@ var EditTrack = declare(DraggableFeatureTrack,
             }
             return true;
         });
-        if (!stopCodon) {
-            orfStop = cdna.length;
-        }
+        //if (!stopCodon) {
+            //orfStop = cdna.length;
+        //}
 
         if (transcript.get('strand') === -1) {
             orfStart = cdna.length - orfStart;
