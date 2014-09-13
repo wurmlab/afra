@@ -129,4 +129,4 @@ task 'test' do
   Dir.glob('test/test_*.rb').each { |file| require_relative file}
 end
 
-task default: [:install, :'db:migrate', :configure]
+task default: [:install, :'db:init', :'db:migrate', :configure]
