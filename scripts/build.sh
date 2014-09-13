@@ -21,8 +21,4 @@ service postgresql start
 rake
 yes|rake
 
-# Other build steps (TODO: Aren't some of these done in the rake step? If not, shouldn't they be added to the Rakefile?)
-ruby -r ./app.rb -e 'App.migrate'
-ruby -r ./app.rb -e 'App.gff2jbrowse'
-ruby -r ./app.rb -e 'App.register_features'
-ruby -r ./app.rb -e 'App.create_tasks'
+rake import\[data/gene/Solenopsis\ invicta/Si_gnF.gff\]
