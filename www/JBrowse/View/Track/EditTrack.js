@@ -1120,7 +1120,9 @@ var EditTrack = declare(DraggableFeatureTrack,
         return cds;
     },
 
-    /* Get translated protein sequence. */
+    /**
+     * Get translated protein sequence for the given feature.
+     */
     getProtein: function (refSeq, feature) {
         var cds = this.getCDS(refSeq, feature);
 
@@ -1145,7 +1147,7 @@ var EditTrack = declare(DraggableFeatureTrack,
      * Returns last three characters of CDS.
      *
      * If length of CDS is not a multiple of three, the result will not reflect
-     * the true stop codon.
+     * true stop codon.
      */
     getStopCodon: function (transcript, refSeq) {
         var cds = this.getCDS(refSeq, transcript);
@@ -1339,7 +1341,7 @@ var EditTrack = declare(DraggableFeatureTrack,
     /* Utility functions.
     /* ----------------------------- */
 
-    /*
+    /**
      * Returns `true` if given transcript has CDS, `false` otherwise.
      */
     hasCDS: function (transcript) {
@@ -1348,7 +1350,7 @@ var EditTrack = declare(DraggableFeatureTrack,
         });
     },
 
-    /*
+    /**
      * Returns `true` if given features are all on the same strand, `false`
      * otherwise.
      */
@@ -1359,7 +1361,7 @@ var EditTrack = declare(DraggableFeatureTrack,
         return _.uniq(strand).length === 1;
     },
 
-    /*
+    /**
      * Returns `true` if given features are all top-level, i.e. they do not
      * have parent attribute set, `false` otherwise.
      */
@@ -1369,7 +1371,7 @@ var EditTrack = declare(DraggableFeatureTrack,
         });
     },
 
-    /*
+    /**
      * Returns `true` if given features are all sub-features, i.e. they have
      * parent attribute set, `false` otherwise.
      */
@@ -1379,7 +1381,7 @@ var EditTrack = declare(DraggableFeatureTrack,
         });
     },
 
-    /*
+    /**
      * Returns `true` if all given features have the same parent, `false`
      * otherwise.
      *
