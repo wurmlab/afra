@@ -383,7 +383,7 @@ var EditTrack = declare(DraggableFeatureTrack,
 
     setTranslationStartForSelectedTranscript: function () {
         var selected = this.selectionManager.getSelectedFeatures()[0];
-        var transcript = selected.parent() ? selected.parent() : selected;
+        var transcript = EditTrack.getTopLevelAnnotation(selected);
         var coordinate = this.gview.absXtoBp($('#contextmenu').position().left);
         var newTranscript = this.setTranslationStart(transcript, coordinate);
         this.replaceTranscript(transcript, newTranscript);
@@ -495,6 +495,11 @@ var EditTrack = declare(DraggableFeatureTrack,
         return 'afra-' + feature.get('seq_id') + '-mRNA-' + counter++;
     },
 
+    /**
+     * Returns `true` if given features are overlapping.
+     *
+     * Only two features can be compare at a time.
+     */
     areFeaturesOverlapping: function (feature1, feature2) {
         var features = this.sortAnnotationsByLocation([feature1, feature2]);
         var f1 = features[0];
@@ -505,17 +510,62 @@ var EditTrack = declare(DraggableFeatureTrack,
         return false;
     },
 
-    /*
-     * Select exons from an array of features or subfeatures of the given
-     * feature.
+    /**
+     * Select all features from an array of features or from subfeatures of the
+     * given feature that are of the given type.
      */
-    filterExons: function (features) {
+    filterFeatures: function (features, type) {
         if (features instanceof SimpleFeature) {
             features = features.get('subfeatures');
         }
         return _.filter(features, function (f) {
-            return f.get('type') === 'exon';
+            return f.get('type') === type;
         });
+    },
+
+    /**
+     * Select exons from an array of features or subfeatures of the given
+     * feature.
+     */
+    filterExons: function (features) {
+        return this.filterFeatures(features, 'exon');
+    },
+
+    /**
+     * Select CDS from an array of features or subfeatures of the given
+     * feature.
+     */
+    filterCDS: function (features) {
+        return this.filterFeatures(features, 'CDS');
+    },
+
+    /**
+     * Select all features from an array of features or from subfeatures of the
+     * given feature except of the given type.
+     */
+    rejectFeatures: function (features, type) {
+        if (features instanceof SimpleFeature) {
+            features = features.get('subfeatures');
+        }
+        return _.reject(features, function (f) {
+            return f.get('type') === type;
+        });
+    },
+
+    /**
+     * Select all features from an array of features or from subfeatures of the
+     * given feature except exons.
+     */
+    rejectExons: function (features) {
+        return this.rejectFeatures(features, 'exon');
+    },
+
+    /**
+     * Select all features from an array of features or from subfeatures of the
+     * given feature except CDS.
+     */
+    rejectCDS: function (features) {
+        return this.rejectFeatures(features, 'CDS');
     },
 
     resizeExon: function (transcript, exon, leftDelta, rightDelta) {
@@ -705,13 +755,28 @@ var EditTrack = declare(DraggableFeatureTrack,
         return [newTranscript1, newTranscript2];
     },
 
-    setTranslationStart: function(transcript, coordinate) {
-        var newTranscript = this.setCDS(transcript, {start: coordinate});
+    /**
+     * Recalculate reading frame of the given transcript from the given
+     * coordinate.
+     *
+     * Returns new transcript.
+     */
+    setTranslationStart: function (transcript, coordinate) {
+        coordinate = Math.round(coordinate);
+        //FIXME: it should call setORF, not setCDS.
+        var newTranscript = this.setCDS(transcript, {start: coordinate, end: (coordinate + (3 * transcript.get('strand')))});
         return newTranscript;
     },
 
-    setTranslationStop: function(transcript, coordinate) {
-        var newTranscript = this.setCDS(transcript, {end: coordinate});
+    /**
+     * Forcibly extend or cut short reading frame of the given transcript to
+     * the given coordinate.
+     *
+     * The transcript must already have CDS to extend or reduce.
+     */
+    setTranslationStop: function (transcript, coordinate) {
+        coordinate = Math.round(coordinate);
+        var newTranscript = this.setCDS(transcript, {start: this.getTranslationStart(transcript), end: coordinate});
         return newTranscript;
     },
 
@@ -1068,6 +1133,25 @@ var EditTrack = declare(DraggableFeatureTrack,
         });
     },
 
+    /**
+     * Returns first three characters of CDS.
+     */
+    getStartCodon: function (transcript, refSeq) {
+        var cds = this.getCDS(refSeq, transcript);
+        return cds.slice(0, 3);
+    },
+
+    /**
+     * Returns last three characters of CDS.
+     *
+     * If length of CDS is not a multiple of three, the result will not reflect
+     * the true stop codon.
+     */
+    getStopCodon: function (transcript, refSeq) {
+        var cds = this.getCDS(refSeq, transcript);
+        return cds.slice(-3);
+    },
+
     /* ------------------------------------------------------------------------
      * getXCoordinates functions below return coordinates on _refSeq_.
      * ------------------------------------------------------------------------
@@ -1159,65 +1243,81 @@ var EditTrack = declare(DraggableFeatureTrack,
         return [cdsMin, cdsMax];
     },
 
-    getStartCodon: function (transcript, refSeq) {
-        var cds = this.getCDS(refSeq, transcript);
-        return cds.slice(0, 3);
-    },
-
-    getStopCodon: function (transcript, refSeq) {
-        var cds = this.getCDS(refSeq, transcript);
-        return cds.slice(-3);
-    },
-
+    /**
+     * Returns translation start coordinate. Returns `undefined` if transcript
+     * doesn't have CDS.
+     */
     getTranslationStart: function (transcript) {
         return this.getWholeCDSCoordinates(transcript)[0];
     },
 
+    /**
+     * Returns translation start coordinate. Returns `undefined` if transcript
+     * doesn't have CDS.
+     */
     getTranslationStop: function (transcript) {
         return this.getWholeCDSCoordinates(transcript)[1];
     },
 
-    // Insert CDS into a transcript replacing the old one if needed.
+    /**
+     * Returns start coordinate of the given feature if it's on forward strand.
+     * Returns end   coordinate of the given feature if it's on reverse strand.
+     *
+     * Start coordinate is returned if it's not known which strand the feature
+     * is on. That is, the feature is assumed to be on forward strand.
+     */
+    getFeatureStart: function (feature) {
+        return feature.get('strand') === -1 ?
+            feature.get('end') : feature.get('start');
+    },
+
+    /**
+     * Returns end   coordinate of the given feature if it's on forward strand.
+     * Returns start coordinate of the given feature if it's on reverse strand.
+     *
+     * End coordinate is returned if it's not known which strand the feature is
+     * on. That is, the feature is assumed to be on forward strand.
+     */
+    getFeatureEnd:   function (feature) {
+        return feature.get('strand') === -1 ?
+            feature.get('start') : feature.get('end');
+    },
+
+    /**
+     * Given a transcript and whole CDS coordinates, insert CDS features in the
+     * transcript. CDS features are created within exons boundaries.
+     *
+     * If the whole CDS coordinates do not fully lie within exon range, only
+     * the part that lies within exon range will be used.  The function will
+     * not add new or alter existing exons.
+     *
+     * Returns new transcript.
+     */
     setCDS: function (transcript, cdsCoordinates) {
-        // filter out existing CDS, if any
-        var subfeatures = _.reject(transcript.get('subfeatures'), function (f) {
-            return f.get('type') === 'CDS';
-        });
-
-        var cdsStart = cdsCoordinates['start'] || this.getWholeCDSCoordinates(transcript)[0];
-        var cdsEnd = cdsCoordinates['end'] || this.getWholeCDSCoordinates(transcript)[1];
-
-        // insert new CDS
+        var cdsStart = cdsCoordinates['start'];
+        var cdsEnd   = cdsCoordinates['end'];
         if (transcript.get('strand') == -1) {
             // simply swap start and stop
             var temp = cdsStart;
             cdsStart = cdsEnd;
             cdsEnd  = temp;
         }
-        _.each(subfeatures, dojo.hitch(this, function (f) {
-            if (f.get('type') === 'exon') {
-                if (f.get('start') >= cdsStart && f.get('end') <= cdsEnd) {
-                    // exon containing CDS only
-                    subfeatures.push(this.copyFeature(f, {type: 'CDS'}));
-                }
-                else if (f.get('start') < cdsStart && f.get('end') > cdsStart) {
-                    // exon with a 5' UTR
-                    subfeatures.push(this.copyFeature(f, {type: 'CDS', start: cdsStart}));
-                }
-                else if (f.get('start') < cdsEnd && f.get('end') > cdsEnd) {
-                    // exon with a 3' UTR
-                    subfeatures.push(this.copyFeature(f, {type: 'CDS', end: cdsEnd}));
-                }
-                else if (f.get('start') < cdsEnd && f.get('end') <= cdsEnd) {
-                    // this exon contains the entire CDS - will never happen in practice
-                    subfeatures.push(this.copyFeature(f, {type: 'CDS', start: cdsStart, end: cdsEnd}));
-                }
-                else {
-                    // exon lies completely out of UTR
-                    // do nothing
-                }
+
+        var exons = this.filterExons(transcript);
+        exons = this.sortAnnotationsByLocation(exons);
+        var exonsContainingCDS = [];
+        _.each(exons, function (f) {
+            if (f.get('end') >= cdsStart && f.get('start') <= cdsEnd) {
+                exonsContainingCDS.push(f);
             }
-        }));
+        });
+
+        var subfeatures = this.rejectCDS(transcript);
+        _.each(exonsContainingCDS, _.bind(function (f) {
+            var fmin = _.max([f.get('start'), cdsStart]);
+            var fmax = _.min([f.get('end'),   cdsEnd  ]);
+            subfeatures.push(this.copyFeature(f, {type: 'CDS', start: fmin, end: fmax}));
+        }, this));
 
         // return a new transcript
         return this.createTranscript(subfeatures, transcript.get('name'));
@@ -1586,21 +1686,24 @@ var EditTrack = declare(DraggableFeatureTrack,
     updateSetTranslationStartMenuItem: function () {
         var menuItem = $('#contextmenu-set-translation-start');
         var selected = this.selectionManager.getSelectedFeatures();
-        if (selected.length > 1 || selected[0].parent()) {
-            menuItem.addClass('disabled')
+        if (selected.length === 1 &&
+            this.areToplevel(selected)) {
+            menuItem.removeClass('disabled');
             return;
         }
-        menuItem.removeClass('disabled');
+        menuItem.addClass('disabled')
     },
 
     updateSetTranslationStopMenuItem: function () {
         var menuItem = $('#contextmenu-set-translation-stop');
         var selected = this.selectionManager.getSelectedFeatures();
-        if (selected.length > 1 || selected[0].parent()) {
-            menuItem.addClass('disabled')
+        if (selected.length === 1      &&
+            this.areToplevel(selected) &&
+            this.hasCDS(selected[0])) {
+            menuItem.removeClass('disabled');
             return;
         }
-        menuItem.removeClass('disabled');
+        menuItem.addClass('disabled')
     },
 
     updateSetLongestORFMenuItem: function () {
