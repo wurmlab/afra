@@ -172,12 +172,12 @@ var EditTrack = declare(DraggableFeatureTrack,
                         var rightDeltaBases  = Math.round(track.gview.pxToBp(rightDeltaPixels));
 
                         if (leftExon && (exon.get('start') + leftDeltaBases) <= leftExon.get('end')) {
-                            var newTranscript = track.mergeExons(parent, leftExon, exon);
+                            var newTranscript = track.mergeExons(parent, [leftExon, exon]);
                             newTranscript.set('name', parent.get('name'));
                             track.replaceTranscript(parent, newTranscript);
                         }
                         else if (rightExon && (exon.get('end') + rightDeltaBases) >= rightExon.get('start')) {
-                            var newTranscript = track.mergeExons(parent, exon, rightExon);
+                            var newTranscript = track.mergeExons(parent, [exon, rightExon]);
                             newTranscript.set('name', parent.get('name'));
                             track.replaceTranscript(parent, newTranscript);
                         }
