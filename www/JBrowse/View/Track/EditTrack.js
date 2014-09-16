@@ -1074,13 +1074,21 @@ var EditTrack = declare(DraggableFeatureTrack,
     getProtein: function (refSeq, feature) {
         var cds = this.getCDS(refSeq, feature);
 
-        return cds.replace(/(...)/gi,  function(codon) {
+        var start = this.transcriptToCDS(EditTrack.getTopLevelAnnotation(feature), this.getFeatureStart(feature));
+        if (start < 0) {
+            start = 0;
+        }
+        var mod   = start % 3; // 0, 1, 2
+        var phase = mod ? (3 - mod) : mod;
+
+        cds = cds.slice(phase);
+        return _.map(cds.match(/(...)/g), function (codon) {
             var aa = CodonTable[codon];
             if (!aa) {
                 aa = "?";
             }
             return aa;
-        });
+        }).join('');
     },
 
     /**
