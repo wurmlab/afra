@@ -402,7 +402,10 @@ var EditTrack = declare(DraggableFeatureTrack,
     setLongestORFForSelectedTranscript: function () {
         var transcript = this.selectionManager.getSelectedFeatures()[0];
         this.selectionManager.clearSelection();
-        this.setLongestORF(transcript);
+        this.getRefSeq(function (refSeq) {
+            var newTranscript = this.setLongestORF(refSeq, transcript);
+            this.replaceTranscript(transcript, newTranscript);
+        });
     },
 
     flipStrandForSelectedFeatures: function ()  {
@@ -490,7 +493,9 @@ var EditTrack = declare(DraggableFeatureTrack,
 
     /* end CONTROLLERS - bridge between the view and model layer */
 
-    /* Model layer */
+    /*******************************
+     * Model layer.                *
+     *******************************/
     generateName: function (feature) {
         return 'afra-' + feature.get('seq_id') + '-mRNA-' + counter++;
     },
@@ -780,74 +785,71 @@ var EditTrack = declare(DraggableFeatureTrack,
         return newTranscript;
     },
 
-    setLongestORF: function (transcript) {
-        this.browser.getStore('refseqs', dojo.hitch(this, function (refSeqStore) {
-            if (refSeqStore) {
-                refSeqStore.getFeatures(
-                    {ref: transcript.get('seq_id'), start: transcript.get('start'), end: transcript.get('end')},
-                    dojo.hitch(this, function (refSeqFeature) {
-                        var seq = refSeqFeature.get('seq')
-                            , offset = refSeqFeature.get('start');
+    /**
+     * Find the longest ORF in the given transcript and accordingly set whole
+     * CDS. If more than one longest ORF is found, the last one is taken.
+     *
+     * Returns new transcript.
+     */
+    setLongestORF: function (refSeq, transcript) {
+        var offset = transcript.get('start');
 
-                        var cdna   = [];
-                        var island = []; // coordinate range on mRNA (spliced) mapped to offset from start of pre-mRNA (non-spliced)
-                        var lastEnd, i = 0;
-                        _.each(transcript.children(), function (f) {
-                            if (f.get('type') === 'exon') {
-                                var start = f.get('start') - offset
-                                    , end = f.get('end') - offset;
-                                cdna.push(seq.slice(start, end));
+        var cdna   = [];
+        var island = []; // coordinate range on mRNA (spliced) mapped to offset from start of pre-mRNA (non-spliced)
+        var lastEnd, i = 0;
+        _.each(transcript.get('subfeatures'), function (f) {
+            if (f.get('type') === 'exon') {
+                var start = f.get('start');
+                var end   = f.get('end');
+                cdna.push(refSeq.slice(start, end));
 
-                                if (!lastEnd) { // first exon
-                                    island.push([end - start, 0]);
-                                }
-                                else { // second exon onwards
-                                    island.push([island[i - 1][0] + end - start, island[i - 1][1] + start - lastEnd])
-                                }
-                                lastEnd = end;
-                                i++;
-                            }
-                        });
-                        cdna = cdna.join('');
-                        if (transcript.get('strand') == -1) {
-                            cdna = Util.reverseComplement(cdna);
-                        }
-
-                        cdna = cdna.toLowerCase();
-
-                        var orfStart, orfStop, longestORF = 0;
-                        var startIndex = cdna.indexOf(CodonTable.START_CODON);
-                        while (startIndex >= 0) {
-                            var runningORF   = 0;
-                            var readingFrame = cdna.slice(startIndex);
-                            var stopCodon    = !_.every(readingFrame.match(/.../g), function (codon) {
-                                runningORF += 3;
-                                if (CodonTable.STOP_CODONS.indexOf(codon) !== -1) {
-                                    return false;
-                                }
-                                return true;
-                            });
-                            //console.log('reading frame:', startIndex, startIndex + runningORF, runningORF, stopCodon);
-                            if (stopCodon && (runningORF > longestORF)) {
-                                orfStart   = startIndex;
-                                orfStop    = orfStart + runningORF;
-                                longestORF = runningORF;
-                            }
-                            startIndex = cdna.indexOf(CodonTable.START_CODON, startIndex + 1);
-                        }
-
-                        if (transcript.get('strand') == -1) {
-                            orfStart = cdna.length - orfStart;
-                            orfStop  = cdna.length - orfStop;
-                        }
-                        orfStart = orfStart + offset + _.find(island, function (i) { if (i[0] >= orfStart) return i; })[1];
-                        orfStop = orfStop + offset + _.find(island, function (i) { if (i[0] >= orfStop) return i; })[1];
-
-                        var newTranscript = this.setCDS(transcript, {start: orfStart, end: orfStop});
-                        this.replaceTranscript(transcript, newTranscript);
-                    }));
+                if (!lastEnd) { // first exon
+                    island.push([end - start, 0]);
+                }
+                else { // second exon onwards
+                    island.push([island[i - 1][0] + end - start, island[i - 1][1] + start - lastEnd])
+                }
+                lastEnd = end;
+                i++;
             }
-        }));
+        });
+        cdna = cdna.join('');
+        if (transcript.get('strand') == -1) {
+            cdna = Util.reverseComplement(cdna);
+        }
+
+        cdna = cdna.toLowerCase();
+
+        var orfStart, orfStop, longestORF = 0;
+        var startIndex = cdna.indexOf(CodonTable.START_CODON);
+        while (startIndex >= 0) {
+            var runningORF   = 0;
+            var readingFrame = cdna.slice(startIndex);
+            var stopCodon    = !_.every(readingFrame.match(/.../g), function (codon) {
+                runningORF += 3;
+                if (CodonTable.STOP_CODONS.indexOf(codon) !== -1) {
+                    return false;
+                }
+                return true;
+            });
+            //console.log('reading frame:', startIndex, startIndex + runningORF, runningORF, stopCodon);
+            if (stopCodon && (runningORF > longestORF)) {
+                orfStart   = startIndex;
+                orfStop    = orfStart + runningORF;
+                longestORF = runningORF;
+            }
+            startIndex = cdna.indexOf(CodonTable.START_CODON, startIndex + 1);
+        }
+
+        if (transcript.get('strand') == -1) {
+            orfStart = cdna.length - orfStart;
+            orfStop  = cdna.length - orfStop;
+        }
+        orfStart = orfStart + offset + _.find(island, function (i) { if (i[0] >= orfStart) return i; })[1];
+        orfStop = orfStop + offset + _.find(island, function (i) { if (i[0] >= orfStop) return i; })[1];
+
+        var newTranscript = this.setCDS(transcript, {start: orfStart, end: orfStop});
+        return newTranscript;
     },
 
     setORF: function (transcript, refSeq) {
