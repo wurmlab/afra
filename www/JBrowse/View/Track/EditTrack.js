@@ -792,32 +792,7 @@ var EditTrack = declare(DraggableFeatureTrack,
      * Returns new transcript.
      */
     setLongestORF: function (refSeq, transcript) {
-        var offset = transcript.get('start');
-
-        var cdna   = [];
-        var island = []; // coordinate range on mRNA (spliced) mapped to offset from start of pre-mRNA (non-spliced)
-        var lastEnd, i = 0;
-        _.each(transcript.get('subfeatures'), function (f) {
-            if (f.get('type') === 'exon') {
-                var start = f.get('start');
-                var end   = f.get('end');
-                cdna.push(refSeq.slice(start, end));
-
-                if (!lastEnd) { // first exon
-                    island.push([end - start, 0]);
-                }
-                else { // second exon onwards
-                    island.push([island[i - 1][0] + end - start, island[i - 1][1] + start - lastEnd])
-                }
-                lastEnd = end;
-                i++;
-            }
-        });
-        cdna = cdna.join('');
-        if (transcript.get('strand') == -1) {
-            cdna = Util.reverseComplement(cdna);
-        }
-
+        var cdna = this.getCDNA(refSeq, transcript);
         cdna = cdna.toLowerCase();
 
         var orfStart, orfStop, longestORF = 0;
@@ -841,55 +816,30 @@ var EditTrack = declare(DraggableFeatureTrack,
             startIndex = cdna.indexOf(CodonTable.START_CODON, startIndex + 1);
         }
 
-        if (transcript.get('strand') == -1) {
-            orfStart = cdna.length - orfStart;
-            orfStop  = cdna.length - orfStop;
-        }
-        orfStart = orfStart + offset + _.find(island, function (i) { if (i[0] >= orfStart) return i; })[1];
-        orfStop = orfStop + offset + _.find(island, function (i) { if (i[0] >= orfStop) return i; })[1];
+        orfStart = this.CDNAToTranscript(transcript, orfStart);
+        orfStop  = this.CDNAToTranscript(transcript, orfStop);
 
         var newTranscript = this.setCDS(transcript, {start: orfStart, end: orfStop});
         return newTranscript;
     },
 
+    /**
+     * Set whole CDS from the annotated start codon to the first stop codon. If
+     * stop codon not found, reading frame will extend from the start codon to
+     * the end of transcript such that length of reading frame is a multiple of
+     * 3.
+     */
     setORF: function (transcript, refSeq) {
         if (!this.hasCDS(transcript)) {
             return transcript;
         }
 
-        var offset = transcript.get('start');
-
-        var cdna   = [];
-        var island = []; // coordinate range on mRNA (spliced) mapped to offset from start of pre-mRNA (non-spliced)
-        var lastEnd, i = 0;
-        _.each(transcript.children(), function (f) {
-            if (f.get('type') === 'exon') {
-                var start = f.get('start');
-                var end = f.get('end');
-                cdna.push(refSeq.slice(start, end));
-
-                if (!lastEnd) { // first exon
-                    island.push([end - start, 0]);
-                }
-                else { // second exon onwards
-                    island.push([island[i - 1][0] + end - start, island[i - 1][1] + start - lastEnd])
-                }
-                lastEnd = end;
-                i++;
-            }
-        });
-        cdna = cdna.join('').toLowerCase();
-        if (transcript.get('strand') == -1) {
-            cdna = Util.reverseComplement(cdna);
-        }
+        var cdna = this.getCDNA(refSeq, transcript);
+        cdna = cdna.toLowerCase();
 
         var orfStart, orfStop, readingFrame;
         orfStart = this.getTranslationStart(transcript);
-        orfStart = orfStart - offset;
-        orfStart = orfStart - _.find(island, function (i) { if ((orfStart - i[1]) <= i[0]) return i; })[1];
-        if (transcript.get('strand') == -1) {
-            orfStart = cdna.length - orfStart;
-        }
+        orfStart = this.transcriptToCDNA(transcript, orfStart);
         orfStop       = orfStart;
         readingFrame  = cdna.slice(orfStart);
         var stopCodon = !_.every(readingFrame.match(/.../g), function (codon) {
@@ -903,12 +853,8 @@ var EditTrack = declare(DraggableFeatureTrack,
             //orfStop = cdna.length;
         //}
 
-        if (transcript.get('strand') === -1) {
-            orfStart = cdna.length - orfStart;
-            orfStop  = cdna.length - orfStop;
-        }
-        orfStart = orfStart + offset + _.find(island, function (i) { if (i[0] >= orfStart) return i; })[1];
-        orfStop = orfStop + offset + _.find(island, function (i) { if (i[0] >= orfStop) return i; })[1];
+        orfStart = this.CDNAToTranscript(transcript, orfStart);
+        orfStop  = this.CDNAToTranscript(transcript, orfStop);
 
         var newTranscript = this.setCDS(transcript, {start: orfStart, end: orfStop});
         return newTranscript;
@@ -1285,6 +1231,88 @@ var EditTrack = declare(DraggableFeatureTrack,
     getFeatureEnd:   function (feature) {
         return feature.get('strand') === -1 ?
             feature.get('start') : feature.get('end');
+    },
+
+    /**
+     * For the given feature, return the length of genomic sequence that will
+     * be transcribed. The same as getCDNA(...).length.
+     */
+    getCDNALength: function (feature) {
+        var CDNACoordinates = this.getCDNACoordinates(feature);
+        return _.reduce(CDNACoordinates, function (memo, pair) {
+            return memo + (pair[0] - pair[1]);
+        }, 0);
+    },
+
+    /**
+     * Translates the given CDNA coordinate to transcript coordinate.
+     *
+     * Returns a number that will lie in the exonic region of the given
+     * transcript.
+     */
+    CDNAToTranscript: function (transcript, coordinate) {
+        var offset = transcript.get('start');
+        var island = []; // coordinate range on mRNA (spliced) mapped to offset from start of pre-mRNA (non-spliced)
+        var lastEnd, i = 0;
+        _.each(transcript.get('subfeatures'), function (f) {
+            if (f.get('type') === 'exon') {
+                var start = f.get('start') - offset;
+                var end   = f.get('end')   - offset;
+
+                if (!lastEnd) { // first exon
+                    island.push([end - start, 0]);
+                }
+                else { // second exon onwards
+                    island.push([island[i - 1][0] + end - start, island[i - 1][1] + start - lastEnd]);
+                }
+                lastEnd = end;
+                i++;
+            }
+        });
+
+        if (transcript.get('strand') === -1) {
+            var cdnaLength = this.getCDNALength(transcript);
+            coordinate = cdnaLength - coordinate;
+        }
+
+        return (coordinate + offset + _.find(island, function (i) { if (i[0] >= coordinate) return i; })[1]);
+    },
+
+    /**
+     * Translates the given transcript coordinate to CDNA coordinate.
+     *
+     * Returns a number between 0 and the length of CDNA of the given
+     * transcript minus one (inclusive).
+     */
+    transcriptToCDNA: function (transcript, coordinate) {
+        var offset = transcript.get('start');
+        var island = []; // coordinate range on mRNA (spliced) mapped to offset from start of pre-mRNA (non-spliced)
+        var lastEnd, i = 0;
+        _.each(transcript.get('subfeatures'), function (f) {
+            if (f.get('type') === 'exon') {
+                var start = f.get('start') - offset;
+                var end   = f.get('end')   - offset;
+
+                if (!lastEnd) { // first exon
+                    island.push([end - start, 0]);
+                }
+                else { // second exon onwards
+                    island.push([island[i - 1][0] + end - start, island[i - 1][1] + start - lastEnd]);
+                }
+                lastEnd = end;
+                i++;
+            }
+        });
+
+        coordinate = coordinate - offset;
+        coordinate = coordinate - _.find(island, function (i) { if ((coordinate - i[1]) <= i[0]) return i; })[1];
+
+        if (transcript.get('strand') === -1) {
+            var cdnaLength = this.getCDNALength(transcript);
+            coordinate = cdnaLength - coordinate;
+        }
+
+        return coordinate;
     },
 
     /**
