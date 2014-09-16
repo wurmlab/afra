@@ -2,7 +2,7 @@
 <article class="container">
 
   <div
-    ng-if="not_chrome"
+    ng-if="not_chrome && (location.hash() === 'login')"
     class="incompatible-browser-alert">
     <br>
     <div
