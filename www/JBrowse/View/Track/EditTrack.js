@@ -1235,13 +1235,42 @@ var EditTrack = declare(DraggableFeatureTrack,
 
     /**
      * For the given feature, return the length of genomic sequence that will
-     * be transcribed. The same as getCDNA(...).length.
+     * be transcribed. The same as `getCDNA(...).length`.
      */
     getCDNALength: function (feature) {
         var CDNACoordinates = this.getCDNACoordinates(feature);
         return _.reduce(CDNACoordinates, function (memo, pair) {
             return memo + (pair[0] - pair[1]);
         }, 0);
+    },
+
+    /**
+     * For the given feature, return the length of genomic sequence that will
+     * be translated. The same as `getCDS(...).length`.
+     */
+    getCDSLength: function (feature) {
+        var cdsCoordinates = this.getCDSCoordinates(feature);
+        return _.reduce(cdsCoordinates, function (memo, pair) {
+            return memo + (pair[0] - pair[1]);
+        }, 0);
+    },
+
+    /**
+     * Return length of 5' UTR of the given transcript.
+     */
+    getFivePrimeUTRLength: function (transcript) {
+        var transcriptStart  = this.getFeatureStart(transcript);
+        var translationStart = this.getTranslationStart(transcript);
+        return Math.abs(transcriptStart - translationStart);
+    },
+
+    /**
+     * Return length of 3' UTR of the given transcript.
+     */
+    getThreePrimeUTRLength: function (transcript) {
+        var transcriptEnd  = this.getFeatureEnd(transcript);
+        var translationEnd = this.getTranslationStop(transcript);
+        return Math.abs(transcriptEnd - translationEnd);
     },
 
     /**
@@ -1313,6 +1342,26 @@ var EditTrack = declare(DraggableFeatureTrack,
         }
 
         return coordinate;
+    },
+
+    CDNAToCDS: function (transcript, coordinate) {
+        var fivePrimeUTRLength = this.getFivePrimeUTRLength(transcript);
+        return coordinate - fivePrimeUTRLength;
+    },
+
+    CDSToCDNA: function (transcript, coordinate) {
+        var fivePrimeUTRLength = this.getFivePrimeUTRLength(transcript);
+        return coordinate + fivePrimeUTRLength;
+    },
+
+    transcriptToCDS: function (transcript, coordinate) {
+        var onCDNA = this.transcriptToCDNA(transcript, coordinate);
+        return this.CDNAToCDS(transcript, onCDNA);
+    },
+
+    CDSToTranscript: function (transcript, coordinate) {
+        var onCDNA = this.CDSToCDNA(transcript, coordinate);
+        return this.CDNAToTranscript(transcript, onCDNA);
     },
 
     /**
