@@ -105,7 +105,7 @@ var EditTrack = declare(DraggableFeatureTrack,
                 drop:       function (event, ui) {
                     var transcript = featDiv.feature;
                     var selection = track.browser.featSelectionManager.getSelection();
-                    track.addToTranscript(transcript, selection);
+                    track.addDraggedFeatures(selection, transcript);
                     event.stopPropagation();
                 }
             });
@@ -225,47 +225,13 @@ var EditTrack = declare(DraggableFeatureTrack,
     /* Initializing view, including wiring it to the controller ends here. */
 
     /* CONTROLLERS - bridge between the view and model layer */
-    processDraggedFeatures: function (selection) {
-        var transcripts = [];
-        var subfeatures = [];
-        for (var i in selection)  {
-            var hadParent  = !!selection[i].feature.parent();
-            var transcript = this.normalizeFeature(selection[i].feature, selection[i].track);
-            if (hadParent) {
-                subfeatures = subfeatures.concat(transcript.get('subfeatures'));
-            }
-            else {
-                transcript.set('name', this.generateName(transcript));
-                transcripts.push(transcript);
-            }
-        }
-
-        if (subfeatures.length > 0) {
-            var plusStranded = _.filter(subfeatures, function (f) {
-                return f.get('strand') == 1;
-            });
-            var minusStranded = _.filter(subfeatures, function (f) {
-                return f.get('strand') == -1;
-            });
-
-            if (plusStranded.length > 0) {
-                var newTranscript = this.createTranscript(plusStranded, this.generateName(plusStranded[0].parent()));
-                transcripts.push(newTranscript);
-            }
-
-            if (minusStranded.length > 0) {
-                var newTranscript = this.createTranscript(minusStranded, this.generateName(minusStranded[0].parent()));
-                transcripts.push(newTranscript);
-            }
-        }
-
-        return transcripts;
-    },
-
-    addDraggedFeatures: function (selection) {
+    addDraggedFeatures: function (selection, transcript) {
         var transcripts = _.map(selection, _.bind(function (s) {
             return this.normalizeFeature(s.feature, s.track);
         }, this));
+        if (transcript) {
+            transcripts.push(transcript);
+        }
 
         var whichStrandModal   = $('#which-strand');
         var whichStrandButtons = $('#which-strand button');
@@ -281,8 +247,13 @@ var EditTrack = declare(DraggableFeatureTrack,
                     }
                 }, this));
 
-                var transcript = this.mergeTranscripts(transcripts);
-                this.insertTranscript(transcript);
+                var newTranscript = this.mergeTranscripts(transcripts);
+                if (transcript) {
+                    this.replaceTranscript(transcript, newTranscript);
+                }
+                else {
+                    this.insertTranscript(newTranscript);
+                }
             }
         }, this);
 
@@ -293,26 +264,6 @@ var EditTrack = declare(DraggableFeatureTrack,
         else {
             var strand = transcripts[0].get('strand');
             proceedWithStrand.apply(this, [strand]);
-        }
-    },
-
-    addToTranscript: function (transcript, selection) {
-        var transcripts = this.processDraggedFeatures(selection);
-        if (transcripts.length === 1) {
-            var f = transcripts[0];
-            if (!(f.get('start') > transcript.get('start') &&
-                 f.get('start') < transcript.get('end'))   ||
-                     !(f.get('end') > transcript.get('start')) &&
-                         f.get('end') < transcript.get('end')) {
-
-                if (f.get('strand') === transcript.get('strand')) {
-                    var mergedTranscript = this.mergeTranscripts(transcript, f);
-                    this.replaceTranscript(transcript, mergedTranscript);
-                }
-            }
-        }
-        if (!mergedTranscript && transcripts.length > 0) {
-            this.insertTranscripts(transcripts);
         }
     },
 
