@@ -1051,14 +1051,16 @@ var EditTrack = declare(DraggableFeatureTrack,
     },
 
     /**
-     * Returns last three characters of CDS.
+     * Returns last three in-frame characters of CDS.
      *
-     * If length of CDS is not a multiple of three, the result will not reflect
-     * true stop codon.
+     * Equivalent to reading CDS in triplets and returning the last triplet
+     * read.
      */
     getStopCodon: function (transcript, refSeq) {
-        var cds = this.getCDS(refSeq, transcript);
-        return cds.slice(-3);
+        var cds      = this.getCDS(refSeq, transcript);
+        var extra    = cds.length % 3;
+        var frameEnd = cds.length - extra;
+        return cds.slice(frameEnd - 3, frameEnd);
     },
 
     /* ------------------------------------------------------------------------
