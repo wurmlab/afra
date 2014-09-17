@@ -1524,7 +1524,9 @@ var EditTrack = declare(DraggableFeatureTrack,
 
         var stopCodon = this.getStopCodon(transcript, refSeq);
         var translationStop = this.getTranslationStop(transcript);
-        if (stopCodon && translationStop && !_.contains(CodonTable.STOP_CODONS, stopCodon.toLowerCase())) {
+        var cdsLength = this.getCDSLength(transcript);
+        if ((stopCodon && translationStop && !_.contains(CodonTable.STOP_CODONS, stopCodon.toLowerCase())) ||
+           (cdsLength && (cdsLength % 3 !== 0))) {
             var coord = translationStop - transcript.get('strand');
             subfeatures.push(new SimpleFeature({
                 data: {
