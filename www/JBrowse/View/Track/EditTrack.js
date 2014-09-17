@@ -800,9 +800,9 @@ var EditTrack = declare(DraggableFeatureTrack,
             }
             return true;
         });
-        //if (!stopCodon) {
-            //orfStop = cdna.length;
-        //}
+        if (!stopCodon) {
+            orfStop = cdna.length;
+        }
 
         orfStart = this.CDNAToTranscript(transcript, orfStart);
         orfStop  = this.CDNAToTranscript(transcript, orfStop);
