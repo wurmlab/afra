@@ -1652,7 +1652,6 @@ var EditTrack = declare(DraggableFeatureTrack,
             this.getRefSeq(function (refSeq) {
                 var inserted = [];
                 _.each(transcriptsToInsert, _.bind(function (toInsert) {
-                    toInsert = this.setORF(toInsert, refSeq);
                     toInsert = this.markNonCanonicalSites(toInsert, refSeq);
                     this.store.insert(toInsert);
                     inserted.push(toInsert);
