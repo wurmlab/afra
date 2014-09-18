@@ -355,7 +355,9 @@ var EditTrack = declare(DraggableFeatureTrack,
         this.selectionManager.clearSelection();
         this.getRefSeq(function (refSeq) {
             var newTranscript = this.setLongestORF(refSeq, transcript);
-            this.replaceTranscript(transcript, newTranscript);
+            if (newTranscript) {
+                this.replaceTranscript(transcript, newTranscript);
+            }
         });
     },
 
@@ -737,10 +739,14 @@ var EditTrack = declare(DraggableFeatureTrack,
     },
 
     /**
-     * Find the longest ORF in the given transcript and accordingly set whole
-     * CDS. If more than one longest ORF is found, the last one is taken.
+     * Find the longest ORF and accordingly sets whole CDS in the given
+     * transcript.
      *
      * Returns new transcript.
+     *
+     * Returns `undefined` if no open reading frame found.
+     *
+     * If more than one longest ORF are found, the last one is taken.
      */
     setLongestORF: function (refSeq, transcript) {
         var cdna = this.getCDNA(refSeq, transcript);
@@ -767,11 +773,13 @@ var EditTrack = declare(DraggableFeatureTrack,
             startIndex = cdna.indexOf(CodonTable.START_CODON, startIndex + 1);
         }
 
-        orfStart = this.CDNAToTranscript(transcript, orfStart);
-        orfStop  = this.CDNAToTranscript(transcript, orfStop);
+        if (longestORF) {
+            orfStart = this.CDNAToTranscript(transcript, orfStart);
+            orfStop  = this.CDNAToTranscript(transcript, orfStop);
 
-        var newTranscript = this.setCDS(transcript, {start: orfStart, end: orfStop});
-        return newTranscript;
+            var newTranscript = this.setCDS(transcript, {start: orfStart, end: orfStop});
+            return newTranscript;
+        }
     },
 
     /**
