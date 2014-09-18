@@ -1,9 +1,6 @@
 #!/bin/bash
 # This builds afra and the db (TODO: The database stuff should be decoupled from the actual app build).
 
-# Add config using environmental variables (TODO: This could be avoided if app used env vars directly in config code)
-echo -e "session_secret: $SESSION_SECRET\nfacebook_app_id: $FACEBOOK_APP_ID\nfacebook_app_secret: $FACEBOOK_APP_SECRET" > env.yml
-
 # Allow bower to run with root (TODO: This could be avoided by running the build without root)
 sed -e 's/bower install/bower install --allow-root/' package.json > package.json.sed && mv package.json.sed package.json
 
