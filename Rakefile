@@ -123,10 +123,20 @@ task 'serve', [:uri] do |t, args|
   App.serve
 end
 
-desc 'Test.'
-task 'test' do
+desc 'Run unit tests for Ruby code.'
+task 'test:rb' do
   require 'minitest/autorun'
-  Dir.glob('test/test_*.rb').each { |file| require_relative file}
+  Dir.glob('tests/rb/test_*.rb').each { |file| require_relative file}
+end
+
+desc 'Run unit tests for JS code.'
+task 'test:js' do
+  require_relative 'app'
+  static = Class.new(Sinatra::Base)
+  static.public_dir = Dir.pwd
+  App.init_config(binds: ['tcp://localhost:9293'])
+  puts "* Starting jasmine test server ...."
+  App.init_server.serve(static)
 end
 
 task default: [:install, :'db:init', :'db:migrate', :configure]

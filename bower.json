@@ -34,5 +34,9 @@
     "FileSaver":       "dkasenberg/FileSaver.js",
     "jquery.ui":       "1.10.3",
     "bionode":         "bionode/bionode"
+  },
+
+  "devDependencies": {
+    "jasmine":         "2.0.2"
   }
 }

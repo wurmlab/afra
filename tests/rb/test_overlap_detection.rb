@@ -1,5 +1,5 @@
 require 'minitest/spec'
-require_relative '../services/importer'
+require_relative '../../services/importer'
 
 describe "Overlap detection" do
 

@@ -5,3 +5,4 @@ MYMETA.yml
 MYMETA.json
 Makefile
 data
+!tests/data

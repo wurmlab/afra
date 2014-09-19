@@ -1,0 +1,10 @@
+{
+  "zoz": 42,
+  "overrideMe": "includes.json",
+  "include": [ "no_includes.json" ],
+  "override2": "includes.json",
+  "tracks": [
+      { "label": "zaz", "quux": "bar", "include": "here too!" },
+      { "label": "includes", "zeek": "hi" }
+  ]
+}
