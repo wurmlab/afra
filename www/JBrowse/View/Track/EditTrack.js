@@ -315,7 +315,7 @@ var EditTrack = declare(DraggableFeatureTrack,
         this.getRefSeq(function (refSeq) {
             if (this.areSiblings(selected)) {
                 var transcript    = selected[0].parent();
-                var newTranscript = this.mergeExons(transcript, selected);
+                var newTranscript = this.mergeExons(refSeq, transcript, selected);
                 this.replaceTranscript(transcript, newTranscript);
             }
             else {
@@ -559,7 +559,7 @@ var EditTrack = declare(DraggableFeatureTrack,
      * Returns a new transcript with the given exons merged into one. Returns
      * `undefined` if given exons are not all on the same transcript.
      */
-    mergeExons: function (transcript, exonsToMerge) {
+    mergeExons: function (refSeq, transcript, exonsToMerge) {
         if (!this.areSiblings(exonsToMerge)) {
             return;
         }
@@ -575,12 +575,10 @@ var EditTrack = declare(DraggableFeatureTrack,
         }, this));
         subfeatures.push(this.copyFeature(exonsToMerge[0], {start: min, end: max}));
 
-        var newTranscript = this.createTranscript(subfeatures);
-        // FIXME: we reinsert old CDS, which will later be corrected by setORF.
-        // This function itself should set corrrect CDS.
-        var cdsCoordinates = this.getWholeCDSCoordinates(transcript);
-        if (cdsCoordinates[0]) {
-            newTranscript = this.setCDS(newTranscript, {start: cdsCoordinates[0], end: cdsCoordinates[1]});
+        var newTranscript    = this.createTranscript(subfeatures);
+        var translationStart = this.getTranslationStart(transcript);
+        if (translationStart) {
+            newTranscript = this.setORF(refSeq, newTranscript, translationStart);
         }
         newTranscript.set('name', transcript.get('name'));
         return newTranscript;
