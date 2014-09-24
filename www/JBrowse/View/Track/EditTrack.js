@@ -156,43 +156,28 @@ var EditTrack = declare(DraggableFeatureTrack,
                     grid: gridvals,
 
                     stop: function (event, ui)  {
-                        var exon      = ui.originalElement[0].subfeature;
-                        var parent    = exon.parent();
-                        var children  = parent.children();
-                        var leftExon  = _.find(children.slice().reverse(), function (f) {
-                            return f.get('end') < exon.get('start') && f.get('type') === 'exon';
-                        });
-                        var rightExon = _.find(children, function (f) {
-                            return f.get('start') > exon.get('end') && f.get('type') === 'exon';
-                        });
+                        var exon       = ui.originalElement[0].subfeature;
+                        var transcript = exon.parent();
 
                         var leftDeltaPixels  = ui.position.left - ui.originalPosition.left;
                         var rightDeltaPixels = ui.position.left + ui.size.width - ui.originalPosition.left - ui.originalSize.width;
                         var leftDeltaBases   = Math.round(track.gview.pxToBp(leftDeltaPixels));
                         var rightDeltaBases  = Math.round(track.gview.pxToBp(rightDeltaPixels));
 
-                        if (leftExon && (exon.get('start') + leftDeltaBases) <= leftExon.get('end')) {
-                            var newTranscript = track.mergeExons(parent, [leftExon, exon]);
-                            newTranscript.set('name', parent.get('name'));
-                            track.replaceTranscript(parent, newTranscript);
-                        }
-                        else if (rightExon && (exon.get('end') + rightDeltaBases) >= rightExon.get('start')) {
-                            var newTranscript = track.mergeExons(parent, [exon, rightExon]);
-                            newTranscript.set('name', parent.get('name'));
-                            track.replaceTranscript(parent, newTranscript);
-                        }
-                        else {
-                            var newTranscript = track.resizeExon(parent, exon, leftDeltaBases, rightDeltaBases);
-                            newTranscript.set('name', parent.get('name'));
-                            track.replaceTranscript(parent, newTranscript, function (t) {
-                                var newExon = _.find(t.get('subfeatures'), _.bind(function (f) {
+                        var newLeft  = exon.get('start') + leftDeltaBases;
+                        var newRight = exon.get('end')   + rightDeltaBases;
+
+                        track.getRefSeq(function (refSeq) {
+                            var newTranscript = track.resizeExon(refSeq, transcript, exon, newLeft, newRight);
+                            newTranscript.set('name', transcript.get('name'));
+                            track.replaceTranscript(transcript, newTranscript, function (t) {
+                                _.each(t.get('subfeatures'), _.bind(function (f) {
                                     if (this.areFeaturesOverlapping(exon, f)) {
-                                        return true;
+                                        this.highlightFeature(f);
                                     }
                                 }, this));
-                                this.highlightFeature(newExon);
                             });
-                        }
+                        });
                     }
                 });
             }
@@ -538,20 +523,48 @@ var EditTrack = declare(DraggableFeatureTrack,
         return this.rejectFeatures(features, 'CDS');
     },
 
-    resizeExon: function (transcript, exon, leftDelta, rightDelta) {
-        var subfeatures = _.map(transcript.get('subfeatures'), dojo.hitch(this, function (f) {
-            if (f.get('start') === exon.get('start') && f.get('end') === exon.get('end')) {
-                return this.copyFeature(f, {
-                    start: f.get('start') + leftDelta,
-                    end:   f.get('end') + rightDelta
-                });
+    /**
+     * Set left / right coordiantes for the given exon in the given transcript.
+     * If setting new coordinates causes the exon to overlap with its siblings,
+     * they will be merged together.
+     *
+     * Returns new transcript. Returns `undefined` if the given exon is not a
+     * part of the given transcript, or if the given exon is not really an exon.
+     */
+    resizeExon: function (refSeq, transcript, exonToResize, left, right) {
+        if (exonToResize.parent() !== transcript ||
+            exonToResize.get('type') !== 'exon') {
+            return;
+        }
+
+        var _exons, exons = [];
+        _exons = this.filterExons(transcript);
+        _exons = _.reject(_exons, function (exon) { return exon === exonToResize; });
+        if (left !== right) {
+            _exons.push(this.copyFeature(exonToResize, {start: left, end: right}));
+        }
+        _exons = this.sortAnnotationsByLocation(_exons);
+        _.each(_exons, _.bind(function (f) {
+            var last = exons[exons.length - 1];
+            if (last && (f.get('start') - last.get('end') <= 1)) {
+                last.set('end', Math.max(last.get('end'), f.get('end')));
             }
             else {
-                return f;
+                exons.push(this.copyFeature(f));
             }
-        }));
+        }, this));
 
-        var newTranscript = this.createTranscript(subfeatures, transcript.get('name'));
+        var newTranscript    = this.createTranscript(exons, transcript.get('name'));
+        var translationStart = this.getTranslationStart(transcript);
+        if (translationStart) {
+            if (translationStart < newTranscript.get('start')) {
+                translationStart = newTranscript.get('start');
+            }
+            if (translationStart > newTranscript.get('end')) {
+                translationStart = newTranscript.get('end');
+            }
+            newTranscript = this.setORF(refSeq, newTranscript, translationStart);
+        }
         return newTranscript;
     },
 
@@ -1352,7 +1365,7 @@ var EditTrack = declare(DraggableFeatureTrack,
      *
      * If the whole CDS coordinates do not fully lie within exon range, only
      * the part that lies within exon range will be used.  The function will
-     * not add new or alter existing exons.
+     * not add new nor alter existing exons.
      *
      * Returns new transcript.
      */
