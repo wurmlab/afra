@@ -788,7 +788,7 @@ var EditTrack = declare(DraggableFeatureTrack,
      * the end of transcript such that length of reading frame is a multiple of
      * 3.
      */
-    setORF: function (transcript, refSeq) {
+    setORF: function (refSeq, transcript) {
         if (!this.hasCDS(transcript)) {
             return transcript;
         }
@@ -1638,7 +1638,7 @@ var EditTrack = declare(DraggableFeatureTrack,
                 _.each(_.zip(transcriptsToRemove, transcriptsToInsert), _.bind(function (pair) {
                     var toRemove = pair[0];
                     var toInsert = pair[1];
-                    toInsert = this.setORF(toInsert, refSeq);
+                    toInsert = this.setORF(refSeq, toInsert);
                     toInsert = this.markNonCanonicalSites(toInsert, refSeq);
                     toInsert.id(toRemove.id());
                     this.store.replace(toInsert);
