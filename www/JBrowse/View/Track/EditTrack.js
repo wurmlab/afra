@@ -788,17 +788,13 @@ var EditTrack = declare(DraggableFeatureTrack,
      * the end of transcript such that length of reading frame is a multiple of
      * 3.
      */
-    setORF: function (refSeq, transcript) {
-        if (!this.hasCDS(transcript)) {
-            return transcript;
-        }
+    setORF: function (refSeq, transcript, orfStart) {
+        orfStart = orfStart || this.getTranslationStart(transcript);
+        if (!orfStart) { return; }
 
-        var cdna = this.getCDNA(refSeq, transcript);
-        cdna = cdna.toLowerCase();
-
-        var orfStart, orfStop, readingFrame;
-        orfStart = this.getTranslationStart(transcript);
-        orfStart = this.transcriptToCDNA(transcript, orfStart);
+        var cdna, orfStop, readingFrame;
+        cdna          = this.getCDNA(refSeq, transcript).toLowerCase();
+        orfStart      = this.transcriptToCDNA(transcript, orfStart);
         orfStop       = orfStart;
         readingFrame  = cdna.slice(orfStart);
         var stopCodon = !_.every(readingFrame.match(/.../g), function (codon) {
@@ -811,7 +807,6 @@ var EditTrack = declare(DraggableFeatureTrack,
         if (!stopCodon) {
             orfStop = cdna.length;
         }
-
         orfStart = this.CDNAToTranscript(transcript, orfStart);
         orfStop  = this.CDNAToTranscript(transcript, orfStop);
 
