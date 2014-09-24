@@ -233,6 +233,11 @@ var EditTrack = declare(DraggableFeatureTrack,
             transcripts.push(transcript);
         }
 
+        if (transcripts.length === 1) {
+            this.insertTranscript(transcripts[0]);
+            return;
+        }
+
         var whichStrandModal   = $('#which-strand');
         var whichStrandButtons = $('#which-strand button');
         var proceedWithStrand  = _.bind(function (eventOrStrand) {
