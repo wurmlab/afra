@@ -342,12 +342,15 @@ var EditTrack = declare(DraggableFeatureTrack,
     },
 
     setTranslationStartForSelectedTranscript: function () {
-        var selected = this.selectionManager.getSelectedFeatures()[0];
+        var selected   = this.selectionManager.getSelectedFeatures()[0];
+        this.selectionManager.clearSelection();
         var transcript = EditTrack.getTopLevelAnnotation(selected);
         var coordinate = this.gview.absXtoBp($('#contextmenu').position().left);
-        var newTranscript = this.setTranslationStart(transcript, coordinate);
-        this.replaceTranscript(transcript, newTranscript);
-        this.selectionManager.clearSelection();
+
+        this.getRefSeq(function (refSeq) {
+            var newTranscript = this.setTranslationStart(refSeq, transcript, coordinate);
+            this.replaceTranscript(transcript, newTranscript);
+        });
     },
 
     setTranslationStopForSelectedTranscript: function () {
@@ -732,11 +735,9 @@ var EditTrack = declare(DraggableFeatureTrack,
      *
      * Returns new transcript.
      */
-    setTranslationStart: function (transcript, coordinate) {
+    setTranslationStart: function (refSeq, transcript, coordinate) {
         coordinate = Math.round(coordinate);
-        //FIXME: it should call setORF, not setCDS.
-        var newTranscript = this.setCDS(transcript, {start: coordinate, end: (coordinate + (3 * transcript.get('strand')))});
-        return newTranscript;
+        return this.setORF(refSeq, transcript, coordinate);
     },
 
     /**
