@@ -252,13 +252,15 @@ var EditTrack = declare(DraggableFeatureTrack,
                     }
                 }, this));
 
-                var newTranscript = this.mergeTranscripts(transcripts);
-                if (transcript) {
-                    this.replaceTranscript(transcript, newTranscript);
-                }
-                else {
-                    this.insertTranscript(newTranscript);
-                }
+                this.getRefSeq(function (refSeq) {
+                    var newTranscript = this.mergeTranscripts(refSeq, transcripts);
+                    if (transcript) {
+                        this.replaceTranscript(transcript, newTranscript);
+                    }
+                    else {
+                        this.insertTranscript(newTranscript);
+                    }
+                });
             }
         }, this);
 
@@ -306,19 +308,21 @@ var EditTrack = declare(DraggableFeatureTrack,
         this.replaceTranscripts(transcriptsToAlter, newTranscripts);
     },
 
-    mergeSelectedFeatures: function()  {
+    mergeSelectedFeatures: function ()  {
         var selected = this.selectionManager.getSelectedFeatures();
         this.selectionManager.clearSelection();
 
-        if (this.areSiblings(selected)) {
-            var transcript    = selected[0].parent();
-            var newTranscript = this.mergeExons(transcript, selected);
-            this.replaceTranscript(transcript, newTranscript);
-        }
-        else {
-            var newTranscript = this.mergeTranscripts(selected);
-            this.replaceMergedTranscripts(selected, newTranscript);
-        }
+        this.getRefSeq(function (refSeq) {
+            if (this.areSiblings(selected)) {
+                var transcript    = selected[0].parent();
+                var newTranscript = this.mergeExons(transcript, selected);
+                this.replaceTranscript(transcript, newTranscript);
+            }
+            else {
+                var newTranscript = this.mergeTranscripts(refSeq, selected);
+                this.replaceMergedTranscripts(selected, newTranscript);
+            }
+        });
     },
 
     splitSelectedTranscript: function ()  {
@@ -643,26 +647,35 @@ var EditTrack = declare(DraggableFeatureTrack,
 
     /**
      * Merges given transcripts into a new transcript. Overlapping and adjacent
-     * exons are combined into one. Reading frame of the merged transcript is
-     * calculated from the left most or right most start codon, depending on
-     * the strand.
+     * exons are combined into one.
+     *
+     * If the given transcripts don't have CDS features, merged transcript
+     * won't have a CDS feature either.
+     *
+     * If the given transcripts have CDS features, open reading frame of merged
+     * transcript is re-calculated from the left most or right most translation
+     * start site (dependending on the strand), of the given transcripts.
      *
      * Returns a new tranascript. If transcripts are all not on the same strand,
      * returns `undefined`.
      */
-    mergeTranscripts: function (transcripts) {
+    mergeTranscripts: function (refSeq, transcripts) {
         if (!this.areOnSameStrand(transcripts)) {
             return undefined;
         }
 
-        var subfeatures = [];
-        _.each(transcripts, function (transcript) {
-            subfeatures = subfeatures.concat(transcript.get('subfeatures'));
-        });
-        subfeatures = this.sortAnnotationsByLocation(subfeatures);
+        var strand = transcripts[0].get('strand');
+        var translationStart = _.map(transcripts, _.bind(function (transcript) {
+            return this.getTranslationStart(transcript);
+        }, this));
+        translationStart = (strand === -1) ? _.max(translationStart) : _.min(translationStart);
 
         var exons = [];
-        _.each(this.filterExons(subfeatures), _.bind(function (f) {
+        _.each(transcripts, _.bind(function (transcript) {
+            exons = exons.concat(this.filterExons(transcript));
+        }, this));
+        exons = this.sortAnnotationsByLocation(exons);
+        _.each(exons, _.bind(function (f) {
             var last = exons[exons.length - 1];
             if (last && (f.get('start') - last.get('end') <= 1)) { // we are looking for introns
                 exons[exons.length - 1] = this.copyFeature(last, {end: Math.max(last.get('end'), f.get('end'))});
@@ -673,12 +686,7 @@ var EditTrack = declare(DraggableFeatureTrack,
         }, this));
 
         var newTranscript  = this.createTranscript(exons);
-        // FIXME: we insert CDS of the first transcript which will later be
-        // corrected by setORF. This function itself should set correct CDS.
-        var cdsCoordinates = this.getWholeCDSCoordinates(transcripts[0]);
-        if (cdsCoordinates[0]) {
-            newTranscript = this.setCDS(newTranscript, {start: cdsCoordinates[0], end: cdsCoordinates[1]});
-        }
+        newTranscript = this.setORF(refSeq, newTranscript, translationStart);
         newTranscript.set('name', 'afra-' + newTranscript.get('seq_id') + '-mRNA-' + counter++);
         return newTranscript;
     },
