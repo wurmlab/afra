@@ -852,6 +852,7 @@ var EditTrack = declare(DraggableFeatureTrack,
      * NOTE: Doesn't copy children.
      */
     copyFeature: function (from, data) {
+        data = data || {};
         var parent = data.parent;
         delete data.parent;
         return new SimpleFeature({
