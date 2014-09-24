@@ -751,7 +751,7 @@ var EditTrack = declare(DraggableFeatureTrack,
      */
     setTranslationStop: function (transcript, coordinate) {
         coordinate = Math.round(coordinate);
-        var newTranscript = this.setCDS(transcript, {start: this.getTranslationStart(transcript), end: coordinate});
+        var newTranscript = this.setCDS(transcript, this.getTranslationStart(transcript), coordinate);
         return newTranscript;
     },
 
@@ -794,7 +794,7 @@ var EditTrack = declare(DraggableFeatureTrack,
             orfStart = this.CDNAToTranscript(transcript, orfStart);
             orfStop  = this.CDNAToTranscript(transcript, orfStop);
 
-            var newTranscript = this.setCDS(transcript, {start: orfStart, end: orfStop});
+            var newTranscript = this.setCDS(transcript, orfStart, orfStop);
             return newTranscript;
         }
     },
@@ -827,7 +827,7 @@ var EditTrack = declare(DraggableFeatureTrack,
         orfStart = this.CDNAToTranscript(transcript, orfStart);
         orfStop  = this.CDNAToTranscript(transcript, orfStop);
 
-        var newTranscript = this.setCDS(transcript, {start: orfStart, end: orfStop});
+        var newTranscript = this.setCDS(transcript, orfStart, orfStop);
         return newTranscript;
     },
 
@@ -1356,9 +1356,7 @@ var EditTrack = declare(DraggableFeatureTrack,
      *
      * Returns new transcript.
      */
-    setCDS: function (transcript, cdsCoordinates) {
-        var cdsStart = cdsCoordinates['start'];
-        var cdsEnd   = cdsCoordinates['end'];
+    setCDS: function (transcript, cdsStart, cdsEnd) {
         if (transcript.get('strand') == -1) {
             // simply swap start and stop
             var temp = cdsStart;
@@ -1366,20 +1364,13 @@ var EditTrack = declare(DraggableFeatureTrack,
             cdsEnd  = temp;
         }
 
-        var exons = this.filterExons(transcript);
-        exons = this.sortAnnotationsByLocation(exons);
-        var exonsContainingCDS = [];
-        _.each(exons, function (f) {
-            if (f.get('end') >= cdsStart && f.get('start') <= cdsEnd) {
-                exonsContainingCDS.push(f);
-            }
-        });
-
         var subfeatures = this.rejectCDS(transcript);
-        _.each(exonsContainingCDS, _.bind(function (f) {
-            var fmin = _.max([f.get('start'), cdsStart]);
-            var fmax = _.min([f.get('end'),   cdsEnd  ]);
-            subfeatures.push(this.copyFeature(f, {type: 'CDS', start: fmin, end: fmax}));
+        _.each(this.filterExons(transcript), _.bind(function (f) {
+            if (f.get('end') >= cdsStart && f.get('start') <= cdsEnd) {
+                var fmin = _.max([f.get('start'), cdsStart]);
+                var fmax = _.min([f.get('end'),   cdsEnd  ]);
+                subfeatures.push(this.copyFeature(f, {type: 'CDS', start: fmin, end: fmax}));
+            }
         }, this));
 
         // return a new transcript
