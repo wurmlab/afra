@@ -1633,7 +1633,6 @@ var EditTrack = declare(DraggableFeatureTrack,
                 _.each(_.zip(transcriptsToRemove, transcriptsToInsert), _.bind(function (pair) {
                     var toRemove = pair[0];
                     var toInsert = pair[1];
-                    toInsert = this.setORF(refSeq, toInsert);
                     toInsert = this.markNonCanonicalSites(toInsert, refSeq);
                     toInsert.id(toRemove.id());
                     this.store.replace(toInsert);
