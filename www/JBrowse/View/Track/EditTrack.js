@@ -558,24 +558,29 @@ var EditTrack = declare(DraggableFeatureTrack,
     /**
      * Returns a new transcript with the given exons merged into one. Returns
      * `undefined` if given exons are not all on the same transcript.
+     *
+     * If given transcript has CDS features, open reading frame of the new
+     * transcript is re-calculated from the translation start site. If the
+     * given transcript does not have CDS features, the resulting transcript
+     * won't have any CDS features either.
      */
     mergeExons: function (refSeq, transcript, exonsToMerge) {
         if (!this.areSiblings(exonsToMerge)) {
             return;
         }
 
-        var min = _.min(_.map(exonsToMerge, function (exonToMerge) { return exonToMerge.get('start'); }));
-        var max = _.max(_.map(exonsToMerge, function (exonToMerge) { return exonToMerge.get('end');   }));
-        var subfeatures = _.reject(transcript.get('subfeatures'), _.bind(function (f) {
-            return _.find(exonsToMerge, _.bind(function (exonToMerge) {
-                if (this.areFeaturesOverlapping(exonToMerge, f)) {
-                    return true;
-                }
-            }, this));
-        }, this));
-        subfeatures.push(this.copyFeature(exonsToMerge[0], {start: min, end: max}));
+        var exons = _.reject(this.filterExons(transcript), function (exon) {
+            return _.indexOf(exonsToMerge, exon) !== -1;
+        });
+        var min = _.min(_.map(exonsToMerge, function (exonToMerge) {
+            return exonToMerge.get('start');
+        }));
+        var max = _.max(_.map(exonsToMerge, function (exonToMerge) {
+            return exonToMerge.get('end');
+        }));
+        exons.push(this.copyFeature(exonsToMerge[0], {start: min, end: max}));
 
-        var newTranscript    = this.createTranscript(subfeatures);
+        var newTranscript    = this.createTranscript(exons);
         var translationStart = this.getTranslationStart(transcript);
         if (translationStart) {
             newTranscript = this.setORF(refSeq, newTranscript, translationStart);
