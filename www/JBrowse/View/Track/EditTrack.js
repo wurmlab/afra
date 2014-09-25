@@ -270,27 +270,32 @@ var EditTrack = declare(DraggableFeatureTrack,
         var selected = this.selectionManager.getSelectedFeatures();
         this.selectionManager.clearSelection();
 
-        var exonsToRemove       = [];
-        var transcriptsToRemove = [];
-        _.each(selected, _.bind(function (feature) {
-            feature.parent() ? exonsToRemove.push(feature) : transcriptsToRemove.push(feature);
-        }, this));
+        this.getRefSeq(function (refSeq) {
+            var transcriptsToRemove = [];
+            var exonsToRemove       = [];
+            var transcriptsToAlter  = [];
+            var alteredTranscripts  = [];
 
-        if (exonsToRemove) {
-            var newTranscripts = [];
-            var transcriptsToAlter = _.map(exonsToRemove, function (exon) {
-                return exon.parent();
+            _.each(selected, function (feature) {
+                var parent;
+                if (parent = feature.parent()) {
+                    exonsToRemove.push(feature);
+                    transcriptsToAlter.push(parent);
+                }
+                else {
+                    transcriptsToRemove.push(feature);
+                }
             });
+            transcriptsToAlter = _.uniq(transcriptsToAlter);
             _.each(transcriptsToAlter, _.bind(function (transcript) {
-                var exons = _.filter(exonsToRemove, function (exon) {
-                    return exon.parent() === transcript;
-                });
-                newTranscripts.push(this.deleteExons(transcript, exons));
+                var exonsToDelete     = this.filterSiblings(exonsToRemove, transcript);
+                var alteredTranscript = this.deleteExons(refSeq, transcript, exonsToRemove);
+                alteredTranscripts.push(alteredTranscript);
             }, this));
-        }
 
-        this.deleteTranscripts(transcriptsToRemove);
-        this.replaceTranscripts(transcriptsToAlter, newTranscripts);
+            this.deleteTranscripts(transcriptsToRemove);
+            this.replaceTranscripts(transcriptsToAlter, alteredTranscripts);
+        });
     },
 
     mergeSelectedFeatures: function ()  {
@@ -495,6 +500,16 @@ var EditTrack = declare(DraggableFeatureTrack,
     },
 
     /**
+     * Sometimes we will have an array of subfeatures and want to select
+     * those with a common parent.
+     */
+    filterSiblings: function (subfeatures, parent) {
+        return _.filter(subfeatures, function (subfeature) {
+            return subfeature.parent() === parent;
+        });
+    },
+
+    /**
      * Select all features from an array of features or from subfeatures of the
      * given feature except of the given type.
      */
@@ -646,22 +661,28 @@ var EditTrack = declare(DraggableFeatureTrack,
     /**
      * Returns a new transcript with the said exons deleted. Returns
      * `undefined` if transcript contains one exon only.
+     *
      */
-    deleteExons: function (transcript, exonsToDelete)  {
+    deleteExons: function (refSeq, transcript, exonsToDelete)  {
         if (this.filterExons(transcript).length <= 1) {
             return;
         }
-        else {
-            var subfeatures = _.reject(transcript.get('subfeatures'), _.bind(function (f) {
-                return _.find(exonsToDelete, _.bind(function (exonToDelete) {
-                    if (this.areFeaturesOverlapping(exonToDelete, f)) {
-                        return true;
-                    }
-                }, this));
-            }, this));
-            var newTranscript = this.createTranscript(subfeatures, transcript.get('name'));
-            return newTranscript;
+
+        var exons = _.reject(this.filterExons(transcript), function (exon) {
+            return _.indexOf(exonsToDelete, exon) !== -1;
+        });
+        var newTranscript    = this.createTranscript(exons, transcript.get('name'));
+        var translationStart = this.getTranslationStart(transcript);
+        if (translationStart) {
+            if (translationStart < newTranscript.get('start')) {
+                translationStart = newTranscript.get('start');
+            }
+            if (translationStart > newTranscript.get('end')) {
+                translationStart = newTranscript.get('end');
+            }
+            newTranscript = this.setORF(refSeq, newTranscript, translationStart);
         }
+        return newTranscript;
     },
 
     /**
