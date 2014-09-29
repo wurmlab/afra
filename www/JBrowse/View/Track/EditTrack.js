@@ -1818,13 +1818,10 @@ var EditTrack = declare(DraggableFeatureTrack,
 
     updateSplitTranscriptMenuItem: function() {
         var menuItem = $('#contextmenu-split');
-        var selected = this.selectionManager.getSelection();
-        if (selected.length > 1) {
-            menuItem.addClass('disabled')
-            return;
-        }
-        var parent = selected[0].feature.parent();
-        if (parent) {
+        var selected = this.selectionManager.getSelectedFeatures();
+        if (selected.length > 1 ||
+            this.areSubfeatures(selected) ||
+            (this.filterExons(selected[0]).length <= 1)) {
             menuItem.addClass('disabled')
             return;
         }
