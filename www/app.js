@@ -6,7 +6,6 @@ require.config({
         contextmenu:'lib/bootstrap-contextmenu/bootstrap-contextmenu',
         moment:     'lib/moment/moment',
         angular:    'lib/angular/angular',
-        ngCookies:  'lib/angular-cookies/angular-cookies',
         ngAnimate:  'lib/angular-animate/angular-animate',
         ngMoment:   'lib/angular-moment/angular-moment',
         bionode:    'lib/bionode/lib/bionode'
@@ -30,9 +29,6 @@ require.config({
         angular:    {
             exports: 'angular',
             deps:    ['jquery']
-        },
-        ngCookies:  {
-            deps:    ['angular']
         },
         ngAnimate:  {
             deps:    ['angular']
@@ -93,12 +89,12 @@ require.config({
 require(['bootstrap', 'less!styles']
 , function () {
 
-    require(['underscore', 'jquery', 'angular', 'dojo/has', 'dojo/_base/sniff', 'ngCookies', 'ngAnimate', 'ngMoment']
+    require(['underscore', 'jquery', 'angular', 'dojo/has', 'dojo/_base/sniff', 'ngAnimate', 'ngMoment']
     , function (_, $, angular, has) {
 
         'use strict';
 
-        var app = angular.module('app', ['ngCookies', 'ngAnimate', 'angularMoment']);
+        var app = angular.module('app', ['ngAnimate', 'angularMoment']);
 
         app.config(['$httpProvider'
         , function (http_provider) {
@@ -136,8 +132,8 @@ require(['bootstrap', 'less!styles']
             location_provider.html5Mode(true).hashPrefix('!');
         }])
 
-        app.run(['$http', '$location', '$cookieStore', '$rootScope', '$injector', '$compile'
-        , function (http, location, cookie, root_scope, injector, compile) {
+        app.run(['$http', '$location', '$rootScope', '$injector', '$compile'
+        , function (http, location, root_scope, injector, compile) {
 
             if (!has('chrome')) {
                 root_scope.not_chrome = true;
@@ -150,8 +146,8 @@ require(['bootstrap', 'less!styles']
                     'html!templates/' + path + '.html',
                     'controllers/'    + path,
                     'less!styles'     // Yeah, we load one and the same style sheet
-                                    // for all the views.  A style sheet per view
-                                    // just doesn't work.
+                                      // for all the views.  A style sheet per view
+                                      // just doesn't work.
                 ];
 
                 $('#spinner').modal();

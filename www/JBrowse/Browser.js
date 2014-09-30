@@ -12,6 +12,7 @@ define( [
             'dojo/request',
             'JBrowse/has',
             'dojo/_base/array',
+            'underscore',
             'dijit/layout/ContentPane',
             'dijit/layout/BorderContainer',
             'dijit/focus',
@@ -47,6 +48,7 @@ define( [
             request,
             has,
             array,
+            _,
             dijitContentPane,
             dijitBorderContainer,
             dijitFocus,
@@ -143,7 +145,13 @@ constructor: function(params) {
             thisB.initTrackMetadata();
             thisB.loadRefSeqs().then(function() {
                 thisB.initView().then(function() {
-                    Touch.loadTouch(); // init touch device support
+                    // init touch device support
+                    Touch.loadTouch();
+
+                    // open all tracks defined in config and move to
+                    // coordinates if defined
+                    thisB.showRegion(thisB.config);
+
                     thisB.passMilestone('completely initialized', {success: true});
                 });
             });
@@ -169,24 +177,31 @@ resolveUrl: function( url ) {
     return Util.resolveUrl( browserRoot, url );
 },
 
-loadRefSeqs: function() {
-    return this._milestoneFunction( 'loadRefSeqs', function( deferred ) {
+loadRefSeqs: function () {
+    return this._milestoneFunction('loadRefSeqs', function (deferred) {
+        var browser = this;
+        var resolveRefSeqs = function (refSeqs) {
+            browser.addRefSeqs(refSeqs);
+            deferred.resolve({success: true});
+        };
+
         // load our ref seqs
-        if( typeof this.config.refSeqs == 'string' )
-            this.config.refSeqs = { url: this.config.refSeqs };
-        dojo.xhrGet(
-            {
-                url: this.config.refSeqs.url,
+        if (typeof this.config.refSeqs == 'string') {
+            dojo.xhrGet({
+                url: this.config.refSeqs,
                 handleAs: 'json',
-                load: dojo.hitch( this, function(o) {
-                    this.addRefseqs( o );
-                    deferred.resolve({success:true});
-                }),
-                error: dojo.hitch( this, function(e) {
+                load: function (refSeqs) {
+                    resolveRefSeqs(refSeqs);
+                },
+                error: function (e) {
                     console.error('Failed to load reference sequence info: ', e, e.stack);
-                    deferred.resolve({ success: false, error: e });
-                })
+                    deferred.resolve({success: false, error: e});
+                }
             });
+        }
+        else {
+            resolveRefSeqs(this.config.refSeqs);
+        }
     });
 },
 
@@ -858,22 +873,16 @@ loadConfig: function () {
  */
 _addTrackConfigs: function( /**Array*/ configs ) {
 
-    if( ! this.config.tracks )
+    if (!this.config.tracks)
         this.config.tracks = [];
-    if( ! this.trackConfigsByName )
+    if (!this.trackConfigsByName)
         this.trackConfigsByName = {};
 
-    array.forEach( configs, function(conf){
-
-        // if( this.trackConfigsByName[ conf.label ] ) {
-        //     console.warn("track with label "+conf.label+" already exists, skipping");
-        //     return;
-        // }
-
+    configs = _.sortBy(configs, 'order');
+    array.forEach(configs, function (conf) {
         this.trackConfigsByName[conf.label] = conf;
-        this.config.tracks.push( conf );
-
-    },this);
+        this.config.tracks.push(conf);
+    }, this);
 
     return configs;
 },
@@ -955,11 +964,11 @@ _coerceBoolean: function(val) {
 /**
  * @param refSeqs {Array} array of refseq records to add to the browser
  */
-addRefseqs: function( refSeqs ) {
+addRefSeqs: function (refSeqs) {
     var allrefs = this.allRefs = this.allRefs || {};
-    dojo.forEach( refSeqs, function(r) {
+    dojo.forEach(refSeqs, function (r) {
         this.allRefs[r.name] = r;
-    },this);
+    }, this);
 
     // generate refSeqOrder
     this.refSeqOrder =
@@ -1075,17 +1084,19 @@ onVisibleTracksChanged: function() {
  * location with a little bit of flanking sequence to each side, if
  * possible.
  */
-showRegion: function( location ) {
-    var flank   = Math.round( ( location.end - location.start ) * 0.5 );
+showRegion: function (location) {
+    var flank = Math.round((location.end - location.start) * 0.5);
+
     //go to location, with some flanking region
-    this.navigateToLocation({ ref: location.ref,
-                               start: location.start - flank,
-                               end: location.end + flank
-                             });
+    this.navigateToLocation({
+        ref:   location.ref,
+        start: location.start - flank,
+        end:   location.end   + flank
+    });
 
     // if the location has a track associated with it, show it
-    if( location.tracks ) {
-        this.showTracks( array.map( location.tracks, function( t ) { return t && (t.label || t.name) || t; } ));
+    if (location.tracks) {
+        this.showTracks(array.map(location.tracks, function (t) {return t && (t.label || t.name) || t;}));
     }
 },
 

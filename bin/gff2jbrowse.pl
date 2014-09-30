@@ -102,11 +102,11 @@ else {
 my %commands = (
 
     #MAKER anotations
-    gene            => [ '--key' => "Gene spans",
-                         '--className' =>  'feature5',
-                         '--type' => 'gene',
-                         '--noSubfeatures'
-                       ],
+    #gene            => [ '--key' => "Gene spans",
+                         #'--className' =>  'feature5',
+                         #'--type' => 'gene',
+                         #'--noSubfeatures'
+                       #],
     maker           => [ '--key' => "MAKER",
                          '--className' => 'transcript',
                          '--subfeatureClasses' => '{"exon": "exon", "CDS": "CDS", "five_prime_UTR": "five_prime_UTR", "three_prime_UTR": "three_prime_UTR"}',

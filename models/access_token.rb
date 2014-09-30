@@ -2,11 +2,12 @@
 # time.
 class AccessToken < Sequel::Model
 
-  many_to_one :user
+  many_to_one :user,
+    key:       :for_user_id
 
   class << self
     def generate(user)
-      t = create(user_id: user.id)
+      t = create(for_user_id: user.id)
       t.token
     end
 

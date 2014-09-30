@@ -4,20 +4,18 @@ Sequel.migration do
 
       primary_key :id
 
-      String      :type,
+      foreign_key :ref_seq_id, :ref_seqs,
+        null:      false,
+        type:      String,
+        on_delete: :cascade
+
+      String      :source,
         null:      false
-      validate do
-        includes %w|PredictedFeature UserCreatedFeature|, :type
-      end
 
       String      :name,
         null:      false
 
-      Integer     :version,
-        null:      false,
-        default:   1
-
-      String      :ref,
+      String      :type,
         null:      false
 
       Integer     :start,
@@ -27,15 +25,11 @@ Sequel.migration do
       Integer     :end,
         null:      false
 
+      Integer     :strand,
+        null:      false
+
       column      :subfeatures, :json,
         default:   Sequel.pg_json({})
-
-      column      :tracks, 'text[]',
-        default:   Sequel.pg_array([
-          'DNA', 'Edit', 'maker', 'augustus_masked',
-          'snap_masked', 'est2genome', 'protein2genome',
-          'blastx', 'tblastx', 'blastn', 'repeatmasker'
-        ])
     end
   end
 

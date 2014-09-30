@@ -2,24 +2,13 @@ define(['JBrowse/Browser']
 , function (Browser) {
 
     var config = {
-        containerID: 'genome',
-        baseUrl: 'data/jbrowse/',
-        refSeqs: 'data/jbrowse/seq/refSeqs.json',
-        include: ['data/jbrowse/trackList.json', 'data/jbrowse/edit-track.json', 'data/jbrowse/simple-track.json'],
-        show_nav: false,
-        show_tracklist: true,
+        containerID:    'genome',
+        show_nav:       false,
         show_overview:  false,
-        stores: {
-            url: {
-                type: "JBrowse/Store/SeqFeature/FromConfig",
-                features: []
-            }
-        }
+        show_tracklist: true
     };
 
-    return ['$http', '$q', '$cookieStore', '$location', function (http, q, cookie, location) {
-        this.browser = new Browser(config);
-
+    return ['$q', '$http', '$location', function (q, http, location) {
         this.sidebar_visible = true;
         this.toggle_sidebar  = function () {
             this.sidebar_visible = !this.sidebar_visible;
@@ -30,7 +19,8 @@ define(['JBrowse/Browser']
         };
 
         this.load = function (task) {
-            this.browser.showRegion(task);
+            config = $.extend({}, config, task);
+            this.browser = new Browser(config);
         };
 
         this.edits = function () {
@@ -44,13 +34,11 @@ define(['JBrowse/Browser']
         var jbrowse = this;
 
         var get = function () {
-            return http.get('data/tasks/next')
+            var params = location.search();
+            params.id  = params.id || 'next';
+            return http.get('data/tasks/' + params.id + '/' + params.mode)
             .then(function (response) {
                 return response.data;
-            })
-            .then(function (task) {
-                cookie.put('task', task);
-                return task;
             });
         };
 
@@ -73,10 +61,8 @@ define(['JBrowse/Browser']
         }
 
         this.done = function () {
-            var task = cookie.get('task');
-            put(task.id, jbrowse.edits())
+            put(this.browser.config.id, this.edits())
             .then(function () {
-                cookie.remove('task');
                 $('#thanks').modal();
             });
         };
@@ -106,11 +92,7 @@ define(['JBrowse/Browser']
         }
 
         // initialize
-        q.when(cookie.get('task'))
-        .then(function (task) {
-            return task || get();
-        })
-        .then(function (task) {
+        get().then(function (task) {
             jbrowse.load(task);
         });
     }];

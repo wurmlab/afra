@@ -1,19 +1,14 @@
 Sequel.migration do
 
-  ### Tasks super table.
   up do
     create_table :tasks  do
 
       primary_key :id
 
-      String      :type,
-        null:      false
-      validate do
-        includes %w|CurationTask|, :type
-      end
-
-      String      :ref,
-        null:      false
+      foreign_key :ref_seq_id, :ref_seqs,
+        null:      false,
+        type:      String,
+        on_delete: :cascade
 
       Integer     :start,
         null:      false
@@ -46,5 +41,4 @@ Sequel.migration do
     drop_constraint_validations_for table: :tasks
     drop_table :tasks
   end
-  ### /Tasks super table.
 end

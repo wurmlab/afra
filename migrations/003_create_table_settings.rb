@@ -20,7 +20,7 @@ Sequel.migration do
   end
 
   down do
-    drop_constraint_validations_for table: :config
-    drop_table :config
+    drop_constraint_validations_for table: :settings
+    drop_table :settings
   end
 end

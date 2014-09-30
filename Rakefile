@@ -104,10 +104,16 @@ task 'import', [:annotations_file] do |t, args|
   App.init_config
   App.load_services
   annotations_file = args[:annotations_file]
-  puts
-  puts
-  puts "Importing #{annotations_file}"
   Importer.new(annotations_file).run
+end
+
+desc 'Create tasks'
+task 'tasks:create', [:annotations_file] do |t, args|
+  require_relative 'app'
+  App.init_config
+  App.load_services
+  annotations_file = args[:annotations_file]
+  TaskCreator.new(annotations_file).run
 end
 
 desc 'IRb.'

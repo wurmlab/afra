@@ -3,35 +3,49 @@ require 'date'
 
 class Task < Sequel::Model
 
-  many_to_many  :features
+  many_to_one :ref_seq
 
-  one_to_many   :contributions
-
-  plugin        :class_table_inheritance,
-    key:         :type
-
-  def tracks
-    features.first.tracks
-  end
+  one_to_many :submissions
 
   class << self
+    def distribution_dataset
+      db[:task_distribution]
+    end
+
     def give(to: nil)
       raise "Task can only be given 'to' a User" unless to.is_a? User
+
+      # First check if a task was already assigned to the user.
+      if t = distribution_dataset.where(user_id: to.id).first
+        return Task.with_pk(t[:task_id])
+      end
+
+      # Assign user a new task.
       available_tasks = where(id: to.tasks.map(&:id)).invert.where(state: 'ready').where(difficulty: 1)
       available_tasks_with_highest_priority = available_tasks.where(priority: available_tasks.max(:priority))
       task = available_tasks_with_highest_priority.offset(Sequel.function(:floor, Sequel.function(:random) * available_tasks_with_highest_priority.count)).first
-      task.set_running_state
+      task.set_running_state and task.add_to_distributed_list(to)
     end
   end
 
+  def submission(from:)
+    submissions.first{|s| from == s.user}
+  end
+
   def register_submission(submission, from: nil)
-    yield
-    register_user_contribution from
-    #if contributions.count == 3 # and type == 'curation'
-      #set_
-    #else
-      increment_priority and set_ready_state and save
-    #end
+    raise "Submission should come 'from' a User" unless from.is_a? User
+
+    data = {
+      type:  'curation',
+      value: []
+    }
+    submission.each do |feature|
+      data[:value] << feature_detail_hash(feature)
+    end
+    Task.db.transaction do
+      Submission.create data: data, task_id: self.id, user_id: from.id
+      increment_priority and set_ready_state and remove_from_distributed_list(from)
+    end
   end
 
   def auto_check
@@ -53,45 +67,38 @@ class Task < Sequel::Model
     self
   end
 
+  def distribution_dataset
+    self.class.distribution_dataset
+  end
+
+  def add_to_distributed_list(user)
+    distribution_dataset.insert(task_id: self.id, user_id: user.id)
+    self
+  end
+
+  def remove_from_distributed_list(user)
+    distribution_dataset.where(task_id: self.id, user_id: user.id).delete
+    self
+  end
+
   def increment_priority
     self.priority += 1
     self.save
     self
   end
 
-  def register_user_contribution(from)
-    raise "Submission should come 'from' a User" unless from.is_a? User
-    Contribution.create user_id: from.id, task_id: id
-  end
-end
-
-class CurationTask < Task
-
-  one_to_many   :submissions,
-    class: :UserCreatedFeature
-
-  def register_submission(submission, from: nil)
-    super do
-      ### MEGA HACK!!
-      File.write(".submissions/#{from.id}_#{DateTime.now}.yml", YAML.dump(submission))
-      ### MEGA HACK!!
-
-      # The id of the submissions can be ignored. And assuming the submission
-      # comprises only one gene model.
-      submission = submission.first.values.first
-
-      feature = UserCreatedFeature.new({
-        name:        submission['name'],
-        ref:         submission['ref'],
-        start:       submission['start'],
-        end:         submission['end'],
-        subfeatures: submission['subfeatures'].map do |subfeature|
-          subfeature = subfeature.values.first
-          {start: subfeature['start'], end: subfeature['end']}
-        end,
-        curation_task_id: self.id
-      })
-      feature.save
-    end
+  def feature_detail_hash(feature)
+    data = feature['data']
+    {
+      name:        data['name'],
+      ref:         data['ref'],
+      type:        data['type'],
+      start:       data['start'],
+      end:         data['end'],
+      subfeatures: data['subfeatures'].map do |subfeature|
+        subfeature = subfeature.values.first
+        {start: subfeature['start'], end: subfeature['end'], type: subfeature['type']}
+      end,
+    }
   end
 end

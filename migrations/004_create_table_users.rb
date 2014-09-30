@@ -7,9 +7,7 @@ Sequel.migration do
       # redundant.
       ##
 
-      column   :id,  :uuid,
-        default:     Sequel.function(:uuid_generate_v4),
-        primary_key: true
+      primary_key :id
 
       String   :name,
         null:   false

@@ -29,7 +29,7 @@ return declare( SeqFeatureStore,
         var features = {};
         for( var i=0; i<fdata.length; i++ ) {
             var f = this._makeFeature( fdata[i] );
-            var refName = this.browser.regularizeReferenceName( f.get('seq_id') );
+            var refName = this.browser.regularizeReferenceName( f.get('seq_id') || f.get('ref'));
             var refFeatures = features[ refName ] || function() {
                 return features[ refName ] = [];
             }.call();

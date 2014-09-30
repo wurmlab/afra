@@ -2,8 +2,7 @@ Sequel.migration do
   up do
     create_table :access_tokens  do
 
-      foreign_key :user_id, :users,
-        type:        :uuid,
+      foreign_key :for_user_id, :users,
         null:        false,
         on_delete:   :cascade
 

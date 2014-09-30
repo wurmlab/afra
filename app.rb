@@ -134,6 +134,7 @@ module App
   def irb(**options)
     init_config **options
     load_models
+    load_services
     require 'irb'
     IRB.start
   end

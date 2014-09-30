@@ -79,7 +79,7 @@
               &nbsp;&nbsp;
               Pick a challenge above and start contributing!
               <span
-                am-time-ago="contribution.attempted_at"
+                am-time-ago="contribution.submitted_at"
                 class="time pull-right">
                 {{user.joined_on | amDateFormat: 'MMMM Do, YYYY'}}
               </span>
@@ -106,7 +106,7 @@
         <ul
           class="list-group">
           <li
-            ng-repeat="contribution in contributions | orderBy:'-attempted_at'"
+            ng-repeat="contribution in contributions | orderBy:'-submitted_at'"
             class="list-group-item">
             <p class="list-group-item-text">
               <span
@@ -116,7 +116,7 @@
               &nbsp;&nbsp;
               {{contribution.description}}
               <span
-                am-time-ago="contribution.attempted_at"
+                am-time-ago="contribution.submitted_at"
                 class="time pull-right">
               </span>
             </p>
