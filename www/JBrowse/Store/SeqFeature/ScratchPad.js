@@ -1,11 +1,12 @@
 define(['underscore', 'dojo/_base/declare', 'JBrowse/Store/SeqFeature']
-, function(_, declare, SeqFeatureStore) {
+, function(_, declare, SeqFeature) {
 
-    return declare(SeqFeatureStore, {
+    return declare(SeqFeature, {
 
         constructor: function (args) {
+            this.inherited(arguments);
             this.refSeq   = args.refSeq;
-            this.features = [];
+            this.features = this._makeFeatures(this.config.features || []);
             this._calculateStats();
         },
 
@@ -34,6 +35,29 @@ define(['underscore', 'dojo/_base/declare', 'JBrowse/Store/SeqFeature']
 
         ids: function () {
             return _.map(this.features, function (f) {return f.id();});
+        },
+
+        _makeFeatures: function (fdata) {
+            return _.map(fdata, _.bind(function (fd) {
+                return this._makeFeature(fd);
+            }, this));
+        },
+
+        _parseInt: function (data) {
+            _.each(['start','end','strand'], function (field) {
+                if (field in data)
+                    data[field] = parseInt(data[field]);
+            });
+            if ('score' in data)
+                data.score = parseFloat(data.score);
+            if ('subfeatures' in data)
+                for (var i=0; i<data.subfeatures.length; i++)
+            this._parseInt(data.subfeatures[i]);
+        },
+
+        _makeFeature: function (data, parent) {
+            this._parseInt(data);
+            return new SimpleFeature({data: data, parent: parent});
         },
 
         _calculateStats: function () {
