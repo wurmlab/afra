@@ -2,6 +2,8 @@ Sequel.migration do
   up do
     create_table :submissions  do
 
+      primary_key :id
+
       foreign_key :task_id,  :tasks,
         null:      false,
         on_delete: :cascade

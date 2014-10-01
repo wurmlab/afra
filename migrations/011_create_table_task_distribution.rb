@@ -10,9 +10,10 @@ Sequel.migration do
         on_delete: :cascade
 
       primary_key [:task_id, :user_id]
-      #DateTime    :created_at,
-        #null:      false,
-        #default:   Sequel.function(:now)
+
+      DateTime    :created_at,
+        null:      false,
+        default:   Sequel.function(:now)
     end
   end
 
