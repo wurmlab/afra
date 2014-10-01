@@ -92,6 +92,7 @@ class Task < Sequel::Model
     {
       name:        data['name'],
       ref:         data['ref'],
+      strand:      data['strand'],
       type:        data['type'],
       start:       data['start'],
       end:         data['end'],

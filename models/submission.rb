@@ -9,6 +9,6 @@ class Submission < Sequel::Model
   end
 
   def description
-    "Curated #{for_task.ref}:#{for_task.start}..#{for_task.end}."
+    "Corrections to #{task.ref_seq.species} gene."
   end
 end

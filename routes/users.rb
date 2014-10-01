@@ -8,7 +8,7 @@ class Users < App::Routes
   end
 
   get '/data/users/:id/contributions' do |id|
-    contribution = Gene::UserCreated.where from_user_id: id
-    contribution.to_json only: [:task_type, :description, :status, :submitted_at]
+    contribution = Submission.where user_id: id
+    contribution.to_json only: [:task_id, :task_type, :description, :status, :submitted_at]
   end
 end

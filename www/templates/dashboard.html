@@ -114,7 +114,10 @@
                 {{contribution.status}}
               </span>
               &nbsp;&nbsp;
+              <a
+                ng-href="curate?id={{contribution.task_id}}">
               {{contribution.description}}
+              </a>
               <span
                 am-time-ago="contribution.submitted_at"
                 class="time pull-right">

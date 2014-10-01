@@ -20,15 +20,15 @@ define(['JBrowse/Browser']
 
         this.load = function (task) {
             config = $.extend({}, config, task);
+            if (this.browser) {
+                delete this.browser;
+            }
+            $('<div id="genome"></div>').insertAfter('.controls-top');
             this.browser = new Browser(config);
         };
 
         this.edits = function () {
             return this.browser.getEditTrack().store.features;
-        };
-
-        this.clear_edits = function () {
-            this.browser.getEditTrack().store.features = {};
         };
 
         var jbrowse = this;
@@ -69,8 +69,6 @@ define(['JBrowse/Browser']
 
         this.contribute_more = function () {
             var handler = function () {
-                console.log('contribute more');
-                jbrowse.clear_edits();
                 get()
                 .then(function (task) {
                     jbrowse.load(task);
