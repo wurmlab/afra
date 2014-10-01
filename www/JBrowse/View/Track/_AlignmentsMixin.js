@@ -4,17 +4,23 @@
 define([
            'dojo/_base/declare',
            'dojo/_base/array',
+           'dojo/_base/lang',
+           'dojo/when',
            'JBrowse/Util',
-           'JBrowse/Store/SeqFeature/_MismatchesMixin'
+           'JBrowse/Store/SeqFeature/_MismatchesMixin',
+           'JBrowse/View/Track/_NamedFeatureFiltersMixin'
         ],
         function(
             declare,
             array,
+            lang,
+            when,
             Util,
-            MismatchesMixin
+            MismatchesMixin,
+            NamedFeatureFiltersMixin
         ) {
 
-return declare( MismatchesMixin ,{
+return declare([ MismatchesMixin, NamedFeatureFiltersMixin ], {
 
     /**
      * Make a default feature detail page for the given feature.
@@ -87,10 +93,14 @@ return declare( MismatchesMixin ,{
         var outSheets = [];
         array.forEach( inSheets, function( sheet ) {
             outSheets.push( sheet );
-            array.forEach( sheet.cssRules || sheet.rules, function( rule ) {
-                if( rule.styleSheet )
-                    outSheets.push.apply( outSheets, this._getStyleSheets( [rule.styleSheet] ) );
-            },this);
+            // avoid modifying cssRules for plugins which generates SecurityException on Firefox
+            if(sheet.href!=null&&!sheet.href.match("^resource:\/\/")){
+                
+                array.forEach( sheet.cssRules || sheet.rules, function( rule ) {
+                    if( rule.styleSheet )
+                        outSheets.push.apply( outSheets, this._getStyleSheets( [rule.styleSheet] ) );
+                },this);
+            }
         },this);
         return outSheets;
     },
@@ -103,25 +113,106 @@ return declare( MismatchesMixin ,{
             var colors = {};
             var styleSheets = this._getStyleSheets( document.styleSheets );
             array.forEach( styleSheets, function( sheet ) {
-                var classes = sheet.rules || sheet.cssRules;
-                if( ! classes ) return;
-                array.forEach( classes, function( c ) {
-                    var match = /^\.base_([^\s_]+)$/.exec( c.selectorText );
-                    if( match && match[1] ) {
-                        var base = match[1];
-                        match = /\#[0-9a-f]{3,6}|(?:rgb|hsl)a?\([^\)]*\)/gi.exec( c.cssText );
-                        if( match && match[0] ) {
-                            colors[ base.toLowerCase() ] = match[0];
-                            colors[ base.toUpperCase() ] = match[0];
+                // avoid modifying cssRules for plugins which generates SecurityException on Firefox
+                if(sheet.href!=null&&!sheet.href.match("^resource:\/\/")){
+                    var classes = sheet.rules || sheet.cssRules;
+                    if( ! classes ) return;
+                    array.forEach( classes, function( c ) {
+                        var match = /^\.base_([^\s_]+)$/.exec( c.selectorText );
+                        if( match && match[1] ) {
+                            var base = match[1];
+                            match = /\#[0-9a-f]{3,6}|(?:rgb|hsl)a?\([^\)]*\)/gi.exec( c.cssText );
+                            if( match && match[0] ) {
+                                colors[ base.toLowerCase() ] = match[0];
+                                colors[ base.toUpperCase() ] = match[0];
+                            }
                         }
-                    }
-                });
-           });
+                    });
+                }
+            });
 
-           return colors;
+            return colors;
         }.call(this);
 
         return this._baseStyles[base] || '#999';
+    },
+
+
+    // filters for BAM alignments according to some flags
+    _getNamedFeatureFilters: function() {
+        return lang.mixin( {}, this.inherited( arguments ),
+            {
+                hideDuplicateReads: {
+                    desc: 'Hide PCR/Optical duplicate reads',
+                    func: function( f ) {
+                        return ! f.get('duplicate');
+                    }
+                },
+                hideQCFailingReads: {
+                    desc: 'Hide reads failing vendor QC',
+                    func: function( f ) {
+                        return ! f.get('qc_failed');
+                    }
+                },
+                hideSecondary: {
+                    desc: 'Hide secondary alignments',
+
+                    func: function( f ) {
+                        return ! f.get('secondary_alignment');
+                    }
+                },
+                hideSupplementary: {
+                    desc: 'Hide supplementary alignments',
+                    func: function( f ) {
+                        return ! f.get('supplementary_alignment');
+                    }
+                },
+                hideMissingMatepairs: {
+                    desc: 'Hide reads with missing mate pairs',
+                    func: function( f ) {
+                        return ! ( f.get('multi_segment_template') && ! f.get('multi_segment_all_aligned') );
+                    }
+                },
+                hideUnmapped: {
+                    desc: 'Hide unmapped reads',
+                    func: function( f ) {
+                        return ! f.get('unmapped');
+                    }
+                },
+                hideForwardStrand: {
+                    desc: 'Hide reads aligned to the forward strand',
+                    func: function( f ) {
+                        return f.get('strand') != 1;
+                    }
+                },
+                hideReverseStrand: {
+                    desc: 'Hide reads aligned to the reverse strand',
+                    func: function( f ) {
+                        return f.get('strand') != -1;
+                    }
+                }
+            });
+    },
+
+    _alignmentsFilterTrackMenuOptions: function() {
+        // add toggles for feature filters
+        var track = this;
+        return when( this._getNamedFeatureFilters() )
+            .then( function( filters ) {
+                       return track._makeFeatureFilterTrackMenuItems(
+                           [
+                               'hideDuplicateReads',
+                               'hideQCFailingReads',
+                               'hideMissingMatepairs',
+                               'hideSecondary',
+                               'hideSupplementary',
+                               'hideUnmapped',
+                               'SEPARATOR',
+                               'hideForwardStrand',
+                               'hideReverseStrand'
+                           ],
+                           filters );
+                   });
     }
 
 });
