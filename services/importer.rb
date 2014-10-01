@@ -10,7 +10,7 @@ class Importer
   end
 
   def run
-    #format
+    format
     update_tracklist
     Genome.db.transaction do
       register_genome

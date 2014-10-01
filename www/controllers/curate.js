@@ -36,7 +36,7 @@ define(['JBrowse/Browser']
         var get = function () {
             var params = location.search();
             params.id  = params.id || 'next';
-            return http.get('data/tasks/' + params.id + '/' + params.mode)
+            return http.get('data/tasks/' + params.id)
             .then(function (response) {
                 return response.data;
             });

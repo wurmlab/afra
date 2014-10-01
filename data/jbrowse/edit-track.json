@@ -8,7 +8,7 @@
          "autocomplete" : "none",
          "label" : "Edit",
          "type" : "JBrowse/View/Track/EditTrack",
-         "storeClass" : "JBrowse/Store/SeqFeature/ScratchPad",
+         "store" : "scratchpad",
          "style" : {
              "className" : "transcript",
              "renderClassName" : "transcript-overlay",
@@ -25,5 +25,12 @@
          "subfeatures" : 1,
          "pinned" : true
       }
-   ]
+   ],
+
+   "stores": {
+       "scratchpad": {
+            "type": "JBrowse/Store/SeqFeature/ScratchPad",
+            "features": []
+       }
+   }
 }

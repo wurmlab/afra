@@ -1,5 +1,5 @@
-define(['underscore', 'dojo/_base/declare', 'JBrowse/Store/SeqFeature']
-, function(_, declare, SeqFeature) {
+define(['underscore', 'dojo/_base/declare', 'JBrowse/Store/SeqFeature', 'JBrowse/Model/SimpleFeature']
+, function(_, declare, SeqFeature, SimpleFeature) {
 
     return declare(SeqFeature, {
 

@@ -2,38 +2,7 @@ require 'json'
 
 class Tasks < App::Routes
 
-  before do
-    content_type 'application/json'
-  end
-
-  get '/data/tasks/next' do
-    user = AccessToken.user(request.session[:token])
-    task = Task.give to: user
-
-    {
-      id:      task.id,
-      refSeqs: [
-        {
-          start:  0,
-          end:    task.ref_seq.length,
-          length: task.ref_seq.length,
-          name:   task.ref_seq.seq_id,
-          seqChunkSize: RefSeq::CHUNK_SIZE
-        }
-      ],
-      baseUrl: "data/jbrowse/#{task.ref_seq.species}/#{task.ref_seq.asm_id}/",
-      include: ["data/jbrowse/#{task.ref_seq.species}/#{task.ref_seq.asm_id}/trackList.json", "data/jbrowse/edit-track.json"],
-      start:   task.start,
-      end:     task.end
-    }.to_json
-  end
-
-  # FIXME: Ideally we would allow this URL only if the user has attempted
-  # this task already.
-  get  '/data/tasks/:id/:mode' do |id, mode|
-    user = AccessToken.user(request.session[:token])
-    task = Task.with_pk id
-
+  def task_data task, user
     data = {
       id:      task.id,
       refSeqs: [
@@ -51,33 +20,39 @@ class Tasks < App::Routes
       end:     task.end
     }
 
-    case mode
-    when 'revise'
-      data[:tracks] = [{
-        label: "user_#{user.id}",
-        key:   user.name,
-        type: 'JBrowse/View/Track/DraggableHTMLFeatures',
-        store: "store_user_#{user.id}",
-        style: {
-          className: "transcript",
-          subfeatureClasses: {
-            three_prime_UTR: "three_prime_UTR",
-            five_prime_UTR: "five_prime_UTR",
-            CDS: "CDS",
-            exon: "exon",
-          }
-        }
-      }]
+    if s = task.submission(from: user)
       data[:stores] = {
-        "store_user_#{user.id}" => {
-          type: "JBrowse/Store/SeqFeature/FromConfig",
-          features: task.submission(from: user).data["value"]
+        "scratchpad" => {
+          type: "JBrowse/Store/SeqFeature/ScratchPad",
+          features: s.data["value"]
         }
       }
-    when 'review'
     end
 
-    data.to_json
+    data
+  end
+
+  before do
+    content_type 'application/json'
+  end
+
+  # Give user a new task at random or the last task she was on.
+  get '/data/tasks/next' do
+    user = AccessToken.user(request.session[:token])
+    task = Task.give to: user
+
+    task_data(task, user).to_json
+  end
+
+  # Give user a task by the requested id. This is so that users can revise
+  # their submission.
+  #
+  # FIXME: allow this URL only if the user has attempted this task already.
+  get  '/data/tasks/:id' do |id|
+    user = AccessToken.user(request.session[:token])
+    task = Task.with_pk id
+
+    task_data(task, user).to_json
   end
 
   post '/data/tasks/:id' do
