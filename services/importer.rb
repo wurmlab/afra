@@ -10,8 +10,8 @@ class Importer
   end
 
   def run
-    format
-    update_tracklist
+    #format
+    #update_tracklist
     Genome.db.transaction do
       register_genome
       register_ref_seqs
@@ -72,7 +72,7 @@ class Importer
   def register_annotations
     values = []
     Dir[File.join(jb_store, 'tracks', '*')].each do |track|
-      next if File.basename(track) == 'gene'
+      next unless File.basename(track) == 'maker'
       Dir[File.join(track, '*')].each do |ref|
         track_data = JSON.load File.read File.join(ref, 'trackData.json')
         values.concat nclist_to_features(ref, track_data['intervals']['classes'], track_data['intervals']['nclist'])
