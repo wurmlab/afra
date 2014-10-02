@@ -20,7 +20,7 @@ class Tasks < App::Routes
       end:     task.end
     }
 
-    if s = task.submission(from: user)
+    if s = task.filter_submission(from: user)
       data[:stores] = {
         "scratchpad" => {
           type: "JBrowse/Store/SeqFeature/ScratchPad",
@@ -55,11 +55,13 @@ class Tasks < App::Routes
     task_data(task, user).to_json
   end
 
+  # Save new or update existing submission made by the user.
   post '/data/tasks/:id' do
-    submission = JSON.parse request.body.read
+    data = JSON.parse request.body.read
     user = AccessToken.user(request.session[:token])
     task = Task.with_pk params[:id]
-    task.register_submission submission, from: user
+    task.update_submission(data, user) or
+      task.register_submission(data, user)
     200
   end
 end

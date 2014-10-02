@@ -28,24 +28,24 @@ class Task < Sequel::Model
     end
   end
 
-  def submission(from:)
-    submissions.first{|s| from == s.user}
+  def register_submission(data, user)
+    Task.db.transaction do
+      Submission.create data: data, task_id: self.id, user_id: user.id
+      increment_priority and set_ready_state and remove_from_distributed_list(user)
+    end
   end
 
-  def register_submission(submission, from: nil)
-    raise "Submission should come 'from' a User" unless from.is_a? User
-
-    data = {
-      type:  'curation',
-      value: []
-    }
-    submission.each do |feature|
-      data[:value] << feature_detail_hash(feature)
-    end
+  def update_submission(data, user)
+    submission = filter_submission from: user
+    return unless submission
     Task.db.transaction do
-      Submission.create data: data, task_id: self.id, user_id: from.id
-      increment_priority and set_ready_state and remove_from_distributed_list(from)
+      submission.data = data
+      submission.save
     end
+  end
+
+  def filter_submission(from:)
+    submissions.first{|s| from == s.user}
   end
 
   def auto_check
@@ -85,21 +85,5 @@ class Task < Sequel::Model
     self.priority += 1
     self.save
     self
-  end
-
-  def feature_detail_hash(feature)
-    data = feature['data']
-    {
-      name:        data['name'],
-      ref:         data['ref'],
-      strand:      data['strand'],
-      type:        data['type'],
-      start:       data['start'],
-      end:         data['end'],
-      subfeatures: data['subfeatures'].map do |subfeature|
-        subfeature = subfeature.values.first
-        {start: subfeature['start'], end: subfeature['end'], type: subfeature['type']}
-      end,
-    }
   end
 end

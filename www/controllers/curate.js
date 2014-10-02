@@ -42,18 +42,22 @@ define(['JBrowse/Browser']
             });
         };
 
-        var put = function (id, submission) {
-            _.each(submission, function (f) {
-                f.set('ref', f.get('seq_id'));
-            });
-            var data = JSON.stringify(submission, function (key, value) {
-                if (key === '_parent' && value) {
-                    return value.id();
+        // convert to db savable form
+        var normalizeFeatures = function (features) {
+            return _.map(features, function (f) {
+                var data = $.extend({}, f.data);
+                if (data.subfeatures) {
+                    data.subfeatures = normalizeFeatures(data.subfeatures);
                 }
-                else {
-                    return value;
-                }
+                return data;
             });
+        };
+
+        var put = function (id, transcripts) {
+            var data = {
+                type:  'curation',
+                value: normalizeFeatures(transcripts)
+            }
             return http.post('data/tasks/' + id, data).then(function (response) {
                 console.log('saved submission');
             });
@@ -69,6 +73,7 @@ define(['JBrowse/Browser']
 
         this.contribute_more = function () {
             var handler = function () {
+                location.search('');
                 get()
                 .then(function (task) {
                     jbrowse.load(task);
