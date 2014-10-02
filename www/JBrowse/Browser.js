@@ -17,10 +17,6 @@ define( [
             'dijit/layout/BorderContainer',
             'dijit/focus',
             'JBrowse/Util',
-            'JBrowse/Store/LazyTrie',
-            'JBrowse/Store/Names/LazyTrieDojoData',
-            'dojo/store/DataStore',
-            'JBrowse/Store/Names/Hash',
             'JBrowse/FeatureFiltererMixin',
             'JBrowse/GenomeView',
             'JBrowse/TouchScreenSupport',
@@ -53,10 +49,6 @@ define( [
             dijitBorderContainer,
             dijitFocus,
             Util,
-            LazyTrie,
-            NamesLazyTrieDojoDataStore,
-            DojoDataStore,
-            NamesHashStore,
             FeatureFiltererMixin,
             GenomeView,
             Touch,
@@ -141,7 +133,6 @@ constructor: function(params) {
             if( thisB.config.initialHighlight )
                 thisB.setHighlight(new Location(thisB.config.initialHighlight));
 
-            thisB.loadNames();
             thisB.initTrackMetadata();
             thisB.loadRefSeqs().then(function() {
                 thisB.initView().then(function() {
@@ -209,38 +200,6 @@ loadRefSeqs: function () {
  * Event that fires when the reference sequences have been loaded.
  */
 onRefSeqsLoaded: function() {
-},
-
-/**
- * Load our name index.
- */
-loadNames: function() {
-    return this._milestoneFunction( 'loadNames', function( deferred ) {
-        var conf = dojo.mixin( dojo.clone( this.config.names || {} ),
-                               this.config.autocomplete || {} );
-        if( ! conf.url )
-            conf.url = this.config.nameUrl || 'data/names/';
-
-        if( conf.baseUrl )
-            conf.url = Util.resolveUrl( conf.baseUrl, conf.url );
-
-        if( conf.type == 'Hash' )
-            this.nameStore = new NamesHashStore( dojo.mixin({ browser: this }, conf) );
-        else
-            // wrap the older LazyTrieDojoDataStore with
-            // dojo.store.DataStore to conform with the dojo/store API
-            this.nameStore = new DojoDataStore({
-                store: new NamesLazyTrieDojoDataStore({
-                    browser: this,
-                    namesTrie: new LazyTrie( conf.url, "lazy-{Chunk}.json"),
-                    stopPrefixes: conf.stopPrefixes,
-                    resultLimit:  conf.resultLimit || 15,
-                    tooManyMatchesMessage: conf.tooManyMatchesMessage
-                })
-            });
-
-        deferred.resolve({success: true});
-    });
 },
 
 /**
