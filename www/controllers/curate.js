@@ -20,10 +20,6 @@ define(['JBrowse/Browser']
 
         this.load = function (task) {
             config = $.extend({}, config, task);
-            if (this.browser) {
-                delete this.browser;
-            }
-            $('<div id="genome"></div>').insertAfter('.controls-top');
             this.browser = new Browser(config);
         };
 
@@ -35,8 +31,7 @@ define(['JBrowse/Browser']
 
         var get = function () {
             var params = location.search();
-            params.id  = params.id || 'next';
-            return http.get('data/tasks/' + params.id)
+            return http.get('data/tasks/' + (params.id || 'next'))
             .then(function (response) {
                 return response.data;
             });
@@ -72,12 +67,12 @@ define(['JBrowse/Browser']
         };
 
         this.contribute_more = function () {
+            var scope = this;
             var handler = function () {
-                location.search('');
-                get()
-                .then(function (task) {
-                    jbrowse.load(task);
+                scope.$apply(function () {
+                    location.search('id', null);
                 });
+                scope.view_current();
                 $(this).off('hidden.bs.modal', handler);
             };
             $('#thanks').modal('hide').on('hidden.bs.modal', handler);

@@ -211,8 +211,8 @@ require(['bootstrap', 'less!styles']
             root_scope.$on('$locationChangeSuccess'
             , function (event, next, prev) {
 
-                var n = next.split('/').pop().split('#');
-                var p = prev.split('/').pop().split('#');
+                var n = next.split('/').pop().split(/[#?]/);
+                var p = prev.split('/').pop().split(/[#?]/);
 
                 http.get('whoami')
                 .then(function (response) {
@@ -221,6 +221,11 @@ require(['bootstrap', 'less!styles']
                         return;
                     }
                     root_scope.user = user;
+
+                    if (n[0] == p[0] && n[1] == p[1] && n[2] != p[2]) {
+                        root_scope.$broadcast('$paramsChange', n[2], p[2]);
+                        return;
+                    }
 
                     if (n[0] == p[0] && n[1] != p[1]) {
                         root_scope.$broadcast('$hashChange', n[1], p[1]);
