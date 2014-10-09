@@ -41,6 +41,7 @@ class Task < Sequel::Model
     Task.db.transaction do
       submission.data = data
       submission.save
+      set_ready_state and remove_from_distributed_list(user)
     end
   end
 
@@ -76,8 +77,10 @@ class Task < Sequel::Model
     self
   end
 
+  # Remove from distribution list if present.
   def remove_from_distributed_list(user)
-    distribution_dataset.where(task_id: self.id, user_id: user.id).delete
+    entry = distribution_dataset.where(task_id: self.id, user_id: user.id)
+    entry.delete if entry.first
     self
   end
 
