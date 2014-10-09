@@ -331,30 +331,42 @@ var EditTrack = declare(DraggableFeatureTrack,
         this.selectionManager.clearSelection();
     },
 
-    setTranslationStartForSelectedTranscript: function () {
-        var selected   = this.selectionManager.getSelectedFeatures()[0];
+    /**
+     * NOTE: on setting translation start and stop, and longest ORF.
+     *
+     * We allow setting translation start and stop, and longest ORF even if the
+     * user selected an exon. That is, the transcript to operate on is implied.
+     * This is because at close to base pair zoom level the distinction,
+     * whether exon is selected or transcript, is not apparent and thus not
+     * intuitive why these menu items should be disabled.
+     */
+    setTranslationStartForImpliedTranscript: function () {
+        var selected   = this.selectionManager.getSelectedFeatures();
+        var transcript = EditTrack.getTopLevelAnnotation(selected[0]);
         this.selectionManager.clearSelection();
-        var transcript = EditTrack.getTopLevelAnnotation(selected);
-        var coordinate = this.gview.absXtoBp($('#contextmenu').position().left);
 
+        var coordinate = this.gview.absXtoBp($('#contextmenu').position().left);
         this.getRefSeq(function (refSeq) {
             var newTranscript = this.setTranslationStart(refSeq, transcript, coordinate);
             this.replaceTranscript(transcript, newTranscript);
         });
     },
 
-    setTranslationStopForSelectedTranscript: function () {
-        var selected = this.selectionManager.getSelectedFeatures()[0];
-        var transcript = selected.parent() ? selected.parent() : selected;
+    setTranslationStopForImpliedTranscript: function () {
+        var selected   = this.selectionManager.getSelectedFeatures();
+        var transcript = EditTrack.getTopLevelAnnotation(selected[0]);
+        this.selectionManager.clearSelection();
+
         var coordinate = this.gview.absXtoBp($('#contextmenu').position().left);
         var newTranscript = this.setTranslationStop(transcript, coordinate);
         this.replaceTranscript(transcript, newTranscript);
-        this.selectionManager.clearSelection();
     },
 
-    setLongestORFForSelectedTranscript: function () {
-        var transcript = this.selectionManager.getSelectedFeatures()[0];
+    setLongestORFForImpliedTranscript: function () {
+        var selected   = this.selectionManager.getSelectedFeatures();
+        var transcript = EditTrack.getTopLevelAnnotation(selected[0]);
         this.selectionManager.clearSelection();
+
         this.getRefSeq(function (refSeq) {
             var newTranscript = this.setLongestORF(refSeq, transcript);
             if (newTranscript) {
@@ -1774,8 +1786,8 @@ var EditTrack = declare(DraggableFeatureTrack,
     updateSetTranslationStartMenuItem: function () {
         var menuItem = $('#contextmenu-set-translation-start');
         var selected = this.selectionManager.getSelectedFeatures();
-        if (selected.length === 1 &&
-            this.areToplevel(selected)) {
+        if ((selected.length === 1 && this.areToplevel(selected)) ||
+            this.areSiblings(selected)) {
             menuItem.removeClass('disabled');
             return;
         }
@@ -1785,9 +1797,9 @@ var EditTrack = declare(DraggableFeatureTrack,
     updateSetTranslationStopMenuItem: function () {
         var menuItem = $('#contextmenu-set-translation-stop');
         var selected = this.selectionManager.getSelectedFeatures();
-        if (selected.length === 1      &&
-            this.areToplevel(selected) &&
-            this.hasCDS(selected[0])) {
+        if (((selected.length === 1 && this.areToplevel(selected)) ||
+            this.areSiblings(selected)) &&
+            this.hasCDS(EditTrack.getTopLevelAnnotation(selected[0]))) {
             menuItem.removeClass('disabled');
             return;
         }
@@ -1797,11 +1809,12 @@ var EditTrack = declare(DraggableFeatureTrack,
     updateSetLongestORFMenuItem: function () {
         var menuItem = $('#contextmenu-set-longest-orf');
         var selected = this.selectionManager.getSelectedFeatures();
-        if (selected.length > 1 || selected[0].parent()) {
-            menuItem.addClass('disabled')
+        if ((selected.length === 1 && this.areToplevel(selected)) ||
+            this.areSiblings(selected)) {
+            menuItem.removeClass('disabled');
             return;
         }
-        menuItem.removeClass('disabled');
+        menuItem.addClass('disabled');
     },
 
     updateMergeMenuItem: function () {
