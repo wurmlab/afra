@@ -648,15 +648,9 @@ wheelScroll: function( event ) {
 
     if( delta.x )
         this.keySlideX( -delta.x );
-    if( delta.y ) {
-        // change zoom level
-        if (delta.y > 0) {
-            this.zoomIn();
-        }
-        if (delta.y < 0) {
-            this.zoomOut();
-        }
-    }
+    if( delta.y )
+        // 60 pixels per mouse wheel event
+        this.setY(this.getY() - delta.y);
 
     //the timeout is so that we don't have to run showVisibleBlocks
     //for every scroll wheel click (we just wait until so many ms
