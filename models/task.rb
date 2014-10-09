@@ -46,7 +46,7 @@ class Task < Sequel::Model
   end
 
   def filter_submission(from:)
-    submissions.first{|s| from == s.user}
+    submissions.find{|s| from == s.user}
   end
 
   def auto_check
