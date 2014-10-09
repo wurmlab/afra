@@ -196,6 +196,9 @@ require(['bootstrap', 'less!styles']
                             });
                         });
                     }
+                    else {
+                        $('.login-error').show();
+                    }
                 }, { scope: 'email' });
             };
 
