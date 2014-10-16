@@ -17,6 +17,15 @@ return declare( null, {
         this.mdAttributeName    = ( this.config.mdAttribute    || 'md'    ).toLowerCase();
     },
 
+    _getSkipsAndDeletions: function( feature ) {
+        // parse the CIGAR tag if it has one
+        var cigarString = feature.get( this.cigarAttributeName );
+        if( cigarString ) {
+            return this._cigarToSkipsAndDeletions( feature, this._parseCigar( cigarString ) );
+        }
+        return [];
+    },
+
     _getMismatches: function( feature ) {
         var mismatches = [];
 
@@ -34,12 +43,21 @@ return declare( null, {
             mismatches.push.apply( mismatches, this._mdToMismatches( feature, mdString, cigarOps, mismatches ) );
         }
 
+        // uniqify the mismatches
+        var seen = {};
+        mismatches = array.filter( mismatches, function( m ) {
+            var key = m.type+','+m.start+','+m.length;
+            var s = seen[key];
+            seen[key] = true;
+            return !s;
+        });
+
         return mismatches;
     },
 
     _parseCigar: function( cigar ) {
-        return array.map( cigar.match(/\d+\D/g), function( op ) {
-           return [ op.match(/\D/)[0].toUpperCase(), parseInt( op ) ];
+        return array.map( cigar.toUpperCase().match(/\d+\D/g), function( op ) {
+           return [ op.match(/\D/)[0], parseInt( op ) ];
         });
     },
 
@@ -47,14 +65,13 @@ return declare( null, {
         var currOffset = 0;
         var mismatches = [];
         array.forEach( ops, function( oprec ) {
-           var op  = oprec[0].toUpperCase();
-           if( !op )
-               return;
+           var op  = oprec[0];
            var len = oprec[1];
            // if( op == 'M' || op == '=' || op == 'E' ) {
            //     // nothing
            // }
            if( op == 'I' )
+               // GAH: shouldn't length of insertion really by 0, since JBrowse internally uses zero-interbase coordinates?
                mismatches.push( { start: currOffset, type: 'insertion', base: ''+len, length: 1 });
            else if( op == 'D' )
                mismatches.push( { start: currOffset, type: 'deletion',  base: '*', length: len  });
@@ -62,6 +79,28 @@ return declare( null, {
                mismatches.push( { start: currOffset, type: 'skip',      base: 'N', length: len  });
            else if( op == 'X' )
                mismatches.push( { start: currOffset, type: 'mismatch',  base: 'X', length: len  });
+           else if( op == 'H' )
+               mismatches.push( { start: currOffset, type: 'hardclip',  base: 'H'+len, length: 1 });
+           else if( op == 'S' )
+               mismatches.push( { start: currOffset, type: 'softclip',  base: 'S'+len, length: 1 });
+
+           if( op != 'I' && op != 'S' && op != 'H' )
+               currOffset += len;
+        });
+        return mismatches;
+    },
+
+    // parse just the skips and deletions out of a CIGAR string
+    _cigarToSkipsAndDeletions: function( feature, ops ) {
+        var currOffset = 0;
+        var mismatches = [];
+        array.forEach( ops, function( oprec ) {
+           var op  = oprec[0];
+           var len = oprec[1];
+           if( op == 'D' )
+               mismatches.push( { start: currOffset, type: 'deletion',  base: '*', length: len  });
+           else if( op == 'N' )
+               mismatches.push( { start: currOffset, type: 'skip',      base: 'N', length: len  });
 
            if( op != 'I' && op != 'S' && op != 'H' )
                currOffset += len;
@@ -78,8 +117,9 @@ return declare( null, {
         var mismatchRecords = [];
         var curr = { start: 0, base: '', length: 0, type: 'mismatch' };
 
-        // number of bases soft-clipped off the beginning of the template seq
-
+        // convert a position on the reference sequence to a position
+        // on the template sequence, taking into account hard and soft
+        // clipping of reads
         function getTemplateCoord( refCoord, cigarOps ) {
             var templateOffset = 0;
             var refOffset = 0;
@@ -106,7 +146,7 @@ return declare( null, {
             var skipOffset = 0;
             array.forEach( cigarMismatches || [], function( mismatch ) {
                 if( mismatch.type == 'skip' && curr.start >= mismatch.start ) {
-                    curr.start += mismatch.len;
+                    curr.start += mismatch.length;
                 }
             });
 
@@ -133,7 +173,11 @@ return declare( null, {
           else if( token.match(/^[a-z]/i) ) { // mismatch
               for( var i = 0; i<token.length; i++ ) {
                   curr.length = 1;
-                  curr.base = seq ? seq.substr( getTemplateCoord( curr.start, cigarOps), 1 ) : 'X';
+                  curr.base = seq ? seq.substr( cigarOps ? getTemplateCoord( curr.start, cigarOps)
+                                                         : curr.start,
+                                                1
+                                              )
+                                  : 'X';
                   nextRecord();
               }
           }

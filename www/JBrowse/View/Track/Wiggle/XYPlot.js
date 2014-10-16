@@ -4,7 +4,7 @@ define( [
             'dojo/_base/Color',
             'dojo/on',
             'JBrowse/View/Track/WiggleBase',
-            'JBrowse/View/Track/YScaleMixin',
+            'JBrowse/View/Track/_YScaleMixin',
             'JBrowse/Util',
             './_Scale'
         ],
@@ -33,12 +33,12 @@ var XYPlot = declare( [WiggleBase, YScaleMixin],
         );
     },
 
-    _getScaling: function( successCallback, errorCallback ) {
+    _getScaling: function( viewArgs, successCallback, errorCallback ) {
 
-        this._getScalingStats( dojo.hitch(this, function( stats ) {
+        this._getScalingStats( viewArgs, dojo.hitch(this, function( stats ) {
 
             //calculate the scaling if necessary
-            if( ! this.lastScaling || ! this.lastScaling.sameStats( stats ) ) {
+            if( ! this.lastScaling || ! this.lastScaling.sameStats( stats ) || this.trackHeightChanged ) { 
 
                 var scaling = new Scale( this.config, stats );
 
@@ -59,6 +59,7 @@ var XYPlot = declare( [WiggleBase, YScaleMixin],
                 scaling.range = scaling.max - scaling.min;
 
                 this.lastScaling = scaling;
+                this.trackHeightChanged=false; //reset flag
             }
 
             successCallback( this.lastScaling );
@@ -75,10 +76,13 @@ var XYPlot = declare( [WiggleBase, YScaleMixin],
      * @private
      */
     _drawFeatures: function( scale, leftBase, rightBase, block, canvas, pixels, dataScale ) {
+        var thisB=this;
         var context = canvas.getContext('2d');
         var canvasHeight = canvas.height;
+ 
+        var ratio = Util.getResolution( context, this.browser.config.highResolutionMode );
         var toY = dojo.hitch( this, function( val ) {
-           return canvasHeight * ( 1-dataScale.normalize.call(this, val) );
+           return canvasHeight * ( 1-dataScale.normalize(val) ) / ratio;
         });
         var originY = toY( dataScale.origin );
 
@@ -86,7 +90,7 @@ var XYPlot = declare( [WiggleBase, YScaleMixin],
 
         dojo.forEach( pixels, function(p,i) {
             if (!p)
-                return
+                return;
             var score = toY(p['score']);
             var f = p['feat'];
 
@@ -95,7 +99,7 @@ var XYPlot = declare( [WiggleBase, YScaleMixin],
                 var bgColor = this.getConfForFeature('style.bg_color', f );
                 if( bgColor ) {
                     context.fillStyle = bgColor;
-                    context.fillRect( i, 0, 1, canvasHeight );
+                    thisB._fillRectMod( context, i, 0, 1, canvasHeight );
                 }
             }
 
@@ -104,20 +108,20 @@ var XYPlot = declare( [WiggleBase, YScaleMixin],
                 if( score <= originY ) {
                     // bar goes upward
                     context.fillStyle = this.getConfForFeature('style.pos_color',f);
-                    context.fillRect( i, score, 1, originY-score+1);
+                    thisB._fillRectMod( context, i, score, 1, originY-score+1);
                     if( !disableClipMarkers && score < 0 ) { // draw clip marker if necessary
                         context.fillStyle = this.getConfForFeature('style.clip_marker_color',f) || this.getConfForFeature('style.neg_color',f);
-                        context.fillRect( i, 0, 1, 3 );
+                        thisB._fillRectMod( context, i, 0, 1, 3 );
 
                     }
                 }
                 else {
                     // bar goes downward
                     context.fillStyle = this.getConfForFeature('style.neg_color',f);
-                    context.fillRect( i, originY, 1, score-originY+1 );
+                    thisB._fillRectMod( context, i, originY, 1, score-originY+1 );
                     if( !disableClipMarkers && score >= canvasHeight ) { // draw clip marker if necessary
                         context.fillStyle = this.getConfForFeature('style.clip_marker_color',f) || this.getConfForFeature('style.pos_color',f);
-                        context.fillRect( i, canvasHeight-3, 1, 3 );
+                        thisB._fillRectMod( context, i, canvasHeight-3, 1, 3 );
 
                     }
                 }
@@ -145,7 +149,7 @@ var XYPlot = declare( [WiggleBase, YScaleMixin],
                     pixelValues[j]['lastUsedStore'] = store;
                 }
                 else {
-                    pixelValues[j] = { score: score, lastUsedStore: store, feat: f }
+                    pixelValues[j] = { score: score, lastUsedStore: store, feat: f };
                 }
             }
         },this);
@@ -181,9 +185,12 @@ var XYPlot = declare( [WiggleBase, YScaleMixin],
     _postDraw: function( scale, leftBase, rightBase, block, canvas, features, featureRects, dataScale ) {
         var context = canvas.getContext('2d');
         var canvasHeight = canvas.height;
+ 
+        var ratio = Util.getResolution( context, this.browser.config.highResolutionMode );
         var toY = dojo.hitch( this, function( val ) {
-           return canvasHeight * (1-dataScale.normalize.call(this, val));
+           return canvasHeight * ( 1-dataScale.normalize(val) ) / ratio;
         });
+        var thisB = this;
 
         // draw the variance_band if requested
         if( this.config.variance_band ) {
@@ -198,7 +205,7 @@ var XYPlot = declare( [WiggleBase, YScaleMixin],
                         var varTop = toY( stats.scoreMean + plusminus );
                         var varHeight = toY( stats.scoreMean - plusminus ) - varTop;
                         varHeight = Math.max( 1, varHeight );
-                        context.fillRect( 0, varTop, canvas.width, varHeight );
+                        thisB._fillRectMod( context, 0, varTop, canvas.width, varHeight );
                         context.font = '12px sans-serif';
                         if( plusminus > 0 ) {
                             context.fillText( '+'+label, 2, varTop );

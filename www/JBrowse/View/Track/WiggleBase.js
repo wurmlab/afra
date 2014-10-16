@@ -1,16 +1,35 @@
 define( [
             'dojo/_base/declare',
             'dojo/_base/array',
+            'dojo/_base/lang',
+            'dojo/_base/event',
             'dojo/dom-construct',
             'dojo/on',
             'dojo/mouse',
             'JBrowse/View/Track/BlockBased',
-            'JBrowse/View/Track/ExportMixin',
+            'JBrowse/View/Track/_ExportMixin',
             'JBrowse/View/Track/_TrackDetailsStatsMixin',
+            'JBrowse/View/Dialog/SetTrackHeight',
             'JBrowse/Util',
+            'JBrowse/has',
             './Wiggle/_Scale'
         ],
-        function( declare, array, dom, on, mouse, BlockBasedTrack, ExportMixin, DetailStatsMixin, Util, Scale ) {
+        function(
+            declare,
+            array,
+            lang,
+            domEvent,
+            dom,
+            on,
+            mouse,
+            BlockBasedTrack,
+            ExportMixin,
+            DetailStatsMixin,
+            TrackHeightDialog,
+            Util,
+            has,
+            Scale
+        ) {
 
 return declare( [BlockBasedTrack,ExportMixin, DetailStatsMixin ], {
 
@@ -22,6 +41,8 @@ return declare( [BlockBasedTrack,ExportMixin, DetailStatsMixin ], {
         }
 
         this.store = args.store;
+
+        this._setupEventHandlers();
     },
 
     _defaultConfig: function() {
@@ -31,9 +52,38 @@ return declare( [BlockBasedTrack,ExportMixin, DetailStatsMixin ], {
         };
     },
 
-    _getScaling: function( successCallback, errorCallback ) {
+    _setupEventHandlers: function() {
+        // make a default click event handler
+        var eventConf = dojo.clone( this.config.events || {} );
+        if( ! eventConf.click ) {
+            // unlike CanvasFeatures, linkTemplate or nothing here... no default contentDialog since no equivalent to defaultFeatureDetail
+            if ((this.config.style||{}).linkTemplate) {
+                eventConf.click = { action: "newWindow", url: this.config.style.linkTemplate };
+            }
+        }
 
-        this._getScalingStats( dojo.hitch(this, function( stats ) {
+        // process the configuration to set up our event handlers
+        this.eventHandlers = (function() {
+            var handlers = dojo.clone( eventConf );
+                // find conf vars that set events, like `onClick`
+                for( var key in this.config ) {
+                    var handlerName = key.replace(/^on(?=[A-Z])/, '');
+                    if( handlerName != key )
+                        handlers[ handlerName.toLowerCase() ] = this.config[key];
+                }
+                // interpret handlers that are just strings to be URLs that should be opened
+                for( key in handlers ) {
+                    if( typeof handlers[key] == 'string' )
+                        handlers[key] = { url: handlers[key] };
+                }
+                return handlers;
+            }).call(this);
+        // only call _makeClickHandler() if we have related settings in config
+        if (this.eventHandlers.click) this.eventHandlers.click = this._makeClickHandler( this.eventHandlers.click );
+    },
+
+    _getScaling: function( viewArgs, successCallback, errorCallback ) {
+        this._getScalingStats( viewArgs, dojo.hitch(this, function( stats ) {
 
             //calculate the scaling if necessary
             if( ! this.lastScaling || ! this.lastScaling.sameStats(stats) ) {
@@ -53,16 +103,19 @@ return declare( [BlockBasedTrack,ExportMixin, DetailStatsMixin ], {
     // get the statistics to use for scaling, if necessary, either
     // from the global stats for the store, or from the local region
     // if config.autoscale is 'local'
-    _getScalingStats: function( callback, errorCallback ) {
+    _getScalingStats: function( viewArgs, callback, errorCallback ) {
         if( ! Scale.prototype.needStats( this.config ) ) {
             callback( null );
             return null;
         }
         else if( this.config.autoscale == 'local' ) {
-            return this.getRegionStats.call( this, this.browser.view.visibleRegion(), callback, errorCallback );
+            var region = lang.mixin( { scale: viewArgs.scale }, this.browser.view.visibleRegion() );
+            region.start = Math.ceil( region.start );
+            region.end = Math.floor( region.end );
+            return this.getRegionStats.call( this, region, callback, errorCallback );
         }
         else {
-            return this.getGlobalStats.apply( this, arguments );
+            return this.getGlobalStats.call( this, callback, errorCallback );
         }
     },
 
@@ -135,6 +188,7 @@ return declare( [BlockBasedTrack,ExportMixin, DetailStatsMixin ], {
                     finishCallback();
                 }),
                 dojo.hitch( this, function(e) {
+                    console.error( e.stack || ''+e, e );
                     this._handleError( e, args );
                 }));
     },
@@ -174,18 +228,45 @@ return declare( [BlockBasedTrack,ExportMixin, DetailStatsMixin ], {
               width:  this._canvasWidth(block),
               style: {
                   cursor: 'default',
-                  width: "100%",
-                  height: canvasHeight + "px"
+                  height: canvasHeight + "px",
+                  width: has('inaccurate-html-width') ? "" : "100%",
+                  "min-width": has('inaccurate-html-width')? "100%":"",
+                  "max-width": has('inaccurate-html-width')? "102%":""
+                  
               },
               innerHTML: 'Your web browser cannot display this type of track.',
               className: 'canvas-track'
             },
             block.domNode
         );
+       
+        var ctx = c.getContext('2d');
+        var ratio=Util.getResolution(ctx, this.browser.config.highResolutionMode);
+
+        // upscale canvas if the two ratios don't match
+        if (this.browser.config.highResolutionMode!='disabled' && ratio>=1) {
+            var oldWidth = c.width;
+            var oldHeight = c.height;
+
+            c.width = Math.round(oldWidth * ratio);
+            c.height = Math.round(oldHeight * ratio);
+
+            //c.style.width = oldWidth + 'px';
+            c.style.height = oldHeight + 'px';
+
+            // now scale the context to counter
+            // the fact that we've manually scaled
+            // our canvas element
+            ctx.scale(ratio, ratio);
+        }
+ 
         c.startBase = block.startBase;
+        block.canvas = c;
+
 
         //Calculate the score for each pixel in the block
         var pixels = this._calculatePixelScores( c.width, features, featureRects );
+
 
         this._draw( block.scale,    block.startBase,
                     block.endBase,  block,
@@ -193,9 +274,7 @@ return declare( [BlockBasedTrack,ExportMixin, DetailStatsMixin ], {
                     featureRects,   dataScale,
                     pixels,         block.maskingSpans ); // note: spans may be undefined.
 
-        this._makeScoreDisplay( args.scale, args.leftBase, args.rightBase, block, c, features, featureRects, pixels );
-
-        this.heightUpdate( c.height, args.blockIndex );
+        this.heightUpdate( c.height/ratio, args.blockIndex );
         if( !( c.parentNode && c.parentNode.parentNode )) {
             var blockWidth = block.endBase - block.startBase;
 
@@ -211,6 +290,7 @@ return declare( [BlockBasedTrack,ExportMixin, DetailStatsMixin ], {
                 break;
             }
         }
+
     },
 
     fillBlock: function( args ) {
@@ -220,7 +300,7 @@ return declare( [BlockBasedTrack,ExportMixin, DetailStatsMixin ], {
         // hook updateGraphs onto the end of the block feature fetch
         var oldFinish = args.finishCallback || function() {};
         args.finishCallback = function() {
-            thisB.updateGraphs( oldFinish );
+            thisB.updateGraphs( args, oldFinish );
         };
 
         // get the features for this block, and then set in motion the
@@ -228,11 +308,12 @@ return declare( [BlockBasedTrack,ExportMixin, DetailStatsMixin ], {
         this._getBlockFeatures( args );
     },
 
-    updateGraphs: function( callback ) {
+    updateGraphs: function( viewArgs, callback ) {
         var thisB = this;
 
         // update the global scaling
-        this._getScaling( function( scaling ) {
+        this._getScaling( viewArgs,
+                          function( scaling ) {
                               thisB.scaling = scaling;
                               // render all of the blocks that need it
                               array.forEach( thisB.blocks, function( block, blockIndex ) {
@@ -245,11 +326,7 @@ return declare( [BlockBasedTrack,ExportMixin, DetailStatsMixin ], {
                               callback();
                           },
                           function(e) {
-                              thisB.error = e;
-                              array.forEach( thisB.blocks, function( block, blockIndex ) {
-                                  if( block && block.domNode.parentNode )
-                                      thisB.fillBlockError( blockIndex, block );
-                              });
+                              thisB._handleError( e, viewArgs );
                           });
 
     },
@@ -335,7 +412,7 @@ return declare( [BlockBasedTrack,ExportMixin, DetailStatsMixin ], {
                     pixelValues[j]['lastUsedStore'] = store;
                 }
                 else {
-                    pixelValues[j] = { score: score, lastUsedStore: store, feat: f }
+                    pixelValues[j] = { score: score, lastUsedStore: store, feat: f };
                 }
             }
         },this);
@@ -348,69 +425,97 @@ return declare( [BlockBasedTrack,ExportMixin, DetailStatsMixin ], {
         return pixelValues;
     },
 
-    _makeScoreDisplay: function( scale, leftBase, rightBase, block, canvas, features, featureRects, pixels ) {
+    setViewInfo: function() {
+        this.inherited(arguments);
+        this._makeScoreDisplay();
+    },
 
-        var pixelValues = pixels;
+    _makeScoreDisplay: function() {
+        var gv = this.browser.view;
+        var thisB = this;
+
+        if( ! this._mouseoverEvent )
+            this._mouseoverEvent = this.own(
+                on( this.div, 'mousemove', function( evt ) {
+                        evt = domEvent.fix( evt );
+                        var bpX = gv.absXtoBp( evt.clientX );
+                        thisB.mouseover( bpX, evt );
+
+                    }))[0];
+        if( ! this._mouseoutEvent )
+            this._mouseoutEvent = this.own( on( this.div, mouse.leave, function( evt) {
+                                                    thisB.mouseover( undefined );
+                                                }))[0];
+
+        // only add if we have config setting a click eventHandler for this track
+        if (thisB.eventHandlers.click  && ! this._mouseClickEvent)
+            this._mouseClickEvent = this.own( on ( this.div, "click", thisB.eventHandlers.click ))[0];
 
         // make elements and events to display it
-        var scoreDisplay = dojo.create(
-            'div', {
-                className: 'wiggleValueDisplay',
-                style: {
-                    position: 'fixed',
-                    display: 'none',
-                    zIndex: 15
-                }
-            }, block.domNode );
-        var verticalLine = dojo.create( 'div', {
-                className: 'wigglePositionIndicator',
-                style: {
-                    position: 'fixed',
-                    display: 'none',
-                    height: canvas.height+'px',
-                    zIndex: 15
-                }
-        }, block.domNode );
-        dojo.forEach( [canvas,verticalLine,scoreDisplay], function(element) {
-            this.own( on( element, 'mousemove', dojo.hitch(this,function(evt) {
-                    var cPos = dojo.position(canvas);
-                    var x = evt.pageX;
-                    var cx = evt.pageX - cPos.x;
-
-                    verticalLine.style.display = 'block';
-                    verticalLine.style.left = x+'px';
-                    verticalLine.style.top = cPos.y+'px';
-                    if( this._showPixelValue( scoreDisplay, pixelValues[Math.round(cx)] ) ) {
-                        scoreDisplay.style.left = x+'px';
-                        scoreDisplay.style.top = cPos.y+'px';
-                        scoreDisplay.style.display = 'block';
-                    } else {
-                        scoreDisplay.style.display = 'none';
-                    }
-            })));
-        },this);
-        /*
-        this.own( on( block.domNode, 'mouseout', function(evt) {
-                var target = evt.srcElement || evt.target;
-                var evtParent = evt.relatedTarget || evt.toElement;
-                if( !target || !evtParent || target.parentNode != evtParent.parentNode) {
-                    scoreDisplay.style.display = 'none';
-                    verticalLine.style.display = 'none';
-                }
-        }));
-        this.own( on(this.browser.view.trackContainer, 'mousemove', function(evt) {
-                var cPos = dojo.position(canvas);
-                var y = evt.pageY - cPos.y;
-                if ( y < 0 || y > cPos.Height) {
-                    scoreDisplay.style.display = 'none';
-                    verticalLine.style.display = 'none';
-                }
-        */
-        this.own( on( block.domNode, mouse.leave, function(evt) {
-                          scoreDisplay.style.display = 'none';
-                          verticalLine.style.display = 'none';
-        }));
+        if( ! this.scoreDisplay )
+            this.scoreDisplay = {
+                flag: dojo.create(
+                    'div', {
+                        className: 'wiggleValueDisplay',
+                        style: {
+                            position: 'fixed',
+                            display: 'none',
+                            zIndex: 15
+                        }
+                    }, this.div),
+                pole: dojo.create( 'div', {
+                                       className: 'wigglePositionIndicator',
+                                       style: {
+                                           position: 'fixed',
+                                           display: 'none',
+                                           zIndex: 15
+                                       }
+                                   }, this.div )
+            };
     },
+
+    mouseover: function( bpX, evt ) {
+        // if( this._scoreDisplayHideTimeout )
+        //     window.clearTimeout( this._scoreDisplayHideTimeout );
+        if( bpX === undefined ) {
+            var thisB = this;
+            //this._scoreDisplayHideTimeout = window.setTimeout( function() {
+                thisB.scoreDisplay.flag.style.display = 'none';
+                thisB.scoreDisplay.pole.style.display = 'none';
+            //}, 1000 );
+        }
+        else {
+            var block;
+            array.some(this.blocks, function(b) {
+                           if( b && b.startBase <= bpX && b.endBase >= bpX ) {
+                               block = b;
+                               return true;
+                           }
+                           return false;
+                       });
+
+            if( !( block && block.canvas && block.pixelScores && evt ) )
+                return;
+
+            var pixelValues = block.pixelScores;
+            var canvas = block.canvas;
+            var cPos = dojo.position( canvas );
+            var x = evt.pageX;
+            var cx = evt.pageX - cPos.x;
+
+            if( this._showPixelValue( this.scoreDisplay.flag, pixelValues[ Math.round( cx ) ] ) ) {
+                this.scoreDisplay.flag.style.display = 'block';
+                this.scoreDisplay.pole.style.display = 'block';
+
+                this.scoreDisplay.flag.style.left = evt.clientX+'px';
+                this.scoreDisplay.flag.style.top  = cPos.y+'px';
+                this.scoreDisplay.pole.style.left = evt.clientX+'px';
+                this.scoreDisplay.pole.style.height = cPos.h+'px';
+            }
+        }
+    },
+
+
 
     _showPixelValue: function( scoreDisplay, score ) {
         if( typeof score == 'number' ) {
@@ -435,6 +540,38 @@ return declare( [BlockBasedTrack,ExportMixin, DetailStatsMixin ], {
 
     _exportFormats: function() {
         return [{name: 'bedGraph', label: 'bedGraph', fileExt: 'bedgraph'}, {name: 'Wiggle', label: 'Wiggle', fileExt: 'wig'}, {name: 'GFF3', label: 'GFF3', fileExt: 'gff3'} ];
+    },
+
+    _trackMenuOptions: function() {
+        var track = this;
+        var options = this.inherited(arguments) || [];
+
+        options.push({
+            label: 'Change height',
+            iconClass: 'jbrowseIconVerticalResize',
+            action: function() {
+                new TrackHeightDialog({
+                    height: track._canvasHeight(),
+                    setCallback: function( newHeight ) {
+                        track.trackHeightChanged=true;
+                        track.updateUserStyles({ height: newHeight });
+                    }
+                }).show();
+            }
+        });
+
+        return options;
+    },
+
+    // this draws either one or two width pixels based on whether there is a fractional devicePixelRatio
+    _fillRectMod: function( ctx, left, top, width, height ) {
+        var devicePixelRatio = window.devicePixelRatio || 1;
+        var drawWidth=width;
+        // check for fractional devicePixelRatio, and if so, draw wider pixels to avoid subpixel rendering
+        if( this.browser.config.highResolutionMode!='disabled' && (devicePixelRatio-Math.floor(devicePixelRatio)) > 0 ) {
+            drawWidth=width+0.3; // Minimal for subpixel gap, heuristic
+        }
+        ctx.fillRect( left, top, drawWidth, height );
     }
 });
 });
