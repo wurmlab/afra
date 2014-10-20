@@ -1,19 +1,7 @@
 <ng-include src="'templates/_nav.html'"></ng-include>
-<article class="container">
 
-  <div
-    ng-if="not_chrome && (location.hash() === 'login')"
-    class="incompatible-browser-alert">
-    <br>
-    <div
-      class="alert alert-warning">
-      <p>
-        Hi, we are in a pre-alpha stage and support only <strong>Google
-          Chrome</strong> at the moment. It will help us if you drop us a line
-        about your experience with Afra in your browser.
-      </p>
-    </div>
-  </div>
+<article class="container">
+  <ng-include src="'templates/_incompatible-browser-alert.html'"></ng-include>
 
   <section class="problem">
     <h3>Gene Annotation for the Masses</h3>
