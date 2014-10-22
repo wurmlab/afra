@@ -131,7 +131,7 @@
         </div>
       </div>
 
-      <h3>Contribution Activity</h3>
+      <h3>Contribution activity</h3>
       <div
         ng-if="!has_contributions()">
         <h3 class="contribution-activity">
@@ -158,45 +158,28 @@
           </li>
         </ul>
       </div>
-      <div
-        ng-repeat="(task_type, contributions) in contributions">
-        <h3 class="contribution-activity">
-          <div class="inner">
-            <strong>
-              <i
-                ng-if="task_type == 'Curation'"
-                class="fa fa-lg fa-edit"></i>
-              <i
-                ng-if="task_type == 'Review'"
-                class="fa fa-lg fa-search"></i>
-              {{contributions.length}}
-            </strong>
-            {{task_type}}
-          </div>
-        </h3>
-        <ul
-          class="list-group">
-          <li
-            ng-repeat="contribution in contributions | orderBy:'-submitted_at'"
-            class="list-group-item">
-            <p class="list-group-item-text">
-              <span
-                class="label label-primary">
-                {{contribution.status}}
-              </span>
-              &nbsp;&nbsp;
-              <a
-                ng-href="curate?id={{contribution.task_id}}">
+      <ul
+        class="list-group">
+        <li
+          ng-repeat="contribution in contributions | orderBy:'-submitted_at'"
+          class="list-group-item">
+          <p class="list-group-item-text">
+            <span
+              class="label label-primary">
+              {{contribution.status}}
+            </span>
+            &nbsp;&nbsp;
+            <a
+              ng-href="curate?id={{contribution.task_id}}">
               {{contribution.description}}
-              </a>
-              <span
-                am-time-ago="contribution.submitted_at"
-                class="time pull-right">
-              </span>
-            </p>
-          </li>
-        </ul>
-      </div>
+            </a>
+            <span
+              am-time-ago="contribution.submitted_at"
+              class="time pull-right">
+            </span>
+          </p>
+        </li>
+      </ul>
     </div>
   </div>
 </article>
