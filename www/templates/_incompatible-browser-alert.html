@@ -2,16 +2,25 @@
   ng-if="not_chrome && (location.hash() === 'login' || user)"
   class="incompatible-browser-alert">
   <div
-    class="alert alert-warning">
-    <p>
-      Hi, we are in a pre-alpha stage and support only
-      <strong>
-        <a
-          href="http://www.google.com/chrome/">
-          Google Chrome
-        </a>
-      </strong>
-      at the moment.
-    </p>
+    class="alert alert-warning alert-dismissable text-center">
+    Hi, we are in a pre-alpha stage and support only
+    <strong>
+      <a
+        href="http://www.google.com/chrome/">
+        Google Chrome
+      </a>
+    </strong>
+    at the moment.
+    <button
+      type="button" class="close" data-dismiss="alert">
+      <span
+        aria-hidden="true">
+        &times;
+      </span>
+      <span
+        class="sr-only">
+        Close
+      </span>
+    </button>
   </div>
 </div>
