@@ -6,6 +6,7 @@ require.config({
         contextmenu:'lib/bootstrap-contextmenu/bootstrap-contextmenu',
         moment:     'lib/moment/moment',
         angular:    'lib/angular/angular',
+        ngSanitize: 'lib/angular-sanitize/angular-sanitize',
         ngAnimate:  'lib/angular-animate/angular-animate',
         ngMoment:   'lib/angular-moment/angular-moment',
         bionode:    'lib/bionode/lib/bionode'
@@ -29,6 +30,9 @@ require.config({
         angular:    {
             exports: 'angular',
             deps:    ['jquery']
+        },
+        ngSanitize: {
+            deps:    ['angular']
         },
         ngAnimate:  {
             deps:    ['angular']
@@ -89,12 +93,12 @@ require.config({
 require(['bootstrap', 'less!styles']
 , function () {
 
-    require(['underscore', 'jquery', 'angular', 'dojo/has', 'dojo/_base/sniff', 'ngAnimate', 'ngMoment']
+    require(['underscore', 'jquery', 'angular', 'dojo/has', 'dojo/_base/sniff', 'ngSanitize', 'ngAnimate', 'ngMoment']
     , function (_, $, angular, has) {
 
         'use strict';
 
-        var app = angular.module('app', ['ngAnimate', 'angularMoment']);
+        var app = angular.module('app', ['ngSanitize', 'ngAnimate', 'angularMoment']);
 
         app.config(['$httpProvider'
         , function (http_provider) {
