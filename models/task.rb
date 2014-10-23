@@ -7,6 +7,10 @@ class Task < Sequel::Model
 
   one_to_many :submissions
 
+  def for_species
+    ref_seq.species
+  end
+
   class << self
     def distribution_dataset
       db[:task_distribution]
