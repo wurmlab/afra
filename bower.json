@@ -32,7 +32,7 @@
     "jDataView":       "rbuels/jDataView",
     "jszlib":          "rbuels/jszlib",
     "FileSaver":       "dkasenberg/FileSaver.js",
-    "jquery.ui":       "1.10.3",
+    "jquery.ui":       "1.11.2",
     "bionode":         "bionode/bionode"
   },
 

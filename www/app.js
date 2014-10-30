@@ -80,7 +80,7 @@ require.config({
     },
     {
         name:     'jqueryui',
-        location: 'lib/jquery.ui/jqueryui'
+        location: 'lib/jquery.ui/ui'
     }],
     map: {
         '*': {
