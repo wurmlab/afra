@@ -1,7 +1,7 @@
 require.config({
     paths: {
         underscore: 'lib/underscore/underscore',
-        jquery:     'lib/jquery/jquery',
+        jquery:     'lib/jquery/dist/jquery',
         bootstrap:  'lib/bootstrap/dist/js/bootstrap',
         contextmenu:'lib/bootstrap-contextmenu/bootstrap-contextmenu',
         moment:     'lib/moment/moment',
