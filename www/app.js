@@ -8,7 +8,7 @@ require.config({
         angular:    'lib/angular/angular',
         ngSanitize: 'lib/angular-sanitize/angular-sanitize',
         ngAnimate:  'lib/angular-animate/angular-animate',
-        ngMoment:   'lib/angular-moment/angular-moment',
+        'angular-moment': 'lib/angular-moment/angular-moment',
         bionode:    'lib/bionode/lib/bionode'
     },
     shim: {
@@ -24,9 +24,6 @@ require.config({
         contextmenu: {
             deps:    ['bootstrap']
         },
-        moment:     {
-            exports: 'moment'
-        },
         angular:    {
             exports: 'angular',
             deps:    ['jquery']
@@ -36,9 +33,6 @@ require.config({
         },
         ngAnimate:  {
             deps:    ['angular']
-        },
-        ngMoment:   {
-            deps:    ['angular', 'moment']
         }
     },
     packages:[{
@@ -93,7 +87,7 @@ require.config({
 require(['bootstrap', 'less!styles']
 , function () {
 
-    require(['underscore', 'jquery', 'angular', 'dojo/has', 'dojo/_base/sniff', 'ngSanitize', 'ngAnimate', 'ngMoment']
+    require(['underscore', 'jquery', 'angular', 'dojo/has', 'dojo/_base/sniff', 'ngSanitize', 'ngAnimate', 'angular-moment']
     , function (_, $, angular, has) {
 
         'use strict';
@@ -103,31 +97,24 @@ require(['bootstrap', 'less!styles']
         app.config(['$httpProvider'
         , function (http_provider) {
 
-            var http_error_handler = ['$q', '$location', '$rootScope', function(q, location, root_scope) {
+            http_provider.interceptors.push(['$q', '$rootScope'
+            , function (q, root_scope) {
 
-                var success = function (response) {
-                    return response;
-                };
-
-                var error = function(response) {
-                    var status = response.status;
-                    switch(status)
-                    {
-                        case 401:
-                            root_scope.view_login();
+                return {
+                    responseError: function (response) {
+                        var status = response.status;
+                        switch (status)
+                        {
+                            case 401:
+                                root_scope.view_login();
                             return q.reject(response);
 
-                        default:
-                            return q.reject(response);
-                    };
+                            default:
+                                return q.reject(response);
+                        };
+                    }
                 };
-
-                return function(promise) {
-                    return promise.then(success, error);
-                };
-            }];
-
-            http_provider.responseInterceptors.push(http_error_handler);
+            }]);
         }]);
 
         app.config(['$locationProvider'
