@@ -165,10 +165,6 @@
               </span>
               &nbsp;&nbsp;
               Pick a challenge above and start contributing!
-              <span
-                am-time-ago="contribution.submitted_at"
-                class="time pull-right">
-              </span>
             </p>
           </li>
         </ul>
@@ -176,7 +172,7 @@
       <ul
         class="list-group">
         <li
-          ng-repeat="contribution in contributions | orderBy:'-submitted_at'"
+          ng-repeat="contribution in contributions | orderBy:'-made_on'"
           class="list-group-item">
           <p class="list-group-item-text">
             <span
@@ -189,7 +185,7 @@
               ng-bind-html="describe_contribution(contribution)">
             </a>
             <span
-              am-time-ago="contribution.submitted_at"
+              am-time-ago="contribution.made_on"
               class="time pull-right">
             </span>
           </p>

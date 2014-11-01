@@ -66,6 +66,7 @@ module App
     @db.extension :pg_json
     @db.extension :pg_array
     Sequel.extension :pg_json_ops
+    Sequel.datetime_class = DateTime
   end
 
   def init_server

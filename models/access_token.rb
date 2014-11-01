@@ -18,7 +18,7 @@ class AccessToken < Sequel::Model
 
     def valid?(token)
       t = with_pk(token)
-      t and t.expires_on >= Time.now
+      t and t.expires_on >= DateTime.now
     end
 
     def user(token)

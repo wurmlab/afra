@@ -12,11 +12,11 @@ Sequel.migration do
         null:      false,
         on_delete: :restrict
 
-      DateTime    :submitted_at,
+      column      :made_on,    'timestamp with time zone',
         null:      false,
         default:   Sequel.function(:now)
 
-      DateTime    :updated_at,
+      column      :updated_at, 'timestamp with time zone',
         null:      false,
         default:   Sequel.function(:now)
 

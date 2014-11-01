@@ -27,7 +27,6 @@ Sequel.migration do
 
   down do
     drop_constraint_validations_for table: :ref_seqs
-    drop_index :ref_seqs, :seq_id
     drop_table :ref_seqs
   end
 end
