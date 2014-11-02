@@ -16,7 +16,7 @@ Sequel.migration do
         null:      false,
         default:   Sequel.function(:now)
 
-      column      :updated_at, 'timestamp with time zone',
+      column      :revised_on, 'timestamp with time zone',
         null:      false,
         default:   Sequel.function(:now)
 

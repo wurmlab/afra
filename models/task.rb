@@ -44,6 +44,7 @@ class Task < Sequel::Model
     return unless submission
     Task.db.transaction do
       submission.data = data
+      submission.revised_on = DateTime.now
       submission.save
       set_ready_state and remove_from_distributed_list(user)
     end
