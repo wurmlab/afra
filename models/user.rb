@@ -2,7 +2,7 @@ require 'bcrypt'
 
 class User < Sequel::Model
 
-  one_to_many  :access_token,
+  one_to_many  :access_tokens,
     key:        :for_user_id
 
   one_to_many  :submissions
