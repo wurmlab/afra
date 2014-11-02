@@ -31,7 +31,7 @@ Sequel.migration do
         includes %w|ready running auto-check|, :state
       end
 
-      DateTime    :created_at,
+      column      :created_at, 'timestamp with time zone',
         null:      false,
         default:   Sequel.function(:now)
     end

@@ -12,7 +12,7 @@ Sequel.migration do
 
       # FIXME: species + asm_id => unique
 
-      DateTime    :created_at,
+      column      :created_at, 'timestamp with time zone',
         null:      false,
         default:   Sequel.function(:now)
     end

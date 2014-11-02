@@ -10,7 +10,7 @@ Sequel.migration do
         default:     Sequel.function(:uuid_generate_v4),
         primary_key: true
 
-      DateTime :expires_on,
+      column   :expires_on, 'timestamp with time zone',
         default:     Sequel.function(:now) + Sequel.lit("interval '30 days'"),
         null:        false
     end

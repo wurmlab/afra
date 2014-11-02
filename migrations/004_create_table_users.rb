@@ -20,7 +20,7 @@ Sequel.migration do
         null:    false,
         unique:  true
 
-      DateTime :joined_on,
+      column   :joined_on, 'timestamp with time zone',
         default: Sequel.function(:now)
     end
   end

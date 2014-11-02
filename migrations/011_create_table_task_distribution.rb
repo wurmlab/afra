@@ -11,7 +11,7 @@ Sequel.migration do
 
       primary_key [:task_id, :user_id]
 
-      DateTime    :created_at,
+      column      :created_at, 'timestamp with time zone',
         null:      false,
         default:   Sequel.function(:now)
     end
