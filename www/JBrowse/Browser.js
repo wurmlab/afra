@@ -1620,14 +1620,15 @@ showRegionWithHighlight: function( location ) {
 },
 
 /**
- * Get genome browser's edit track.
+ * Get edit track.
  */
 getEditTrack: function()  {
+    if (this._editTrack) return this._editTrack;
     if (this && this.view && this.view.tracks)  {
         var tracks = this.view.tracks;
         for (var i = 0; i < tracks.length; i++)  {
             if (tracks[i] instanceof EditTrack)  {
-                return tracks[i];
+                return (this._editTrack = tracks[i]);
             }
         }
     }
@@ -1635,14 +1636,15 @@ getEditTrack: function()  {
 },
 
 /**
- * Get genome browser's edit track.
+ * Get sequence track.
  */
 getSequenceTrack: function()  {
+    if (this._sequenceTrack) return this._sequenceTrack;
     if (this && this.view && this.view.tracks)  {
         var tracks = this.view.tracks;
         for (var i = 0; i < tracks.length; i++)  {
             if (tracks[i] instanceof SequenceTrack)  {
-                return tracks[i];
+                return (this._sequenceTrack = tracks[i]);
             }
         }
     }
