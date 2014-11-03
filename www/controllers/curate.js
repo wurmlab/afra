@@ -58,7 +58,7 @@ define(['JBrowse/Browser']
 
         var put = function (id, transcripts) {
             var data = {
-                type:  'curation',
+                type:  'correction',
                 value: normalizeFeatures(transcripts)
             }
             return http.post('data/tasks/' + id, data).then(function (response) {
