@@ -18,9 +18,17 @@ define(['JBrowse/Browser']
             }, 0);
         };
 
+        this.can_submit = function () {
+            return this.browser &&
+                this.browser.getEditTrack() &&
+                this.browser.getEditTrack().store &&
+                this.browser.getEditTrack().store.features &&
+                this.browser.getEditTrack().store.features.length > 0;
+        };
+
         this.load = function (task) {
-            config = $.extend({}, config, task);
-            this.browser = new Browser(config);
+            this.browser = new Browser($.extend(task, config));
+            this.browser.ngScope = this;
         };
 
         this.edits = function () {

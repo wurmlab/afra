@@ -46,6 +46,7 @@
       <div class="controls-bot">
         <button
           class="btn btn-primary btn-lg btn-block pull-right"
+          ng-class="!can_submit() && 'disabled'"
           ng-click="done()"
           title="Submit changes">
           <i class="fa fa-lg fa-check-square-o"></i>

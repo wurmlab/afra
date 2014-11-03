@@ -1606,6 +1606,21 @@ var EditTrack = declare(DraggableFeatureTrack,
 
     /* VIEW HELPERS - update the view based on controller events */
 
+    /**
+     * Call `this.changed()` in the context of Angular's scope.
+     *
+     * NOTE: It's tempting to modify `changed` function itself to call
+     * `$apply`. However, we don't really need to inform Angular, everytime
+     * `changed` is called by JBrowse. What is the cost of Angular's digest
+     * cycle?
+     */
+    ngChanged: function () {
+        this.browser.ngScope
+        .$apply(_.bind(function () {
+            this.changed();
+        }, this));
+    },
+
     highlightFeature: function (feature) {
         var div = this.getFeatDiv(feature);
         $(div).trigger('mousedown');
@@ -1634,7 +1649,7 @@ var EditTrack = declare(DraggableFeatureTrack,
                     this.store.insert(toInsert);
                     inserted.push(toInsert);
                 }, this));
-                this.changed();
+                this.ngChanged();
                 if (callback) {
                     callback.apply(this, inserted);
                 }
@@ -1660,7 +1675,7 @@ var EditTrack = declare(DraggableFeatureTrack,
                 this.store.remove(t);
                 removed.push(t);
             }, this));
-            this.changed();
+            this.ngChanged();
             if (callback) {
                 callback.apply(this, removed);
             }
@@ -1756,14 +1771,14 @@ var EditTrack = declare(DraggableFeatureTrack,
         this.redoState = this.store.features.slice();
         this.store.features = this.undoState;
         this.undoState = null;
-        this.changed();
+        this.ngChanged();
     },
 
     redo: function () {
         this.undoState = this.store.features.slice();
         this.store.features = this.redoState;
         this.redoState = null;
-        this.changed();
+        this.ngChanged();
     },
 
     backupStore: function () {
