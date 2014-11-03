@@ -546,47 +546,63 @@ _initEventRouting: function() {
 getStore: function( storeName, callback ) {
     if( !callback ) throw 'invalid arguments';
 
-    var storeCache = this._storeCache || {};
-    this._storeCache = storeCache;
+    this.afterMilestone('loadConfig', dojo.hitch(this, function () {
+        var storeCache = this._storeCache || {};
+        this._storeCache = storeCache;
 
-    var storeRecord = storeCache[ storeName ];
-    if( storeRecord ) {
-        storeRecord.refCount++;
-        callback( storeRecord.store );
-        return;
-    }
+        var storeRecord = storeCache[ storeName ];
+        if( storeRecord ) {
+            storeRecord.refCount++;
+            callback( storeRecord.store );
+            return;
+        }
 
-    var conf = this.config.stores[storeName];
-    if( ! conf ) {
-        console.warn( "store '"+storeName+"' not found" );
-        callback( null );
-        return;
-    }
+        var conf = this.config.stores[storeName];
+        if( ! conf ) {
+            console.warn( "store '"+storeName+"' not found" );
+            callback( null );
+            return;
+        }
 
-    var storeClassName = conf.type;
-    if( ! storeClassName ) {
-        console.warn( "store "+storeName+" has no type defined" );
-        callback( null );
-        return;
-    }
+        var storeClassName = conf.type;
+        if( ! storeClassName ) {
+            console.warn( "store "+storeName+" has no type defined" );
+            callback( null );
+            return;
+        }
 
-    require( [ storeClassName ], dojo.hitch( this, function( storeClass ) {
-                 var storeArgs = {};
-                 dojo.mixin( storeArgs, conf );
-                 dojo.mixin( storeArgs,
-                             {
-                                 config: conf,
-                                 browser: this,
-                                 refSeq: this.refSeq
-                             });
+        require( [ storeClassName ], dojo.hitch( this, function( storeClass ) {
+                    var storeArgs = {};
+                    dojo.mixin( storeArgs, conf );
+                    dojo.mixin( storeArgs,
+                                {
+                                    config: conf,
+                                    browser: this,
+                                    refSeq: this.refSeq
+                                });
 
-                 var store = new storeClass( storeArgs );
-                 this._storeCache[ storeName ] = { refCount: 1, store: store };
-                 callback( store );
-                 // release the callback because apparently require
-                 // doesn't release this function
-                 callback = undefined;
-             }));
+                    // It is possible that the downstream code tried to fetch
+                    // the same store a second time before we got a chance to
+                    // intialize the requested store on first call. In this
+                    // case the last call to getStore will override the
+                    // storeRecord in storeCache leading to inconsistencies.
+                    // So we check again for presence of storeRecord in
+                    // storeCache before initializing the store object.
+                    var storeRecord = storeCache[storeName];
+                    if (storeRecord) {
+                        storeRecord.refCount++;
+                        callback(storeRecord.store);
+                    }
+                    else {
+                        var store = new storeClass( storeArgs );
+                        this._storeCache[ storeName ] = { refCount: 1, store: store };
+                        callback( store );
+                    }
+                    // release the callback because apparently require
+                    // doesn't release this function
+                    callback = undefined;
+                }));
+    }));
 },
 
 /**
