@@ -68,20 +68,27 @@ class Importer
     RefSeq.import [:genome_id, :seq_id, :length], ref_seqs
   end
 
-  # Bulk insert annotations from given GFF file into Postgres.
+  # Bulk insert annotations from the MAKER track of the given GFF file into
+  # Postgres.
+  #
+  # NOTE:
+  #   We don't parse data from GFF file. We use formatted data from JBrowse
+  #   instead.
+  #
+  #   Run `tree` in data/jbrowse/Solenopsis_invicta/Si_gnF/ after importing
+  #   test data to get an idea of how JBrowse keeps data.
   def register_annotations
     values = []
-    Dir[File.join(jb_store, 'tracks', '*')].each do |track|
-      next unless File.basename(track) == 'maker'
-      Dir[File.join(track, '*')].each do |ref|
+    Dir[File.join(jb_store, 'tracks', 'maker', '*')].each do |ref|
         track_data = JSON.load File.read File.join(ref, 'trackData.json')
-        values.concat nclist_to_features(ref, track_data['intervals']['classes'], track_data['intervals']['nclist'])
-      end
+        values.concat nclist_to_features(ref,
+                                         track_data['intervals']['classes'],
+                                         track_data['intervals']['nclist'])
     end
-    Feature.import [:start, :end, :strand, :source, :ref_seq_id, :name, :type, :subfeatures], values
+    Feature.import [:ref_seq_id, :source, :name, :type, :start, :end, :strand, :subfeatures], values
   end
 
-  # Rewrite track list to include order key.
+  # Rewrite `trackList.json` to suit our needs better.
   def update_tracklist
     track_list['tracks'].each do |track|
       order = track_order.index(track['label'])
@@ -91,21 +98,28 @@ class Importer
     File.write track_list_file, JSON.pretty_generate(track_list)
   end
 
-  # Parse JB's NCList.
+  # Parse JB's NCList into an Array of Array.
   def nclist_to_features(ref, classes, nclist)
     list = []
     nclist.each do |e|
-      if e.first == 0
-        c = Struct.new(*classes[0]['attributes'].map(&:downcase).map(&:intern))
-        v = c.new(*e[1, c.members.length])
-        v.subfeatures.each_with_index do |s, i|
-          sc = Struct.new(*classes[s.first]['attributes'].map(&:downcase).map(&:intern))
-          sv = sc.new(*s[1, c.members.length])
-          v.subfeatures[i] = sv.to_h
-        end
-        list << [v.start, v.end, v.strand, v.source, v.seq_id, v.name, v.type, Sequel.pg_json(v.subfeatures)]
+      c = Struct.new(*classes[e.first]['attributes'].map(&:intern))
+      v = c.new(*e[1, c.members.length])
+      if v.respond_to? :Chunk
+        list.concat nclist_to_features(ref, classes, JSON.load(File.read File.join(ref, "lf-#{v.Chunk}.json")))
       else
-        list.concat nclist_to_features(ref, classes, JSON.load(File.read File.join(ref, "lf-#{e[3]}.json")))
+        v.Subfeatures.each_with_index do |s, i|
+          sc = Struct.new(*classes[s.first]['attributes'].map(&:intern))
+          sv = sc.new(*s[1, c.members.length])
+          sf = {
+            name:   sv.Id,
+            type:   sv.Type,
+            start:  sv.Start,
+            end:    sv.End,
+            strand: sv.Strand
+          }
+          v.Subfeatures[i] = sf
+        end
+        list << [v.Seq_id, v.Source, v.Id, v.Type, v.Start, v.End, v.Strand, Sequel.pg_json(v.Subfeatures)]
       end
       if e.last.is_a? Hash
         list.concat nclist_to_features(ref, classes, e.last['Sublist'])

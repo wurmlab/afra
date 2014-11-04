@@ -12,6 +12,7 @@ Sequel.migration do
       String      :source,
         null:      false
 
+      # Same as ID attribute in GFF3.
       String      :name,
         null:      false
 
@@ -25,11 +26,21 @@ Sequel.migration do
       Integer     :end,
         null:      false
 
-      Integer     :strand,
+      String      :strand,
         null:      false
 
+      # Array of Hash objects.
+      # [
+      #   {
+      #     name:   ...,
+      #     type:   ...,
+      #     start:  ...,
+      #     end:    ...,
+      #     strand: ...,
+      #   }
+      # ]
       column      :subfeatures, :json,
-        default:   Sequel.pg_json({})
+        default:   Sequel.pg_json([])
     end
   end
 
