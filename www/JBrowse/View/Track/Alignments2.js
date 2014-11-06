@@ -45,40 +45,6 @@ return declare( [ CanvasFeatureTrack, AlignmentsMixin ], {
             }
         );
 
-        // add menu items for viewing matepair / next segment locations
-        c.menuTemplate.push(
-            {
-                "iconClass": "dijitIconUndo",
-                "url": function( track, feature ) {
-                    return track.browser.makeCurrentViewURL(
-                        { loc: track._nextSegmentViewLoc( feature, 0.8 ),
-                          highlight: feature.get('next_segment_position'),
-                          tracklist: 0
-                        });
-                },
-                "action": "iframeDialog",
-                title: "Open {next_segment_position} in a popup",
-                disabled: function( track, feature ) {
-                    return ! feature.get('next_segment_position');
-                },
-                "label": "Quick-view mate/next location"
-            },
-            {
-                "iconClass": "dijitIconUndo",
-                "url": function( track, feature ) {
-                    return track.browser.makeCurrentViewURL(
-                        { loc: track._nextSegmentViewLoc( feature ),
-                          highlight: feature.get('next_segment_position')
-                        });
-                },
-                "action": "newWindow",
-                title: "Open {next_segment_position} in a new tab",
-                disabled: function( track, feature ) {
-                    return ! feature.get('next_segment_position');
-                },
-                "label": "Open mate/next location in new tab"
-            }
-        );
         return c;
     },
 

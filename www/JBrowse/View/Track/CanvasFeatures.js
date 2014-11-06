@@ -19,7 +19,6 @@ define( [
             'JBrowse/View/Track/_ExportMixin',
             'JBrowse/Errors',
             'JBrowse/View/Track/_FeatureDetailMixin',
-            'JBrowse/View/Track/_FeatureContextMenusMixin',
             'JBrowse/View/Track/_YScaleMixin',
             'JBrowse/Model/Location',
             'JBrowse/Model/SimpleFeature'
@@ -41,7 +40,6 @@ define( [
             ExportMixin,
             Errors,
             FeatureDetailMixin,
-            FeatureContextMenuMixin,
             YScaleMixin,
             Location,
             SimpleFeature
@@ -93,7 +91,6 @@ return declare(
     [ BlockBasedTrack,
       FeatureDetailMixin,
       ExportMixin,
-      FeatureContextMenuMixin,
       YScaleMixin
     ], {
 
@@ -151,48 +148,7 @@ return declare(
                 description: 'note, description'
             },
 
-            displayMode: 'normal',
-
-            events: {
-                contextmenu: function( feature, fRect, block, track, evt ) {
-                    evt = domEvent.fix( evt );
-                    if( fRect && fRect.contextMenu )
-                        fRect.contextMenu._openMyself({ target: block.featureCanvas, coords: { x: evt.pageX, y: evt.pageY }} );
-                    domEvent.stop( evt );
-                }
-            },
-
-            menuTemplate: [
-                { label: 'View details',
-                  title: '{type} {name}',
-                  action: 'contentDialog',
-                  iconClass: 'dijitIconTask',
-                  content: dojo.hitch( this, 'defaultFeatureDetail' )
-                },
-                {
-                    "label" : function() {
-                        return 'Zoom to this '+( this.feature.get('type') || 'feature' );
-                    },
-                    "action" : function(){
-                        var ref   = this.track.refSeq;
-                        var paddingBp = Math.round( 10 /*pixels*/ / this.viewInfo.scale /* px/bp */ );
-                        var start = Math.max( ref.start, this.feature.get('start') - paddingBp );
-                        var end   = Math.min( ref.end, this.feature.get('end') + paddingBp );
-                        this.track.genomeView.setLocation( ref, start, end );
-                    },
-                    "iconClass" : "dijitIconConnector"
-                },
-                {
-                  label : function() {
-                      return 'Highlight this '+( this.feature.get('type') || 'feature' );
-                  },
-                  action: function() {
-                     var loc = new Location({ feature: this.feature, tracks: [this.track] });
-                     this.track.browser.setHighlightAndRedraw(loc);
-                  },
-                  iconClass: 'dijitIconFilter'
-                }
-            ]
+            displayMode: 'normal'
         });
     },
 
@@ -905,7 +861,6 @@ return declare(
                 }
 
                 fRect.glyph.mouseoverFeature( context, fRect );
-                this._refreshContextMenu( fRect );
             } else {
                 block.tooltipTimeout = window.setTimeout( dojo.hitch(this, function() { this.ignoreTooltipTimeout = false; }), 200);
             }
