@@ -88,7 +88,7 @@ module App
   end
 
   def load_routes
-    Dir['routes/*.rb'].each do |route|
+    Dir['routes/*.rb'].sort.each do |route|
       require_relative route
     end
   end
