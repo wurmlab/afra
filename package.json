@@ -16,7 +16,7 @@
   },
   "scripts": {
     "bower":         "bower install",
-    "amdify-bionode":"urequire AMD www/lib/bionode/lib -f"
+    "amdfy-bionode": "urequire AMD www/lib/bionode/lib -o www/lib/bionode/amd"
   },
   "license": "Apache Public License 2.0"
 }

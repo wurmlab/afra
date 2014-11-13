@@ -1,59 +1,77 @@
-desc 'Install dependencies.'
-task 'install' do
-  puts 'installing gems ...'
-  system("gem install --file Gemfile")
+## install dependencies
+directory '.rake'
 
-  puts
-  puts 'installing perl modules ...'
-  %x{
-done_message () {
-    if [ $? == 0 ]; then
-        echo " done."
-        if [ "x$1" != "x" ]; then
-            echo $1;
-        fi
-    else
-        echo " failed." $2
-    fi
-}
+file '.rake/rb' => ['.rake', 'Gemfile'] do
+  if system 'gem install --file Gemfile'
+    touch '.rake/rb'
+    Gem.refresh
+  end
+end
 
-# log information about this system
-(
-    echo '============== System information ====';
-    set -x;
-    lsb_release -a;
-    uname -a;
-    sw_vers;
-    system_profiler;
-    grep MemTotal /proc/meminfo;
-    echo; echo;
-);
-
-echo -n "Installing Perl prerequisites ..."
-if ! ( perl -MExtUtils::MakeMaker -e 1 >/dev/null 2>&1); then
+file '.rake/pl' => ['.rake', 'Makefile.PL'] do
+  system <<SH
+if !(perl -MExtUtils::MakeMaker -e 1 >/dev/null 2>&1); then
     echo;
-    echo "WARNING: Your Perl installation does not seem to include a complete set of core modules.  Attempting to cope with this, but if installation fails please make sure that at least ExtUtils::MakeMaker is installed.  For most users, the best way to do this is to use your system's package manager: apt, yum, fink, homebrew, or similar.";
+    echo "WARNING: Your Perl installation does not seem to include a complete
+set of core modules.  Attempting to cope with this, but if installation fails
+please make sure that at least ExtUtils::MakeMaker is installed.  For most
+users, the best way to do this is to use your system's package manager: apt,
+yum, fink, homebrew, or similar.";
 fi;
-( set -x;
+
+(
+  set -x;
   bin/cpanm -v --notest -l $PWD/.extlib/ --installdeps . < /dev/null;
   bin/cpanm -v --notest -l $PWD/.extlib/ --installdeps . < /dev/null;
   set -e;
   bin/cpanm -v --notest -l $PWD/.extlib/ --installdeps . < /dev/null;
 );
-done_message "" "As a first troubleshooting step, make sure development libraries and header files for Zlib are installed and try again.";
-  }
 
-  puts
-  puts 'installing npm packages ...'
-  system('npm install')
-
-  puts 'installing bower packages ...'
-  system("npm run-script bower")
-
-  puts
-  puts 'AMDfying jquery.ui ...'
-  system("npm run-script amdify-jquery")
+if [ $? == 0 ]; then
+    echo "Done."
+    touch ".rake/pl"
+else
+    echo "Failed."
+    echo "As a first troubleshooting step, make sure development libraries and
+header files for Zlib are installed and try again.";
+fi
+SH
 end
+
+file '.rake/js-npm' => ['.rake', 'package.json'] do
+  if system 'npm install'
+    touch '.rake/js-npm'
+  end
+end
+
+file '.rake/js-bower' => ['.rake/js-npm', 'bower.json'] do
+  if system 'npm run-script bower'
+    touch '.rake/js-bower'
+  end
+end
+
+file 'www/lib/bionode/amd/bionode.js' => ['.rake/js-bower'] do
+  system 'npm run-script amdfy-bionode'
+end
+
+desc 'Install Ruby dependencies.'
+task 'deps:rb' => '.rake/rb'
+
+desc 'Install Perl dependencies.'
+task 'deps:pl' => '.rake/pl'
+
+desc 'Install JavaScript dependencies.'
+task 'deps:js' => ['.rake/js-npm', '.rake/js-bower',
+                   'www/lib/bionode/amd/bionode.js']
+
+desc 'Install all dependencies.'
+task 'deps' => ['deps:rb', 'deps:pl', 'deps:js']
+
+desc 'Clean intermediate files generated while installing dependencies.'
+task 'clean' do
+  rm_r '.rake'
+end
+## /dependencies
 
 desc 'Create database.'
 task 'db:init', [:name] do |t, args|
@@ -84,18 +102,27 @@ task 'configure' do
       Setting.create(key: 'session_secret', value: SecureRandom.hex(64))
     rescue LoadError, NotImplementedError
       # SecureRandom raises a NotImplementedError if no random device is available
-      set :session_secret, "%064x" % Kernel.rand(2**256-1)
       Setting.create(key: 'session_secret', value: "%064x" % Kernel.rand(2**256-1))
     end
   end
 
-  print 'Facebook App ID: '
-  fb_app_id = STDIN.gets.chomp
-  Setting.create(key: 'facebook_app_id', value: fb_app_id)
+  unless Setting['facebook_app_id']
+    fb_app_id = ENV['FACEBOOK_APP_ID']
+    unless fb_app_id
+      print 'Facebook App ID: '
+      fb_app_id = STDIN.gets.chomp
+    end
+    Setting.create(key: 'facebook_app_id', value: fb_app_id)
+  end
 
-  print 'Facebook App secret: '
-  fb_app_secret = STDIN.gets.chomp
-  Setting.create(key: 'facebook_app_secret', value: fb_app_secret)
+  unless Setting['facebook_app_secret']
+    fb_app_secret = ENV['FACEBOOK_APP_SECRET']
+    unless fb_app_secret
+      print 'Facebook App secret: '
+      fb_app_secret = STDIN.gets.chomp
+    end
+    Setting.create(key: 'facebook_app_secret', value: fb_app_secret)
+  end
 end
 
 desc 'Import'
@@ -145,4 +172,4 @@ task 'test:js' do
   App.init_server.serve(static)
 end
 
-task default: [:install, :'db:init', :'db:migrate', :configure]
+task default: [:deps, :'db:init', :'db:migrate', :configure]

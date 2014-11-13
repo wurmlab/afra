@@ -10,4 +10,3 @@ gem 'puma',                 '~> 2.8.1'
 gem 'sinatra',              '~> 1.4.4'
 
 gem 'minitest',             '~> 5.3.1'
-gem 'rake',                 '~> 10.1.1'

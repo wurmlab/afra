@@ -9,7 +9,7 @@ require.config({
         ngSanitize: 'lib/angular-sanitize/angular-sanitize',
         ngAnimate:  'lib/angular-animate/angular-animate',
         'angular-moment': 'lib/angular-moment/angular-moment',
-        bionode:    'lib/bionode/lib/bionode'
+        bionode:    'lib/bionode/amd/bionode'
     },
     shim: {
         underscore: {
