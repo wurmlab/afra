@@ -1,3 +1,4 @@
+env.yml
 Gemfile.lock
 node_modules
 www/lib

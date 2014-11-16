@@ -96,6 +96,10 @@ task 'configure' do
   App.init_config
   App.load_models
 
+  if File.exist? 'env.yml'
+    ENV.update YAML.load_file 'env.yml'
+  end
+
   unless Setting['session_secret']
     begin
       require 'securerandom'
@@ -107,7 +111,7 @@ task 'configure' do
   end
 
   unless Setting['facebook_app_id']
-    fb_app_id = ENV['FACEBOOK_APP_ID']
+    fb_app_id = ENV['facebook_app_id']
     unless fb_app_id
       print 'Facebook App ID: '
       fb_app_id = STDIN.gets.chomp
@@ -116,7 +120,7 @@ task 'configure' do
   end
 
   unless Setting['facebook_app_secret']
-    fb_app_secret = ENV['FACEBOOK_APP_SECRET']
+    fb_app_secret = ENV['facebook_app_secret']
     unless fb_app_secret
       print 'Facebook App secret: '
       fb_app_secret = STDIN.gets.chomp
