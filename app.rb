@@ -54,7 +54,7 @@ module App
   def init_config(**config)
     defaults = {
       db_uri: 'postgres://localhost/afra',
-      binds:  ['tcp://localhost:9292']
+      binds:  ['tcp://0.0.0.0:9292']
     }
     @config = defaults.update config
   rescue Errno::ENOENT
