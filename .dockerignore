@@ -1,3 +1,11 @@
+.git
+Gemfile.lock
+MYMETA.yml
+MYMETA.json
+Makefile
+.extlib
+node_modules
+www/lib
 node_modules
 data/jbrowse
 data/genevalidator

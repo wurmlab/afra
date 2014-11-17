@@ -26,15 +26,6 @@ fi;
   set -e;
   bin/cpanm -v --notest -l $PWD/.extlib/ --installdeps . < /dev/null;
 );
-
-if [ $? == 0 ]; then
-    echo "Done."
-    touch ".rake/pl"
-else
-    echo "Failed."
-    echo "As a first troubleshooting step, make sure development libraries and
-header files for Zlib are installed and try again.";
-fi
 SH
 end
 
