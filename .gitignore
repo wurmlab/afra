@@ -1,3 +1,4 @@
+.rake
 env.yml
 Gemfile.lock
 node_modules
