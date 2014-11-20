@@ -734,109 +734,65 @@ var draggableTrack = declare(HTMLFeatureTrack,
        }
     },
 
-    /*
-     * WARNING: Assumes one level (featdiv has feature) or two-level (featdiv
-     * has feature, subdivs have subfeature) feature hierarchy.
+    /**
+     * NOTE:
+     *   If modifying this function, keep in mind to test following scenarios:
+     *   1. can drag an exon
+     *   2. can drag multiple exons from the same transcript
+     *   3. can drag multiple exons from different transcripts in the same track
+     *   4. can drag multiple exons from different transcripts in different tracks
+     *   5. can drag a transcript
+     *   6. can drag multiple transcripts from the same track
+     *   7. can drag multiple transcripts from different tracks
      */
-    handleFeatureDragSetup: function(event)  {
-        var ftrack = this;
-        var featdiv = (event.currentTarget || event.srcElement);
-        var feat = featdiv.feature || featdiv.subfeature;
-        var selected = this.selectionManager.isSelected({ feature: feat, track: ftrack });
-
-        var valid_drop;
-        /**
-            *  ideally would only make $.draggable call once for each selected div
-            *  but having problems with draggability disappearing from selected divs
-            *       that $.draggable was already called on
-            *  therefore whenever mousedown on a previously selected div also want to
-            *       check that draggability and redo if missing
-            */
-        if (selected)  {
-            var $featdiv = $(featdiv);
-            if (! $featdiv.hasClass("ui-draggable"))  {
-
-                var atrack = ftrack.browser.getEditTrack();
-                if (! atrack) { atrack = ftrack.browser.getSequenceTrack();  }
-                var fblock = ftrack.getBlock(featdiv);
-
-                // append drag ghost to featdiv block's equivalent block in annotation track if present, 
-                //     else  append to equivalent block in sequence track if present, 
-                //     else append to featdiv's block 
-                var ablock = (atrack ? atrack.getEquivalentBlock(fblock) : fblock);
-                var multifeature_draggable_helper = function () {
-                    // var $featdiv_copy = $featdiv.clone();
-                    var $pfeatdiv;
-                    // get top-level feature (assumes one or two-level feature hierarchy)
-                    if (featdiv.subfeature) {
-                        $pfeatdiv = $(featdiv.parentNode);
-                    }
-                    else  {
-                        $pfeatdiv = $(featdiv);
-                    }
-                    var $holder = $pfeatdiv.clone();
+    handleFeatureDragSetup: function (event) {
+        var target  = (event.currentTarget || event.srcElement);
+        var $target = $(target);
+        var isSelected = this.selectionManager.isSelected({feature: target.feature || target.subfeature, track: this});
+        if (isSelected) {
+            if (!$target.hasClass('ui-draggable')) {
+                var multifeature_draggable_helper = _.bind(function () {
+                    var $holder = $target.clone();
+                    var holderOffset = $target.offset();
                     $holder.removeClass();
-                    // just want the shell of the top-level feature, so remove children
-                    //      (selected children will be added back in below)
                     $holder.empty();
-                    $holder.addClass("multifeature-draggable-helper");
-                    var holder = $holder[0];
-                    // var featdiv_copy = $featdiv_copy[0];
+                    $holder.addClass('multifeature-draggable-helper');
 
-                    var foffset = $pfeatdiv.offset();
-                    var fheight = $pfeatdiv.height();
-                    var fwidth = $pfeatdiv.width();
-                    var ftop = foffset.top;
-                    var fleft = foffset.left;
-                    var selection = ftrack.selectionManager.getSelection();
-                    var selength = selection.length;
-                    for (var i=0; i<selength; i++)  {
-                        var srec = selection[i];
-                        var strack = srec.track;
-                        var sfeat = srec.feature;
-                        var sfeatdiv = strack.getFeatDiv( sfeat );
-                        if (sfeatdiv)  {
-                            var $sfeatdiv = $(sfeatdiv);
-                            var $divclone = $sfeatdiv.clone();
-                            var soffset = $sfeatdiv.offset();
-                            var sheight = $sfeatdiv.height();
-                            var swidth =$sfeatdiv.width();
-                            var seltop = soffset.top;
-                            var sleft = soffset.left;
-                            $divclone.width(swidth);
-                            $divclone.height(sheight);
-                            var delta_top = seltop - ftop;
-                            var delta_left = sleft - fleft;
-                            //  setting left and top by pixel, based on delta relative to moused-on feature
-                            //    tried using $divclone.position( { ...., "offset": delta_left + " " + delta_top } );,
-                            //    but position() not working for negative deltas? (ends up using absolute value)
-                            //    so doing more directly with "left and "top" css calls
-                            $divclone.css("left", delta_left);
-                            $divclone.css("top", delta_top);
-                            var divclone = $divclone[0];
-                            holder.appendChild(divclone);
+                    var selection = this.selectionManager.getSelection();
+                    _.each(selection, function (selection) {
+                        var featureDiv = selection.track.getFeatDiv(selection.feature);
+                        if (featureDiv)  {
+                            var $featureDiv = $(featureDiv);
+                            var featureOffset = $featureDiv.offset();
+                            var $clone = $featureDiv.clone();
+                            $clone.width($featureDiv.width());
+                            $clone.height($featureDiv.height());
+                            $clone.css('top', featureOffset.top - holderOffset.top);
+                            $clone.css('left', featureOffset.left - holderOffset.left);
+                            $holder[0].appendChild($clone[0]);
                         }
-                    }
-                    return holder;
-                }
+                    });
+                    return $holder[0];
+                }, this);
 
-                $featdiv.draggable({ // draggable() adds "ui-draggable" class to div
+                var validDrop;
+                $target.draggable({ // draggable() adds "ui-draggable" class to div
                         zIndex:  200,
                         helper:  multifeature_draggable_helper,
-                        appendTo:ablock.domNode,
+                        appendTo:this.getBlock(target).domNode,
                         opacity: 0.5,
                         axis:    'y',
                         revert:  function (valid) {
-                            valid_drop = !!valid;
+                            validDrop = !!valid;
                             return;
                         },
-                        stop: function (event, ui) {
-                            if (valid_drop) {
-                                ftrack.selectionManager.clearAllSelection();
+                        stop: _.bind(function (event, ui) {
+                            if (validDrop) {
+                                this.selectionManager.clearAllSelection();
                             }
-                        }
+                        }, this)
                 });
-                $featdiv.data("ui-draggable")._mouseDown(event);
+                $target.data("ui-draggable")._mouseDown(event);
             }
         }
     },
