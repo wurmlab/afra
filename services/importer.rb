@@ -10,12 +10,12 @@ class Importer
   end
 
   def run
-    #format
-    #update_tracklist
+    format and update_tracklist
     Genome.db.transaction do
       register_genome
       register_ref_seqs
       register_annotations
+      create_curation_tasks
     end
   end
 
@@ -126,5 +126,56 @@ class Importer
       end
     end
     list
+  end
+
+  # Create tasks clubbing overlapping mRNAs into one.
+  def create_curation_tasks
+    # Feature loci on all refs, sorted and grouped by ref.
+    # [
+    #   {
+    #     ref: ...,
+    #     ids: [],
+    #     start_coordinates: [],
+    #     end_coordinates: []
+    #   },
+    #   ...
+    # ]
+    loci_all_ref = genome.mRNAs.
+      select(Sequel.function(:array_agg, Sequel.lit('"id" ORDER BY "start"')).as(:ids),
+      Sequel.function(:array_agg, Sequel.lit('"start" ORDER BY "start"')).as(:start_coordinates),
+      Sequel.function(:array_agg, Sequel.lit('"end" ORDER BY "start"')).as(:end_coordinates),
+      :ref_seq_id).group(:ref_seq_id)
+
+    loci_all_ref.each do |loci_one_ref|
+      groups = call_overlaps loci_one_ref
+      groups.each do |group|
+        ids = group.delete :ids
+        t = Task.create group
+        t.difficulty = ids.length
+        t.save
+      end
+    end
+  end
+
+  # Group overlapping loci together regardless of feature strand.
+  #
+  # About overlapping genes: http://www.biomedcentral.com/1471-2164/9/169.
+  def call_overlaps(loci_one_ref)
+    # Ref being processed.
+    ref = loci_one_ref[:ref_seq_id]
+
+    groups = [] # [{start: , end: , gene_ids: []}, ...]
+    loci_one_ref[:ids].each_with_index do |id, i|
+      start = loci_one_ref[:start_coordinates][i]
+      _end  = loci_one_ref[:end_coordinates][i]
+
+      if not groups.empty? and start < groups.last[:end] # overlap
+        groups.last[:ids] << id
+        groups.last[:end] = [groups.last[:end], _end].max
+      else
+        groups << {ref_seq_id: ref, start: start, end: _end, ids: [id]}
+      end
+    end
+    groups
   end
 end
