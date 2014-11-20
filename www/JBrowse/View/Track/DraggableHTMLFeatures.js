@@ -765,8 +765,8 @@ var draggableTrack = declare(HTMLFeatureTrack,
                             var $featureDiv = $(featureDiv);
                             var featureOffset = $featureDiv.offset();
                             var $clone = $featureDiv.clone();
-                            $clone.width($featureDiv.width());
-                            $clone.height($featureDiv.height());
+                            $clone.width($featureDiv.css('width'));
+                            $clone.height($featureDiv.css('height'));
                             $clone.css('top', featureOffset.top - holderOffset.top);
                             $clone.css('left', featureOffset.left - holderOffset.left);
                             $holder[0].appendChild($clone[0]);
