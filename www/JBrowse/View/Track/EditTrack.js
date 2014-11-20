@@ -171,7 +171,7 @@ var EditTrack = declare(DraggableFeatureTrack,
                             var newTranscript = track.resizeExon(refSeq, transcript, exon, newLeft, newRight);
                             newTranscript.set('name', transcript.get('name'));
                             track.replaceTranscript(transcript, newTranscript, function (t) {
-                                _.each(t.get('subfeatures'), _.bind(function (f) {
+                                _.each(this.filterExons(t), _.bind(function (f) {
                                     if (this.areFeaturesOverlapping(exon, f)) {
                                         this.highlightFeature(f);
                                     }
