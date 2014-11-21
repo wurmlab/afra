@@ -1,0 +1,7 @@
+language: ruby
+rvm:
+  - 2.1.1
+install:
+  - rake deps:rb
+script:
+  - rake test:rb
