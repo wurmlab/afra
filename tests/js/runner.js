@@ -2,15 +2,15 @@ require.config({
     baseUrl: '../../www/',
     paths: {
         underscore: 'lib/underscore/underscore',
-        jquery:     'lib/jquery/jquery',
+        jquery:     'lib/jquery/dist/jquery',
         bootstrap:  'lib/bootstrap/dist/js/bootstrap',
         contextmenu:'lib/bootstrap-contextmenu/bootstrap-contextmenu',
         moment:     'lib/moment/moment',
         angular:    'lib/angular/angular',
-        ngCookies:  'lib/angular-cookies/angular-cookies',
+        ngSanitize: 'lib/angular-sanitize/angular-sanitize',
         ngAnimate:  'lib/angular-animate/angular-animate',
-        ngMoment:   'lib/angular-moment/angular-moment',
-        bionode:    'lib/bionode/lib/bionode'
+        'angular-moment': 'lib/angular-moment/angular-moment',
+        bionode:    'lib/bionode/amd/bionode'
     },
     shim: {
         underscore: {
@@ -25,21 +25,15 @@ require.config({
         contextmenu: {
             deps:    ['bootstrap']
         },
-        moment:     {
-            exports: 'moment'
-        },
         angular:    {
             exports: 'angular',
             deps:    ['jquery']
         },
-        ngCookies:  {
+        ngSanitize: {
             deps:    ['angular']
         },
         ngAnimate:  {
             deps:    ['angular']
-        },
-        ngMoment:   {
-            deps:    ['angular', 'moment']
         }
     },
     packages:[{
@@ -85,7 +79,7 @@ require.config({
     },
     {
         name:     'jqueryui',
-        location: 'lib/jquery.ui/jqueryui'
+        location: 'lib/jquery.ui/ui'
     }],
     map: {
         '*': {
