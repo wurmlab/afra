@@ -73,6 +73,12 @@ RUN chown -R afra /home/afra/src/
 
 WORKDIR /home/afra/src
 
-RUN /etc/init.d/postgresql start && su afra -s /bin/bash -c "source /usr/local/share/chruby/chruby.sh && chruby ruby-2.1.4 && /usr/local/src/ruby-2.1.4/bin/rake" && /etc/init.d/postgresql stop
+RUN /etc/init.d/postgresql start && \
+    su afra -s /bin/bash -c "source /usr/local/share/chruby/chruby.sh && chruby ruby-2.1.4 && /usr/local/src/ruby-2.1.4/bin/rake" && \
+    /etc/init.d/postgresql stop
+
+RUN /etc/init.d/postgresql start && \
+    su afra -s /bin/bash -c "source /usr/local/share/chruby/chruby.sh && chruby ruby-2.1.4 && /usr/local/src/ruby-2.1.4/bin/rake import\[data/annotations/Solenopsis_invicta/Si_gnF.gff\]" && \
+    /etc/init.d/postgresql stop
 
 CMD /etc/init.d/postgresql start && su afra -s /bin/bash -c "source /usr/local/share/chruby/chruby.sh && chruby ruby-2.1.4 && /usr/local/src/ruby-2.1.4/bin/rake serve"
