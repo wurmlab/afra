@@ -106,7 +106,7 @@ require(['bootstrap', 'less!styles']
                         switch (status)
                         {
                             case 401:
-                                root_scope.view_login();
+                                root_scope.signin_em() || root_scope.view_login();
                             return q.reject(response);
 
                             default:
@@ -164,6 +164,23 @@ require(['bootstrap', 'less!styles']
 
             root_scope.view_login = function () {
                 root_scope.view('about');
+            };
+
+            root_scope.signin_em = function () {
+                var email = location.search()['login'];
+                if (email && email !== true && email !== '') {
+                    http.post('/signin', JSON.stringify({
+                        email:         email,
+                        authorization: ''
+                    }))
+                    .then(function (response) {
+                        root_scope.user = response.data;
+                        location.search('login', null);
+                        root_scope.view_current();
+                    });
+                    return true;
+                }
+                return false;
             };
 
             root_scope.signin_fb = function () {
