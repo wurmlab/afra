@@ -28,7 +28,6 @@ use File::Path qw( mkpath );
 use JSON 2;
 use IO::File;
 use Fcntl ":flock";
-use PerlIO::gzip;
 
 use constant DEFAULT_MAX_JSON_DEPTH => 2048;
 
@@ -199,6 +198,15 @@ sub modify {
       or die "couldn't write to $file: $!";
     $fh->close()
       or die "couldn't close $file: $!";
+}
+
+=head2 touch( $file )
+
+=cut
+
+sub touch {
+    my $file = shift->fullPath(@_);
+    open my $f, '>>', $file or die "$! touching $file";
 }
 
 1;

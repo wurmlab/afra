@@ -148,6 +148,11 @@ task 'test:rb' do
   Dir.glob('tests/rb/test_*.rb').each { |file| require_relative file}
 end
 
+desc 'Run unit tests for Perl code.'
+task 'test:pl' do
+  system 'prove -I tests/pl/lib -I . -lr tests'
+end
+
 desc 'Run unit tests for JS code.'
 task 'test:js' do
   require_relative 'app'

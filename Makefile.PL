@@ -2,7 +2,11 @@
 use strict;
 use warnings;
 
+
+
 use ExtUtils::MakeMaker 6.30;
+
+
 
 my %WriteMakefileArgs = (
   "ABSTRACT" => "A modern web-based genome browser.",
@@ -33,17 +37,17 @@ my %WriteMakefileArgs = (
   "PREREQ_PM" => {
     "Bio::Annotation::SimpleValue" => 0,
     "Bio::FeatureIO" => 0,
-    "Bio::GFF3::LowLevel::Parser" => "1.4",
+    "Bio::GFF3::LowLevel::Parser" => "1.8",
     "Bio::Index::Fasta" => 0,
     "Bio::OntologyIO" => 0,
     "Bio::Root::Version" => "1.006000",
     "Bio::SeqFeature::Annotated" => 0,
     "Bio::SeqFeature::Lite" => 0, #< for Bio::DB::BAM
     "Carp" => 0,
-    "Cache::Ref::FIFO" => 0,
     "Cwd" => 0,
     "DBI" => 0,
     "Data::Dumper" => 0,
+    "DB_File" => 0,
     "Devel::Size" => 0,
     "Digest::Crc32" => 0,
     "Exporter" => 0,
@@ -51,6 +55,7 @@ my %WriteMakefileArgs = (
     "File::Basename" => 0,
     "File::Copy::Recursive" => 0,
     "File::Path" => 2,
+    "File::Next" => 0,
     "File::Spec" => 0,
     "File::Spec::Functions" => 0,
     "File::Temp" => 0,
@@ -60,9 +65,11 @@ my %WriteMakefileArgs = (
     "Heap::Simple" => 0,
     "Heap::Simple::XS" => 0,
     "IO::File" => 0,
+    "IO::Uncompress::Gunzip" => 0,
     "JSON" => 2,
     "JSON::XS" => 0,
     "List::Util" => 0,
+    "List::MoreUtils" => 0.28,
     "POSIX" => 0,
     "PerlIO::gzip" => 0,
     "Pod::Usage" => 0,

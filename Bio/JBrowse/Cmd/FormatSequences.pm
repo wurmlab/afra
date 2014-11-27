@@ -20,7 +20,6 @@ use POSIX;
 
 use Bio::JBrowse::JSON;
 use JsonFileStorage;
-use FastaDatabase;
 
 sub option_defaults {(
     out => 'data',
@@ -37,7 +36,6 @@ sub option_definitions {(
     "fasta=s@",
     "sizes=s@",
     "refs=s",
-    "refids=s",
     "reftypes=s",
     "compress",
     "trackLabel=s",
@@ -66,57 +64,32 @@ sub run {
     my $refs = $self->opt('refs');
 
     if ( $self->opt('fasta') && @{$self->opt('fasta')} ) {
-        my $db = FastaDatabase->from_fasta( @{$self->opt('fasta')});
-
-        die "IDs not implemented for FASTA database" if defined $self->opt('refids');
-
-        if ( ! defined $refs && ! defined $self->opt('refids') ) {
-            $refs = join (",", $db->seq_ids);
-        }
-
-        die "found no sequences in FASTA file" if "" eq $refs;
-
-        $self->exportDB( $db, $refs, {} );
+        die "--refids not implemented for FASTA files" if defined $self->opt('refids');
+        $self->exportFASTA( $refs, $self->opt('fasta') );
         $self->writeTrackEntry();
-        #$self->exportFASTAFiles( $refs, $self->opt('fasta') );
     }
     elsif ( $self->opt('gff') ) {
         my $db;
         my $gff = $self->opt('gff');
         my $gzip = '';
         if( $gff =~ /\.gz$/ ) {
-            require PerlIO::gzip;
             $gzip = ':gzip';
         }
         open my $fh, "<$gzip", $gff or die "$! reading GFF file $gff";
-        my %refSeqs;
         while ( <$fh> ) {
-            if ( /^\#\#\s*sequence-region\s+(\S+)\s+(-?\d+)\s+(-?\d+)/i ) { # header line
-                $refSeqs{$1} = {
-                    name => $1,
-                    start => $2 - 1,
-                    end => int($3),
-                    length => ($3 - $2 + 1)
-                    };
-            }
-            elsif( /^##FASTA\s*$/ ) {
+            if( /^##FASTA\s*$/i ) {
                 # start of the sequence block, pass the filehandle to our fasta database
-                $db = FastaDatabase->from_fasta( $fh );
+                $self->exportFASTA( $refs, [$fh] );
                 last;
             }
             elsif( /^>/ ) {
                 # beginning of implicit sequence block, need to seek
                 # back
                 seek $fh, -length($_), SEEK_CUR;
-                $db = FastaDatabase->from_fasta( $fh );
+                $self->exportFASTA( $refs, [$fh] );
                 last;
             }
         }
-        if ( $db && ! defined $refs && ! defined $self->opt('refids') ) {
-            $refs = join (",", $db->seq_ids);
-        }
-
-        $self->exportDB( $db, $refs, \%refSeqs );
         $self->writeTrackEntry();
 
     } elsif ( $self->opt('conf') ) {
@@ -178,6 +151,79 @@ sub trackLabel {
     return lc $st;
 }
 
+sub exportFASTA {
+    my ( $self, $refs, $files ) = @_;
+    my $accept_ref = sub {1};
+
+    if( $refs ) {
+        $refs = { map { $_ => 1 } split /\s*,\s*/, $refs };
+        $accept_ref = sub { $refs->{$_[0]} };
+    }
+
+    my %refSeqs;
+    for my $fasta ( @$files ) {
+        my $gzip = $fasta =~ /\.gz(ip)?$/i ? ':gzip' : '';
+
+        my $fasta_fh;
+        if( ref $fasta ) {
+            $fasta_fh = $fasta;
+        } else {
+            open $fasta_fh, "<$gzip", $fasta or die "$! reading $fasta";
+        }
+
+        my $curr_seq;
+        my $curr_chunk;
+        my $chunk_num;
+
+        my $noseq = $self->opt('noseq');
+
+        my $writechunks = sub {
+            my $flush = shift;
+            return if $noseq;
+
+            while( $flush && $curr_chunk || length $curr_chunk >= $self->{chunkSize} ) {
+                $self->openChunkFile( $curr_seq, $chunk_num )
+                     ->print(
+                         substr( $curr_chunk, 0, $self->{chunkSize}, '' ) #< shifts off the first part of the string
+                         );
+                $chunk_num++;
+            }
+        };
+
+        local $_;
+        while ( <$fasta_fh> ) {
+            if ( /^\s*>\s*(\S+)\s*(.*)/ ) {
+                $writechunks->('flush') if $curr_seq;
+
+                if ( $accept_ref->($1) ) {
+                    $chunk_num = 0;
+                    $curr_chunk = '';
+                    $curr_seq = $refSeqs{$1} = {
+                        name => $1,
+                        start => 0,
+                        end => 0,
+                        seqChunkSize => $self->{chunkSize},
+                        $2 ? ( description => $2 ) : ()
+                        };
+                } else {
+                    undef $curr_seq;
+                }
+            } elsif ( $curr_seq && /\S/ ) {
+                s/[\s\r\n]//g;
+                $curr_seq->{end} += length;
+
+                unless( $noseq ) {
+                    $curr_chunk .= $_;
+                    $writechunks->();
+                }
+            }
+        }
+        $writechunks->('flush');
+    }
+
+    $self->writeRefSeqsJSON( \%refSeqs );
+}
+
 sub exportDB {
     my ( $self, $db, $refs, $refseqs ) = @_;
 
@@ -187,23 +233,25 @@ sub exportDB {
 
     my @queries;
 
-    if ( defined $self->opt('refids') ) {
-        for my $refid (split ",", $self->opt('refids')) {
-            push @queries, [ -db_id => $refid ];
+    if( my $reftypes = $self->opt('reftypes') ) {
+        if( $db->isa( 'Bio::DB::Das::Chado' ) ) {
+            die "--reftypes argument not supported when using the Bio::DB::Das::Chado adaptor\n";
         }
+        push @queries, [ -type => [ split /[\s,]+/, $reftypes ] ];
+    }
+
+    if( ! @queries && ! defined $refs && $db->can('seq_ids') ) {
+        $refs = join ',', $db->seq_ids;
     }
     if ( defined $refs ) {
         for my $ref (split ",", $refs) {
             push @queries, [ -name => $ref ];
         }
     }
-    if( my $reftypes = $self->opt('reftypes') ) {
-        push @queries, [ -type => [ split /[\s,]+/, $reftypes ] ];
-    }
 
     my $refCount = 0;
     for my $query ( @queries ) {
-        my @segments = $db->features( @$query );
+        my @segments = $db->isa('Bio::DB::Das::Chado') ? $db->segment( @$query ) : $db->features( @$query );
 
         unless( @segments ) {
             warn "WARNING: Reference sequence with @$query not found in input.\n";
@@ -259,6 +307,9 @@ sub writeRefSeqsJSON {
                                            }
                                        }
                                        foreach my $name (sort keys %refs) {
+                                           if( not exists $refs{$name}{length} ) {
+                                               $refs{$name}{length} = $refs{$name}{end} - $refs{$name}{start};
+                                           }
                                            push @{$old}, $refs{$name};
                                        }
                                        return $old;
@@ -283,6 +334,8 @@ sub writeTrackEntry {
 
     my $seqTrackName = $self->trackLabel;
     unless( $self->opt('noseq') ) {
+        $self->{storage}->touch( 'tracks.conf' );
+
         $self->{storage}->modify( 'trackList.json',
                                        sub {
                                            my $trackList = shift;
@@ -305,8 +358,8 @@ sub writeTrackEntry {
                                            'label' => $seqTrackName,
                                            'key' => $self->opt('key') || 'Reference sequence',
                                            'type' => "SequenceTrack",
+                                           'category' => "Reference sequence",
                                            'storeClass' => 'JBrowse/Store/Sequence/StaticChunked',
-                                           'pinned' => 1,
                                            'chunkSize' => $self->{chunkSize},
                                            'urlTemplate' => $self->seqUrlTemplate,
                                            ( $compress ? ( 'compress' => 1 ): () ),
