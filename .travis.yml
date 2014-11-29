@@ -3,7 +3,7 @@ rvm:
   - 2.1.1
 install:
   - rake deps:rb
-  - rake deps:pl
+  #- rake deps:pl
 script:
   - rake test:rb
-  - prove -I tests/pl/lib -I . -lr tests
+  #- prove -I tests/pl/lib -I . -lr tests
