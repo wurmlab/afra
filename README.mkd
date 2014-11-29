@@ -1,18 +1,99 @@
-## crowdsourcing platform for gene annotation
+[![build status](https://secure.travis-ci.org/yeban/afra.svg?branch=master)](https://travis-ci.org/yeban/afra)
+[![Code Climate](https://codeclimate.com/github/yeban/afra/badges/gpa.svg)](https://codeclimate.com/github/yeban/afra)
+[![Gitter chat](https://badges.gitter.im/gitterHQ/gitter.png)](https://gitter.im/yeban/afra)
 
-### ... is under construction
+## Afra: crowdsourcing gene feature annotation
 
-![at work](http://www.highdefdiscnews.com/screenshots/a_bugs_life_1.png)
+Genomes of emerging model organisms are now being sequenced at [low cost](http://www.genome.gov/images/content/cost_genome.jpg).
+However, obtaining accurate gene predictions remains challenging.  Even the
+best gene prediction algorithms make substantial errors, leading to further
+erroneous analysis. Therefore, many predicted genes need to be visually
+inspected and manually curated ([Yandell & Ence](http://www.nature.com/nrg/journal/v13/n5/full/nrg3174.html)); this can be infeasible when working with thousands of genes from multiple organisms.
 
-### ... development notes
+Inspired by crowdsourcing approaches and platforms including
+[Foldit](http://fold.it/), [Galaxy Zoo](http://www.galaxyzoo.org/) and
+[Crowdflower](http://www.crowdflower.com/), we are developing Afra to recruit
+additional gene feature curators.  This should help dramatically increase
+the quality of gene curations available for newly sequenced genomes. In the
+long-term we aim to recruit contributors among members of the general public.
+However, gene curation requires large amounts of specialist knowledge and
+overcoming a steep learning curve. While we are working to reduce the steepness
+of the learning curve via interactive tutorials and support forums, genome
+curation is not yet easily accessible to all. Thus in a first instance we are
+recruiting curators among biology students. They perform curations as part of
+their courses aiming to understand gene structure and/or challenges with gene
+identification and gene prediction.
 
-https://github.com/yeban/afra/wiki
+### Current status
+
+Users login to their dashboard using their Facebook account, where they are
+presented with documentation, guided tutorial exercises, and curation challenges which include "Curate" buttons.
+Each curation challenge invites user to contribute towards a different curation project.
+
+![user dashboard](www/img/readme/dashboard.png)
+
+Clicking 'Curate' sends the user to a JBrowse-derived WebApollo-like curation interface
+focusing on a single gene model and showing all available tracks of
+evidence for this gene model. The user starts by dragging one of these
+models (typically the consensus gene model) to the edit track and can
+then edit this gene model.
+
+![curation interface](www/img/readme/curate.png)
+
+Users may refer to the tutorials or seek help on our forum using the 'Help &
+Support' link at the top. A simple step by step guideline to curation is always
+available in a sidebar that folds to the right.
+
+#### Behind the scenes
+
+Afra imports a GFF file of predicted gene models and creates a prioritized list of "curation tasks"
+based on expected curation difficulty; the administrator can additionally prioritize specific genes
+for a specific curation project. Each gene prediction is presented to four
+independent users/curators. Each curator independently examines the gene model
+and may propose revisions or add comments (e.g., if there is insufficient
+evidence to curate).
+
+For each gene prediction, submitted gene models are then automatically compared:
+if all users propose the same changes to a gene model, these changes are
+considered to be correct. If gene models proposed by different curators
+disagree, the different gene predictions are shown to several more experience
+curators who submit their curation in turn. If gene models proposed by the more
+experienced curators disagree, all predictions are shown to an even more senior
+curator who makes a final verdict.
+
+### Roadmap
+
+![at work](www/img/readme/at-work.png)
+
+* ~~Annotation editing.~~
+* ~~Prioritized redundant task distribution~~
+* ~~Basic user dashboard.~~
+* ~~Simple, non-interactive tutorials.~~
+* ~~Obtain curations from eight QMUL MSc students.~~
+* ~~Obtain contributions from 20 of undergraduate students.~~
+* December 2014: Interactive tutorial.
+* December 2014: Improve annotation editing experience. Make it more intuitive.
+* Spring 2015: Roll out to 200 first year students learning about gene
+  structure ... and the inadequacies of Bioinformatics algorithms.
+
+### Contributions are welcome
+
+We welcome contributions of code, curations, or documentation. Find us on
+[Gitter](https://gitter.im/yeban/afra) to discuss how you could best help.
+
+Our [Wiki](https://github.com/yeban/afra/wiki) details setting up a
+development environment using Docker.
+
+### Contact
+
+Please [email](mailto:a.priyam@qmul.ac.uk) if you:
+* would like a demo
+* would like to use Afra in your institution to help teach students
+* have any other questions
 
 ---
 
 <p align="center">
-Photo courtesy: http://www.highdefdiscnews.com/
-<br/>
 Afra is Copyright (©) 2013 Queen Mary, University of London.
 <br/>
 Parts of Afra are forked from or inspired by <a href="http://jbrowse.org/">JBrowse</a> and <a href="http://genomearchitect.org/">WebApollo</a>.
