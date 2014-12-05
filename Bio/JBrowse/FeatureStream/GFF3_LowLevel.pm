@@ -10,7 +10,6 @@ use strict;
 use warnings;
 
 use base 'Bio::JBrowse::FeatureStream';
-use URI::Escape qw(uri_unescape);
 
 sub next_items {
     my ( $self ) = @_;
@@ -62,7 +61,7 @@ sub _to_hashref {
     for my $key ( sort keys %{ $a || {} } ) {
         my $lck = lc $key;
         if( !$skip_attributes{$key} ) {
-            push @{ $h{$lck} ||= [] }, uri_unescape("@{$a->{$key}}");
+            push @{ $h{$lck} ||= [] }, @{$a->{$key}};
         }
     }
 

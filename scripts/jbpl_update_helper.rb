@@ -22,7 +22,6 @@ ignore = %w[
 # changes in mind when updating them.
 modified = %w[
   JBlibs.pm
-  Bio/JBrowse/FeatureStream/GFF3_LowLevel.pm
 ]
 
 new_files        = []
