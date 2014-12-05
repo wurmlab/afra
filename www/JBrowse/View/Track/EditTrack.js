@@ -79,9 +79,9 @@ var EditTrack = declare(DraggableFeatureTrack,
         var featDiv  = this.inherited(arguments);
         var $featDiv = $(featDiv);
 
-        $featDiv.contextmenu({
-            target: '#contextmenu'
-        });
+        $featDiv
+        .attr('data-toggle', 'context')
+        .attr('data-target', '#contextmenu');
 
         $featDiv.droppable({
             greedy:     true,
