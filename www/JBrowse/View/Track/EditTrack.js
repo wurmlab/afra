@@ -75,29 +75,28 @@ var EditTrack = declare(DraggableFeatureTrack,
     /**
      *  overriding renderFeature to add event handling right-click context menu
      */
-    renderFeature:  function (feature, uniqueId, block, scale, labelScale, descriptionScale, containerStart, containerEnd) {
-        var featDiv = this.inherited(arguments);
-        var track   = this;
+    renderFeature: function (feature, uniqueId, block, scale, labelScale, descriptionScale, containerStart, containerEnd) {
+        var featDiv  = this.inherited(arguments);
+        var $featDiv = $(featDiv);
 
-        if (featDiv && featDiv != null)  {
-            $(featDiv).contextmenu({
-                target: '#contextmenu'
-            });
+        $featDiv.contextmenu({
+            target: '#contextmenu'
+        });
 
-            $(featDiv).droppable ({
-                greedy:     true,
-                accept:     ".selected-feature",
-                tolerance:  "pointer",
-                hoverClass: "annot-drop-hover",
+        $featDiv.droppable({
+            greedy:     true,
+            accept:     ".selected-feature",
+            tolerance:  "pointer",
+            hoverClass: "annot-drop-hover",
 
-                drop:       function (event, ui) {
-                    var transcript = featDiv.feature;
-                    var selection = track.browser.featSelectionManager.getSelection();
-                    track.addDraggedFeatures(selection, transcript);
-                    event.stopPropagation();
-                }
-            });
-        }
+            drop: _.bind(function (event, ui) {
+                var transcript = featDiv.feature;
+                var selection = this.browser.featSelectionManager.getSelection();
+                this.addDraggedFeatures(selection, transcript);
+                event.stopPropagation();
+            }, this)
+        });
+
         return featDiv;
     },
 
