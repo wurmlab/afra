@@ -34,7 +34,6 @@ var counter = 1;
 var EditTrack = declare(DraggableFeatureTrack,
 {
     constructor: function( args ) {
-        this.has_custom_context_menu = true;
         this.exportAdapters = [];
 
         this.selectionManager = this.setSelectionManager(this.browser.annotSelectionManager);
