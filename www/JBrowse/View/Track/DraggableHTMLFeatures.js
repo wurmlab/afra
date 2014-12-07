@@ -768,9 +768,9 @@ var draggableTrack = declare(HTMLFeatureTrack,
 
                 var validDrop;
                 $target.draggable({ // draggable() adds "ui-draggable" class to div
-                        zIndex:  200,
+                        zIndex:  9,
                         helper:  multifeature_draggable_helper,
-                        appendTo:this.getBlock(target).domNode,
+                        appendTo:'body',
                         opacity: 0.5,
                         axis:    'y',
                         revert:  function (valid) {
