@@ -140,8 +140,13 @@ var EditTrack = declare(DraggableFeatureTrack,
                     helper: "ui-resizable-helper",
                     autohide: false,
                     grid: gridvals,
+                    resize: function(event, ui) {
+                        track.gview.drawVerticalPositionLine($('body')[0], event);
+                    },
 
                     stop: function (event, ui)  {
+                        track.gview.clearVerticalPositionLine();
+                        track.gview.clearBasePairLabels();
                         var exon       = ui.originalElement[0].subfeature;
                         var transcript = exon.parent();
 
