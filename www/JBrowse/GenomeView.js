@@ -1286,7 +1286,7 @@ maybeDrawVerticalPositionLine: function( evt ) {
  * Draws the red line across the work area, or updates it if it already exists.
  */
 drawVerticalPositionLine: function( parent, evt){
-    var numX = evt.pageX + 2;
+    var numX = evt.pageX;
 
     if( ! this.verticalPositionLine ){
         // if line does not exist, create it
