@@ -141,7 +141,7 @@ var EditTrack = declare(DraggableFeatureTrack,
                     autohide: false,
                     grid: gridvals,
                     resize: function(event, ui) {
-                        track.gview.drawVerticalPositionLine($('body')[0], event);
+                        track.gview.drawVerticalPositionLine(track.div, event);
                     },
 
                     stop: function (event, ui)  {

@@ -1302,7 +1302,7 @@ drawVerticalPositionLine: function( parent, evt){
     line.style.top =  scaleTrackPos.y + 'px';
 
 
-    this.drawBasePairLabel({ name: 'single', offset: 0, x: numX, parent: parent });
+    this.drawBasePairLabel({ name: 'single', offset: 0, x: numX, scaleDiv: parent });
 },
 
 /**
