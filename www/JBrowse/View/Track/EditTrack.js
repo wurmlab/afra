@@ -128,12 +128,12 @@ var EditTrack = declare(DraggableFeatureTrack,
             }
             else {
                 var scale = track.gview.bpToPx(1);
+                scale = parseInt(scale);
 
-                // if zoomed int to showing sequence residues, then make edge-dragging snap to interbase pixels
+                // if zoomed in to show sequence residues, then make edge-dragging snap to interbase pixels
                 var gridvals;
-                var charSize = this.browser.getSequenceTrack().getCharacterMeasurements();
-                if (scale === charSize.width) { gridvals = [track.gview.charWidth, 1]; }
-                else  { gridvals = false; }
+                gridvals = [scale, 1];
+                if (scale < 1) { gridvals = false;}
 
                 $(featdiv).resizable({
                     handles: "e, w",
@@ -141,6 +141,9 @@ var EditTrack = declare(DraggableFeatureTrack,
                     autohide: false,
                     grid: gridvals,
                     resize: function(event, ui) {
+                        if(scale > 1) {
+                            event.pageX = event.pageX - event.pageX % scale + Math.abs($(featdiv).offset().left % scale);
+                        }
                         track.gview.drawVerticalPositionLine(track.div, event);
                     },
 
