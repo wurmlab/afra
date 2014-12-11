@@ -1746,23 +1746,31 @@ var EditTrack = declare(DraggableFeatureTrack,
     },
 
     undo: function () {
-        this.redoState = this.store.features.slice();
-        this.store.features = this.undoState;
-        this.undoState = null;
+        this.redoStateStack = this.redoStateStack || [] ;
+        var redoState = this.store.features.slice();
+        this.redoStateStack.push(redoState);
+
+        var undoState = this.undoStateStack.pop();
+        this.store.features = undoState;
         this.changed();
         this.updateDoneButton();
     },
 
     redo: function () {
-        this.undoState = this.store.features.slice();
-        this.store.features = this.redoState;
-        this.redoState = null;
+        this.undoStateStack = this.undoStateStack || [] ;
+        var undoState = this.store.features.slice();
+        this.undoStateStack.push(undoState);
+
+        var redoState = this.redoStateStack.pop();
+        this.store.features = redoState;
         this.changed();
         this.updateDoneButton();
     },
 
     backupStore: function () {
-        this.undoState = this.store.features.slice();
+        var undoState = this.store.features.slice();
+        this.undoStateStack = this.undoStateStack || [] ;
+        this.undoStateStack.push(undoState);
     },
 
     updateDoneButton: function () {
@@ -1862,18 +1870,22 @@ var EditTrack = declare(DraggableFeatureTrack,
 
     updateUndoMenuItem: function() {
         var menuItem = $("#contextmenu-undo");
-        if (this.undoState) {
-            menuItem.removeClass("disabled");
-            return;
+        if(typeof(this.undoStateStack) != 'undefined'){
+            if (this.undoStateStack.length > 0) {
+                menuItem.removeClass("disabled");
+                return;
+            }
         }
         menuItem.addClass("disabled");
     },
 
     updateRedoMenuItem: function() {
         var menuItem = $("#contextmenu-redo");
-        if (this.redoState) {
-            menuItem.removeClass("disabled");
-            return;
+        if(typeof(this.redoStateStack) != 'undefined'){
+            if (this.redoStateStack.length > 0) {
+                menuItem.removeClass("disabled");
+                return;
+            }
         }
         menuItem.addClass("disabled");
     },
