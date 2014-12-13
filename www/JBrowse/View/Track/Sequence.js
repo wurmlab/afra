@@ -60,11 +60,11 @@ return declare([BlockBased, ExportMixin],
         // if we are zoomed in far enough to draw bases, then draw them
         if (scale >= 2) {
             this.show();
-            this.store.getFeatures({
+            this.store.getReferenceSequence({
                 ref: this.refSeq.name,
                 start: leftBase - 2,
                 end: rightBase + 2
-            }, dojo.hitch(this, '_fillBlock', block), function () {});
+            }, dojo.hitch(this, '_fillBlock', block, leftBase - 2, rightBase + 2), function () {});
             this.heightUpdate(charSize.h * 8, blockIndex);
         }
         // otherwise, hide the track
@@ -75,24 +75,7 @@ return declare([BlockBased, ExportMixin],
         args.finishCallback();
     },
 
-    _fillBlock: function (block, feature) {
-        var seq = feature.get('seq');
-        var start = feature.get('start');
-        var end = feature.get('end');
-
-        // Pad with blanks if the sequence does not extend all the way across
-        // our range.
-        if (start < this.refSeq.start) {
-            while (seq.length < (end-start)) {
-                seq = this.nbsp + seq;
-            }
-        }
-        else if (end > this.refSeq.end) {
-            while (seq.length < (end-start)) {
-                seq += this.nbsp;
-            }
-        }
-
+    _fillBlock: function (block, start, end, seq) {
         // make a div to contain the sequences
         var seqNode = document.createElement("div");
         seqNode.className = "sequence";
@@ -165,7 +148,7 @@ return declare([BlockBased, ExportMixin],
             var ch = seq.charAt(i);
             var nt = document.createElement('span');
             nt.className = 'nt nt_' + ch;
-            nt.innerHTML = showChar ? ch : '&nbsp;';
+            nt.innerHTML = showChar ? ch : this.nbsp;
             container.appendChild(nt);
         }
         return container;
@@ -192,8 +175,7 @@ return declare([BlockBased, ExportMixin],
 
         var extra_bases = (seq.length - offset) % 3;
         var dnaRes = seq.substring(offset, seq.length - extra_bases);
-        var nbsp = this.nbsp;
-        var aaResidues = dnaRes.replace(/(...)/gi, function (triplet) {
+        var aaResidues = dnaRes.replace(/(...)/gi, _.bind(function (triplet) {
             var aa = CodonTable[triplet];
             if (!aa) {
                 /* No mapping in codon table. Two possibilities:
@@ -203,10 +185,10 @@ return declare([BlockBased, ExportMixin],
                  *    example, if the reference sequence is hard masked and the
                  *    triplet turns up to be 'NNN'.
                  */
-                aa = (triplet.indexOf(nbsp) >= 0) ? aa = nbsp : "?";
+                aa = (triplet.indexOf(' ') >= 0) ? aa = this.nbsp : "?";
             }
             return prefix + aa + suffix;
-        });
+        }, this));
         aaResidues = aaResidues.substring(0, blockLength);
         while (aaResidues.length < blockLength)  {
             aaResidues = aaResidues + this.nbsp;
@@ -222,7 +204,7 @@ return declare([BlockBased, ExportMixin],
             var ch = aaResidues.charAt(i);
             var aa = document.createElement('span');
             aa.className = 'aa aa_' + ch;
-            aa.innerHTML = showChar ? ch : '&nbsp;';
+            aa.innerHTML = showChar ? ch : this.nbsp;
             container.appendChild(aa);
         }
         return container;

@@ -1417,10 +1417,10 @@ var EditTrack = declare(DraggableFeatureTrack,
     getRefSeq: function (callback) {
         this.browser.getStore('refseqs', _.bind(function(refSeqStore) {
             if (refSeqStore) {
-                refSeqStore.getFeatures(
+                refSeqStore.getReferenceSequence(
                     {ref: this.refSeq.name, start: this.refSeq.start, end: this.refSeq.end},
-                    _.bind(function (refSeqFeature) {
-                        callback.apply(this, [refSeqFeature.get('seq')]);
+                    _.bind(function (refSeq) {
+                        callback.apply(this, [refSeq]);
                     }, this));
             }
         }, this));
@@ -1941,34 +1941,37 @@ var EditTrack = declare(DraggableFeatureTrack,
             var charSize = seqTrack.getCharacterMeasurements();
             if (scale >= charSize.w && this.useResiduesOverlay)  {
                 for (var bindex = this.firstAttached; bindex <= this.lastAttached; bindex++)  {
-                    var block = this.blocks[bindex];
-                    this.browser.getSequenceTrack().store.getFeatures(
-                        {ref: this.refSeq.name, start: block.startBase, end: block.endBase},
-                        function (refSeqFeature) {
-                            var seq = refSeqFeature.get('seq');
-                            var top = featureTop - 2; // -2 hardwired adjustment to center
-                            var addBP = true;
-                            $('div.sequence', block.domNode).each(function () {
-                                if ($(this).position().top === top) {
-                                    return (addBP = false);
-                                }
-                            });
+                    this.browser.getStore('refseqs', _.bind(function(refSeqStore) {
+                        if (refSeqStore) {
+                            var block = this.blocks[bindex];
+                            refSeqStore.getReferenceSequence(
+                                {ref: this.refSeq.name, start: block.startBase, end: block.endBase},
+                                function (seq) {
+                                    var top = featureTop - 2; // -2 hardwired adjustment to center
+                                    var addBP = true;
+                                    $('div.sequence', block.domNode).each(function () {
+                                        if ($(this).position().top === top) {
+                                            return (addBP = false);
+                                        }
+                                    });
 
-                            if (addBP) {
-                                // make a div to contain the sequences
-                                var seqNode = document.createElement("div");
-                                seqNode.className = "sequence";
-                                seqNode.style.width = "100%";
-                                seqNode.style.top = top + "px";
+                                    if (addBP) {
+                                        // make a div to contain the sequences
+                                        var seqNode = document.createElement("div");
+                                        seqNode.className = "sequence";
+                                        seqNode.style.width = "100%";
+                                        seqNode.style.top = top + "px";
 
-                                if (strand == '-' || strand == -1)  {
-                                    seq = Util.complement(seq);
-                                }
+                                        if (strand == '-' || strand == -1)  {
+                                            seq = Util.complement(seq);
+                                        }
 
-                                seqNode.appendChild(seqTrack._ntDiv(seq));
-                                block.domNode.appendChild(seqNode);
-                            }
-                        });
+                                        seqNode.appendChild(seqTrack._ntDiv(seq));
+                                        block.domNode.appendChild(seqNode);
+                                    }
+                                });
+                        }
+                    }, this));
                 }
             }
         }
