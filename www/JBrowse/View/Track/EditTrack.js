@@ -127,22 +127,29 @@ var EditTrack = declare(DraggableFeatureTrack,
             if (dojo.hasClass(featdiv, "ui-resizable"))  {
             }
             else {
-                var scale = track.gview.bpToPx(1);
-                scale = parseInt(scale);
-
-                // if zoomed in to show sequence residues, then make edge-dragging snap to interbase pixels
-                var gridvals;
-                gridvals = [scale, 1];
-                if (scale < 1) { gridvals = false;}
+                // Snap to the next base when resizing if zoomed in to nucleotide level.
+                var scale = parseInt(track.gview.bpToPx(1));
+                var grid = [scale, 1];
+                if (scale < 1) { grid = false; }
 
                 $(featdiv).resizable({
                     handles: "e, w",
                     helper: "ui-resizable-helper",
                     autohide: false,
-                    grid: gridvals,
-                    resize: function(event, ui) {
-                        if(scale > 1) {
-                            event.pageX = event.pageX - event.pageX % scale + Math.abs($(featdiv).offset().left % scale);
+                    grid:     grid,
+                    resize: function (event, ui) {
+                        // If snapping, reset event.pageX so that the red vertical line snaps as well.
+                        if (grid) {
+                            // if moving left
+                            if (ui.position.left - ui.originalPosition.left) {
+                                event.pageX = ui.position.left;
+                            }
+                            // if moving right
+                            else if (ui.position.left + ui.size.width -
+                                     (ui.originalPosition.left +
+                                      ui.originalSize.width)) {
+                                event.pageX = ui.position.left + ui.size.width;
+                            }
                         }
                         track.gview.drawVerticalPositionLine(track.div, event);
                     },
