@@ -127,7 +127,7 @@ define([
             var translated = "";
             for(var i = 0; i < slicedSeq.length; i += 3) {
                 var nextCodon = slicedSeq.slice(i, i + 3);
-                translated = translated + CodonTable[nextCodon];
+                translated = translated + (CodonTable[nextCodon] || '?');
             }
 
             return translated;
