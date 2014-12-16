@@ -1114,7 +1114,19 @@ return declare( [Component,DetailsMixin,FeatureFiltererMixin,Destroyable],
                                     height: '100%'
                                 }
                             }, args.block.domNode );
-    }
+    },
+
+    getEquivalentBlock: function ( block ) {
+        var startBase = block.startBase;
+        var endBase = block.endBase;
+        for (var i=this.firstAttached; i<=this.lastAttached; i++)  {
+            var testBlock = this.blocks[i];
+            if (testBlock.startBase == startBase && testBlock.endBase == endBase) {
+                return testBlock;
+            }
+        }
+        return null;
+    },
 
 });
 });

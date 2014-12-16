@@ -99,6 +99,7 @@ return declare([BlockBased, ExportMixin],
                 var frame  = ((tstart % 3) + 3) % 3;
                 var aaDiv  = this._aaDiv(extendedEndResidues, i, blockLength);
                 aaDiv.className += (" frame" + frame);
+                aaDiv.className += " forward";
                 aaDivs[frame] = aaDiv;
             }
             for (var i = 2; i >= 0; i--) {
@@ -127,6 +128,7 @@ return declare([BlockBased, ExportMixin],
                 var frame  = (((this.refSeq.length - blockEnd + i) % 3) + 3) % 3;
                 var aaDiv = this._aaDiv(extendedStartResidues, i, blockLength, true);
                 aaDiv.className += (" frame" + frame);
+                aaDiv.className += " reverse";
                 aaDivs[frame] = aaDiv;
             }
             for (var i = 0; i < 3; i++) {

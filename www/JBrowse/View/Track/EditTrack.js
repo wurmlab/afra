@@ -597,6 +597,32 @@ var EditTrack = declare(DraggableFeatureTrack,
     },
 
     /**
+     * Highlight the reading frame for the given exon
+     */
+    highlightRF: function(transcript, block) {
+        var selector = ".aa";
+        var strand = transcript.get("strand");
+        if (strand === 1) {
+            var frame = transcript.get('start') % 3;
+            selector += ".forward";
+            selector += (".frame" + frame.toString());
+        }
+        else if(strand === -1) {
+            var frame = (this.refSeq.end - transcript.get('end')) % 3;
+            selector += ".reverse";
+            selector += (".frame" + frame.toString());
+        }
+
+        $(selector, block.domNode).addClass("frame_highlight");
+        return;
+    },
+
+    unhighlightRF: function() {
+        $(".frame_highlight").removeClass("frame_highlight");
+        return;
+    },
+
+    /**
      * Returns a new transcript with the given exons merged into one. Returns
      * `undefined` if given exons are not all on the same transcript.
      *
@@ -1939,6 +1965,8 @@ var EditTrack = declare(DraggableFeatureTrack,
     },
 
     selectionAdded: function (selection) {
+        this.unhighlightRF();
+
         this.inherited(arguments);
 
         var feature = EditTrack.getTopLevelAnnotation(selection.feature);
@@ -1946,11 +1974,16 @@ var EditTrack = declare(DraggableFeatureTrack,
         var seqTrack = this.browser.getSequenceTrack();
         if (featureDiv)  {
             var strand = feature.get('strand');
+
             var featureTop = $(featureDiv).position().top;
             var scale = this.gview.bpToPx(1);
             var charSize = seqTrack.getCharacterMeasurements();
             if (scale >= charSize.w && this.useResiduesOverlay)  {
                 for (var bindex = this.firstAttached; bindex <= this.lastAttached; bindex++)  {
+                    // Highlight Reading frame
+                    var sblock = this.browser.getSequenceTrack().getEquivalentBlock(this.blocks[bindex]);
+                    this.highlightRF(feature, sblock);
+
                     this.browser.getStore('refseqs', _.bind(function(refSeqStore) {
                         if (refSeqStore) {
                             var block = this.blocks[bindex];
@@ -1990,6 +2023,8 @@ var EditTrack = declare(DraggableFeatureTrack,
     },
 
     selectionRemoved: function (selection)  {
+        this.unhighlightRF();
+
         this.inherited(arguments);
 
         if (selection.track === this)  {
