@@ -75,6 +75,36 @@ return declare([BlockBased, ExportMixin],
         args.finishCallback();
     },
 
+    /**
+     * Highlight the given reading frame.
+     */
+    highlightRF: function (readingFrame) {
+        // Construct jQuery selector from the given reading frame.
+        var selector = '.aa';
+        if (readingFrame > 0) {
+            selector += '.forward'
+        }
+        else if (readingFrame < 0) {
+            selector += '.reverse';
+        }
+        selector += '.frame'
+        selector += (Math.abs(readingFrame) - 1);
+
+        // Highlight it.
+        this.unhighlightRF();
+        for (var i = this.firstAttached; i <= this.lastAttached; i++)  {
+            var block = this.blocks[i];
+            $(selector, block.domNode).addClass("frame_highlight");
+        }
+    },
+
+    /**
+     * Unhighlight reading frame.
+     */
+    unhighlightRF: function () {
+        $(".frame_highlight").removeClass("frame_highlight");
+    },
+
     _fillBlock: function (block, start, end, seq) {
         // make a div to contain the sequences
         var seqNode = document.createElement("div");
