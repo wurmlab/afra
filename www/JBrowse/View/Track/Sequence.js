@@ -91,11 +91,25 @@ return declare([BlockBased, ExportMixin],
         selector += (Math.abs(readingFrame) - 1);
 
         // Highlight it.
-        this.unhighlightRF();
-        for (var i = this.firstAttached; i <= this.lastAttached; i++)  {
-            var block = this.blocks[i];
-            $(selector, block.domNode).addClass("frame_highlight");
-        }
+        //
+        // There has to be a delay because `highlightRF` may be called before
+        // we have had the chance to fill all blocks, and that can cause the
+        // code below to raise an error (because block may still be undefined)
+        // or not highlight frame at all (because aa divs have not yet been
+        // attached to the DOM). This can be the case when user triggers
+        // `GenomeView.scrollToNextEdge` & `GenomeView.scrollToPreviousEdge`.
+        //
+        // We execute the code below after 250ms. That is, we assume 8fps as
+        // the worst case. If we are doing less than 8fps, then, well ...
+        _.delay(_.bind(function () {
+            this.unhighlightRF();
+            for (var i = this.firstAttached; i <= this.lastAttached; i++)  {
+                var block = this.blocks[i];
+                if (block) { // sanity check
+                    $(selector, block.domNode).addClass("frame_highlight");
+                }
+            }
+        }, this), 250);
     },
 
     /**
