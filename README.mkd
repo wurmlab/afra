@@ -75,6 +75,7 @@ curator who makes a final verdict.
 * December 2014: Comments on curations.
 * December 2014: Improve annotation editing experience. Make it more intuitive.
 * December 2014: Extensive automated testing of annotation editing functionality.
+* December 2014: Improve page load times. Improve annotation editing performance.
 * January 2014: Interactive tutorial.
 * Spring 2015: Roll out to 200 first year students learning about gene
   structure ... and the inadequacies of Bioinformatics algorithms.
