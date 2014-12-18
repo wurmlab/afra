@@ -117,72 +117,77 @@ var EditTrack = declare(DraggableFeatureTrack,
      *   handles mouse down on an annotation subfeature
      *   to make the annotation resizable by pulling the left/right edges
      */
-    onAnnotMouseDown: function(event)  {
-        var track = this;
+    onAnnotMouseDown: function (event)  {
         event = event || window.event;
-        var elem = (event.currentTarget || event.srcElement);
-        var featdiv = track.getLowestFeatureDiv(elem);
+        var featureDiv = this.getLowestFeatureDiv(event.currentTarget ||
+                                                   event.srcElement);
 
-        if (featdiv && (featdiv != null))  {
-            if (dojo.hasClass(featdiv, "ui-resizable"))  {
-            }
-            else {
-                // Snap to the next base when resizing if zoomed in to nucleotide level.
-                var scale = parseInt(track.gview.bpToPx(1));
-                var grid = [scale, 1];
-                if (scale < 1) { grid = false; }
+        // Are we zoomed to base pair level? If yes, we will activate snapping
+        // to the next base pair, when resizing, via resizable's grid option.
+        var scale  = parseInt(this.gview.bpToPx(1));
+        var zoomBP = scale > 1;
 
-                $(featdiv).resizable({
-                    handles: "e, w",
-                    helper: "ui-resizable-helper",
-                    autohide: false,
-                    grid:     grid,
-                    resize: function (event, ui) {
-                        // If snapping, reset event.pageX so that the red vertical line snaps as well.
-                        if (grid) {
-                            // if moving left
-                            if (ui.position.left - ui.originalPosition.left) {
-                                event.pageX = ui.position.left;
-                            }
-                            // if moving right
-                            else if (ui.position.left + ui.size.width -
-                                     (ui.originalPosition.left +
-                                      ui.originalSize.width)) {
-                                event.pageX = ui.position.left + ui.size.width;
-                            }
-                        }
-                        track.gview.drawVerticalPositionLine(track.div, event);
-                    },
+        $(featureDiv).resizable({
+            handles: "e, w",
+            helper:  "ui-resizable-helper",
+            grid:    zoomBP && [scale, 1],  // [x, y]
 
-                    stop: function (event, ui)  {
-                        track.gview.clearVerticalPositionLine();
-                        track.gview.clearBasePairLabels();
-                        var exon       = ui.originalElement[0].subfeature;
-                        var transcript = exon.parent();
-
-                        var leftDeltaPixels  = ui.position.left - ui.originalPosition.left;
-                        var rightDeltaPixels = ui.position.left + ui.size.width - ui.originalPosition.left - ui.originalSize.width;
-                        var leftDeltaBases   = Math.round(track.gview.pxToBp(leftDeltaPixels));
-                        var rightDeltaBases  = Math.round(track.gview.pxToBp(rightDeltaPixels));
-
-                        var newLeft  = exon.get('start') + leftDeltaBases;
-                        var newRight = exon.get('end')   + rightDeltaBases;
-
-                        track.getRefSeq(function (refSeq) {
-                            var newTranscript = track.resizeExon(refSeq, transcript, exon, newLeft, newRight);
-                            newTranscript.set('name', transcript.get('name'));
-                            track.replaceTranscript(transcript, newTranscript, function (t) {
-                                _.each(this.filterExons(t), _.bind(function (f) {
-                                    if (this.areFeaturesOverlapping(exon, f)) {
-                                        this.highlightFeature(f);
-                                    }
-                                }, this));
-                            });
-                        });
+            // resize is called during resize whenever resize handle is dragged.
+            // We take advantage of that to draw a vertical line and indicate
+            // base pair coordinate for reference.
+            resize: _.bind(function (event, ui) {
+                // If snapping, reset event.pageX so that the red vertical line
+                // snaps as well.
+                if (zoomBP) {
+                    // if moving left
+                    if (ui.position.left - ui.originalPosition.left) {
+                        event.pageX = ui.position.left;
                     }
+                    // if moving right
+                    else if (ui.position.left + ui.size.width -
+                                (ui.originalPosition.left +
+                                ui.originalSize.width)) {
+                        event.pageX = ui.position.left + ui.size.width;
+                    }
+                }
+
+                // Draw vertical line with a base pair coordinate indicator.
+                this.gview.drawVerticalPositionLine(this.div, event);
+            }, this),
+
+            // Calculate the final coordinates and accordingly modify the
+            // feature, and do any necessary cleanup when resize ends.
+            stop: _.bind(function (event, ui) {
+                // Clear vertical line and base pair coordinate indicator.
+                this.gview.clearVerticalPositionLine();
+                this.gview.clearBasePairLabels();
+
+                var exon       = ui.originalElement[0].subfeature;
+                var transcript = exon.parent();
+
+                var leftDeltaPixels  = ui.position.left - ui.originalPosition.left;
+                var rightDeltaPixels = ui.position.left + ui.size.width - ui.originalPosition.left - ui.originalSize.width;
+                var leftDeltaBases   = Math.round(this.gview.pxToBp(leftDeltaPixels));
+                var rightDeltaBases  = Math.round(this.gview.pxToBp(rightDeltaPixels));
+
+                var newLeft  = exon.get('start') + leftDeltaBases;
+                var newRight = exon.get('end')   + rightDeltaBases;
+
+                // FIXME:
+                //   Should move this to a separate function.
+                this.getRefSeq(function (refSeq) {
+                    var newTranscript = this.resizeExon(refSeq, transcript, exon, newLeft, newRight);
+                    newTranscript.set('name', transcript.get('name'));
+                    this.replaceTranscript(transcript, newTranscript, function (t) {
+                        _.each(this.filterExons(t), _.bind(function (f) {
+                            if (this.areFeaturesOverlapping(exon, f)) {
+                                this.highlightFeature(f);
+                            }
+                        }, this));
+                    });
                 });
-            }
-        }
+            }, this)
+        });
         event.stopPropagation();
     },
 
