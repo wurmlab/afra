@@ -64,6 +64,9 @@ var EditTrack = declare(DraggableFeatureTrack,
         return thisConfig;
     },
 
+    /**
+     * Extend superclass method to make this track droppable.
+     */
     setViewInfo: function (genomeView, heightUpdate, numBlocks, trackDiv, widthPct, widthPx, scale) {
         this.inherited(arguments);
         this.makeTrackDroppable();
@@ -72,7 +75,21 @@ var EditTrack = declare(DraggableFeatureTrack,
     },
 
     /**
-     *  overriding renderFeature to add event handling right-click context menu
+     * Make the track droppable.
+     */
+    makeTrackDroppable: function() {
+        $(this.div).droppable({
+            accept: ".selected-feature",
+            drop:   _.bind(function (event, ui) {
+                var selection = this.browser.featSelectionManager.getSelection();
+                this.addDraggedFeatures(selection);
+            }, this)
+        });
+    },
+
+    /**
+     *  Extend superclass method to add event handling right-click context menu
+     *  and make annotation in this track droppable.
      */
     renderFeature: function (feature, uniqueId, block, scale, labelScale, descriptionScale, containerStart, containerEnd) {
         var featDiv  = this.inherited(arguments);
@@ -99,7 +116,10 @@ var EditTrack = declare(DraggableFeatureTrack,
         return featDiv;
     },
 
-    renderSubfeature: function( feature, featDiv, subfeature,
+    /**
+     *  Extend superclass method to make exons resizable.
+     */
+    renderSubfeature: function (feature, featDiv, subfeature,
                                 displayStart, displayEnd, block) {
         var subdiv = this.inherited( arguments );
 
@@ -192,25 +212,9 @@ var EditTrack = declare(DraggableFeatureTrack,
     },
 
     /**
-     *  feature click no-op (to override FeatureTrack.onFeatureClick, which conflicts with mouse-down selection
+     *  Override superclass method to not interefere with mouse-down selection.
      */
     onFeatureClick: function(event) {
-        event = event || window.event;
-        var elem = (event.currentTarget || event.srcElement);
-        var featdiv = this.getLowestFeatureDiv( elem );
-        if (featdiv && (featdiv != null))  {
-        }
-    },
-
-    makeTrackDroppable: function() {
-        var track = this;
-        $(this.div).droppable({
-            accept: ".selected-feature",
-            drop:   function (event, ui) {
-                var selection = track.browser.featSelectionManager.getSelection();
-                track.addDraggedFeatures(selection);
-            }
-        });
     },
 
     /* Initializing view, including wiring it to the controller ends here. */
