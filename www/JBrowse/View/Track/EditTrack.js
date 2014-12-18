@@ -12,6 +12,7 @@ define([
             'JBrowse/View/GranularRectLayout',
             'JBrowse/CodonTable',
             'FileSaver/FileSaver',
+            'JBrowse/Store/Stack',
             'bionode'
         ],
         function(declare,
@@ -27,6 +28,7 @@ define([
                  Layout,
                  CodonTable,
                  saveAs,
+                 Stack,
                  Bionode) {
 
 var counter = 1;
@@ -1651,7 +1653,7 @@ var EditTrack = declare(DraggableFeatureTrack,
     insertTranscripts: function (transcripts, callback) {
         if (transcripts.length < 1) return;
 
-        this.backupStore();
+        this.store.backupStore();
         try {
             this.getRefSeq(function (refSeq) {
                 var inserted = [];
@@ -1680,7 +1682,7 @@ var EditTrack = declare(DraggableFeatureTrack,
     deleteTranscripts: function (transcripts, callback) {
         if (transcripts.length < 1) return;
 
-        this.backupStore();
+        this.store.backupStore();
         try {
             var removed = [];
             _.each(transcripts, _.bind(function (t) {
@@ -1709,7 +1711,7 @@ var EditTrack = declare(DraggableFeatureTrack,
         }
         if (transcriptsToRemove.length < 1) return;
 
-        this.backupStore();
+        this.store.backupStore();
         try {
             this.getRefSeq(function (refSeq) {
                 var inserted = [];
@@ -1735,7 +1737,7 @@ var EditTrack = declare(DraggableFeatureTrack,
 
     replaceSplitTranscript: function (transcriptToRemove, transcriptsToInsert, callback) {
         if (!transcriptToRemove || transcriptsToInsert.length < 1) return;
-        this.backupStore();
+        this.store.backupStore();
         try {
             this.store.remove(transcriptToRemove);
             this.getRefSeq(function (refSeq) {
@@ -1759,7 +1761,7 @@ var EditTrack = declare(DraggableFeatureTrack,
 
     replaceMergedTranscripts: function (transcriptsToRemove, transcriptToInsert, callback) {
         if (transcriptsToRemove.length < 1 || !transcriptToInsert) return;
-        this.backupStore();
+        this.store.backupStore();
         try {
             _.each(transcriptsToRemove, _.bind(function (t) {
                 this.store.remove(t);
@@ -1781,31 +1783,15 @@ var EditTrack = declare(DraggableFeatureTrack,
     },
 
     undo: function () {
-        this.redoStateStack = this.redoStateStack || [] ;
-        var redoState = this.store.features.slice();
-        this.redoStateStack.push(redoState);
-
-        var undoState = this.undoStateStack.pop();
-        this.store.features = undoState;
+        this.store.undo();
         this.changed();
         this.updateDoneButton();
     },
 
     redo: function () {
-        this.undoStateStack = this.undoStateStack || [] ;
-        var undoState = this.store.features.slice();
-        this.undoStateStack.push(undoState);
-
-        var redoState = this.redoStateStack.pop();
-        this.store.features = redoState;
+        this.store.redo();
         this.changed();
         this.updateDoneButton();
-    },
-
-    backupStore: function () {
-        var undoState = this.store.features.slice();
-        this.undoStateStack = this.undoStateStack || [] ;
-        this.undoStateStack.push(undoState);
     },
 
     updateDoneButton: function () {
@@ -1905,8 +1891,8 @@ var EditTrack = declare(DraggableFeatureTrack,
 
     updateUndoMenuItem: function() {
         var menuItem = $("#contextmenu-undo");
-        if(typeof(this.undoStateStack) != 'undefined'){
-            if (this.undoStateStack.length > 0) {
+        if(typeof(this.store.undoStateStack) != 'undefined'){
+            if (this.store.undoStateStack.length() > 0) {
                 menuItem.removeClass("disabled");
                 return;
             }
@@ -1916,8 +1902,8 @@ var EditTrack = declare(DraggableFeatureTrack,
 
     updateRedoMenuItem: function() {
         var menuItem = $("#contextmenu-redo");
-        if(typeof(this.redoStateStack) != 'undefined'){
-            if (this.redoStateStack.length > 0) {
+        if(typeof(this.store.redoStateStack) != 'undefined'){
+            if (this.store.redoStateStack.length() > 0) {
                 menuItem.removeClass("disabled");
                 return;
             }

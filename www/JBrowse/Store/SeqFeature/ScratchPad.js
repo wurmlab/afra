@@ -1,5 +1,9 @@
-define(['underscore', 'dojo/_base/declare', 'JBrowse/Store/SeqFeature', 'JBrowse/Model/SimpleFeature']
-, function(_, declare, SeqFeature, SimpleFeature) {
+define(['underscore',
+        'dojo/_base/declare',
+        'JBrowse/Store/SeqFeature',
+        'JBrowse/Model/SimpleFeature',
+        'JBrowse/Store/Stack']
+, function(_, declare, SeqFeature, SimpleFeature, Stack) {
 
     return declare(SeqFeature, {
 
@@ -94,6 +98,31 @@ define(['underscore', 'dojo/_base/declare', 'JBrowse/Store/SeqFeature', 'JBrowse
                 }
             }, this));
             if (endCallback)  { endCallback() }
+        },
+
+        undo: function () {
+            this.redoStateStack = this.redoStateStack || new Stack();
+            var redoState = this.features.slice();
+            this.redoStateStack.push(redoState);
+
+            var undoState = this.undoStateStack.pop();
+            this.features = undoState;
+        },
+
+        redo: function () {
+            this.undoStateStack = this.undoStateStack || new Stack() ;
+            var undoState = this.features.slice();
+            this.undoStateStack.push(undoState);
+
+            var redoState = this.redoStateStack.pop();
+            this.features = redoState;
+        },
+
+        backupStore: function () {
+            var undoState = this.features.slice();
+            this.undoStateStack = this.undoStateStack || new Stack() ;
+            this.undoStateStack.push(undoState);
         }
+
     });
 });
