@@ -2029,7 +2029,11 @@ var EditTrack = declare(DraggableFeatureTrack,
             $("div.sequence", this.div).remove();
         }
 
-        $('.ui-resizable').resizable('destroy');
+        var featureDiv  = this.getFeatDiv(selection.feature);
+        var $featureDiv = $(featureDiv);
+        if ($(featureDiv).hasClass('.ui-resizable')) {
+            $featureDiv.resizable('destroy');
+        }
     },
 });
 
