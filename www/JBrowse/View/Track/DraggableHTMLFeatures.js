@@ -126,24 +126,27 @@ var draggableTrack = declare(HTMLFeatureTrack,
                       track.last_whitespace_mousedown_loc = null;
                   });
 
-                  // kludge to restore selection after a double click to
-                  // whatever selection was before initiation of doubleclick
-                  // (first mousedown/mouseup)
-                  $div.bind('dblclick', function(event) {
+                  // Kludge to restore selection after double click or triple
+                  // click.
+                  $div.bind('dblclick tripleclick', function (event) {
                       var target = event.target;
-                      // because of dblclick bound to features, will only bubble up to here on whitespace,
-                      //   but doing feature check just to make sure
-                      if (! (target.feature || target.subfeature))  {
-                          if (track.prev_selection)  {
-                              var plength = track.prev_selection.length;
-                              // restore selection
-                              for (var i = 0; i<plength; i++)  {
-                                  track.selectionManager.addToSelection(track.prev_selection[i]);
-                              }
-                          }
+                      // doubleclick on feature won't bubble up till here.
+                      // Still checking that the user double clicked on
+                      // whitespace here to be 100% sure.
+                      if (!(target.feature || target.subfeature)) {
+                          // Restore selection.
+                          _.each(track.prev_selection, function (ps) {
+                              track.selectionManager.addToSelection(ps);
+                          });
+
+                          // Delay unsetting `prev_selection` just enough so
+                          // that selection can be restored after triple
+                          // click.
+                          _.delay(function () {
+                              track.prev_selection = null;
+                          }, 250);
                       }
-                      track.prev_selection = null;
-                  } );
+                  });
 
 
         /* track click diagnostic (and example of how to add additional track mouse listener?)  */
