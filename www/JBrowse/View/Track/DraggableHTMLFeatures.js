@@ -798,18 +798,6 @@ var draggableTrack = declare(HTMLFeatureTrack,
         return null;  // should never get here...
     },
 
-    getEquivalentBlock: function ( block ) {
-        var startBase = block.startBase;
-        var endBase = block.endBase;
-        for (var i=this.firstAttached; i<=this.lastAttached; i++)  {
-            var testBlock = this.blocks[i];
-            if (testBlock.startBase == startBase && testBlock.endBase == endBase) {
-                return testBlock;
-            }
-        }
-        return null;
-    },
-
     onFeatureDoubleClick: function( event )  {
         var ftrack = this;
         var selman = ftrack.selectionManager;

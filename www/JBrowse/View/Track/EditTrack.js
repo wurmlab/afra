@@ -1024,6 +1024,22 @@ var EditTrack = declare(DraggableFeatureTrack,
         return transcript;
     },
 
+    /**
+     * Returns one of [-3, -2, -1, 1, 2, 3], to indicate reading frame of the
+     * given transcript.
+     */
+    getReadingFrame: function (transcript) {
+        var strand = transcript.get("strand");
+        if (strand === 1) {
+            var frame = transcript.get('start') % 3;
+            return frame + 1;
+        }
+        else if (strand === -1) {
+            var frame = (this.refSeq.end - transcript.get('end')) % 3;
+            return -(frame + 1);
+        }
+    },
+
     /* ------------------------------------------------------------------------
      * getXSequence
      * ------------------------------------------------------------------------
@@ -1946,10 +1962,15 @@ var EditTrack = declare(DraggableFeatureTrack,
         var seqTrack = this.browser.getSequenceTrack();
         if (featureDiv)  {
             var strand = feature.get('strand');
+
             var featureTop = $(featureDiv).position().top;
             var scale = this.gview.bpToPx(1);
             var charSize = seqTrack.getCharacterMeasurements();
             if (scale >= charSize.w && this.useResiduesOverlay)  {
+                // Highlight reading frame.
+                var readingFrame = this.getReadingFrame(feature);
+                seqTrack.highlightRF(readingFrame);
+
                 for (var bindex = this.firstAttached; bindex <= this.lastAttached; bindex++)  {
                     this.browser.getStore('refseqs', _.bind(function(refSeqStore) {
                         if (refSeqStore) {
@@ -1990,6 +2011,9 @@ var EditTrack = declare(DraggableFeatureTrack,
     },
 
     selectionRemoved: function (selection)  {
+        var seqTrack = this.browser.getSequenceTrack();
+        seqTrack.unhighlightRF();
+
         this.inherited(arguments);
 
         if (selection.track === this)  {

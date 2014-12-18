@@ -75,6 +75,50 @@ return declare([BlockBased, ExportMixin],
         args.finishCallback();
     },
 
+    /**
+     * Highlight the given reading frame.
+     */
+    highlightRF: function (readingFrame) {
+        // Construct jQuery selector from the given reading frame.
+        var selector = '.aa';
+        if (readingFrame > 0) {
+            selector += '.forward'
+        }
+        else if (readingFrame < 0) {
+            selector += '.reverse';
+        }
+        selector += '.frame'
+        selector += (Math.abs(readingFrame) - 1);
+
+        // Highlight it.
+        //
+        // There has to be a delay because `highlightRF` may be called before
+        // we have had the chance to fill all blocks, and that can cause the
+        // code below to raise an error (because block may still be undefined)
+        // or not highlight frame at all (because aa divs have not yet been
+        // attached to the DOM). This can be the case when user triggers
+        // `GenomeView.scrollToNextEdge` & `GenomeView.scrollToPreviousEdge`.
+        //
+        // We execute the code below after 250ms. That is, we assume 8fps as
+        // the worst case. If we are doing less than 8fps, then, well ...
+        _.delay(_.bind(function () {
+            this.unhighlightRF();
+            for (var i = this.firstAttached; i <= this.lastAttached; i++)  {
+                var block = this.blocks[i];
+                if (block) { // sanity check
+                    $(selector, block.domNode).addClass("frame_highlight");
+                }
+            }
+        }, this), 250);
+    },
+
+    /**
+     * Unhighlight reading frame.
+     */
+    unhighlightRF: function () {
+        $(".frame_highlight").removeClass("frame_highlight");
+    },
+
     _fillBlock: function (block, start, end, seq) {
         // make a div to contain the sequences
         var seqNode = document.createElement("div");
@@ -99,6 +143,7 @@ return declare([BlockBased, ExportMixin],
                 var frame  = ((tstart % 3) + 3) % 3;
                 var aaDiv  = this._aaDiv(extendedEndResidues, i, blockLength);
                 aaDiv.className += (" frame" + frame);
+                aaDiv.className += " forward";
                 aaDivs[frame] = aaDiv;
             }
             for (var i = 2; i >= 0; i--) {
@@ -127,6 +172,7 @@ return declare([BlockBased, ExportMixin],
                 var frame  = (((this.refSeq.length - blockEnd + i) % 3) + 3) % 3;
                 var aaDiv = this._aaDiv(extendedStartResidues, i, blockLength, true);
                 aaDiv.className += (" frame" + frame);
+                aaDiv.className += " reverse";
                 aaDivs[frame] = aaDiv;
             }
             for (var i = 0; i < 3; i++) {
