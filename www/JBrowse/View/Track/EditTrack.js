@@ -1966,6 +1966,18 @@ var EditTrack = declare(DraggableFeatureTrack,
     selectionAdded: function (selection) {
         this.inherited(arguments);
 
+        // Sometimes selection is made programatically using `addSelection`.
+        // Like in hacks used to restore selection after JB redraws itself
+        // (after move, zoom, etc.) or after double or triple click.
+        // Though selection is restored, resizability isn't. The line below
+        // serves to restore resizability in such situations.
+        //
+        // NOTE:
+        //   I would think that this hack prevents users from selecting multiple
+        //   features at bp level. Funnnily, that doesn't seem to be the case
+        //   (verified against sevaral examples). And I don't know why.
+        $(this.getFeatDiv(selection.feature)).mousedown();
+
         var feature = EditTrack.getTopLevelAnnotation(selection.feature);
         var featureDiv = this.getFeatDiv(feature);
         var seqTrack = this.browser.getSequenceTrack();
