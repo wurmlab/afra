@@ -129,6 +129,15 @@ task 'import', [:annotations_file] do |t, args|
   Importer.new(annotations_file).run
 end
 
+desc 'Export'
+task 'export', [:annotations_file] do |t, args|
+  require_relative 'app'
+  App.init_config
+  App.load_services
+  annotations_file = args[:annotations_file]
+  Exporter.new(annotations_file).run
+end
+
 desc 'IRb.'
 task 'irb' do
   require_relative 'app'
