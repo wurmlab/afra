@@ -57,6 +57,14 @@ var EditTrack = declare(DraggableFeatureTrack,
 
         this.gview.browser.setGlobalKeyboardShortcut(8,  this, 'deleteSelectedFeatures', true);
         this.gview.browser.setGlobalKeyboardShortcut(46, this, 'deleteSelectedFeatures', true);
+
+        $(window).on('storage', _.bind(function (evt) {
+            this.store.features = this.store._parseLocalStorage();
+            this.changed();
+            this.updateDoneButton();
+        }, this));
+
+        this.updateDoneButton();
     },
 
     _defaultConfig: function () {

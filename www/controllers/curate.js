@@ -53,6 +53,7 @@ define(['JBrowse/Browser']
                 value: normalizeFeatures(transcripts)
             }
             return http.post('data/tasks/' + id, data).then(function (response) {
+                localStorage.clear();
                 console.log('saved submission');
             });
             // what on failure?
