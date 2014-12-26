@@ -173,12 +173,14 @@ return declare( [Component,DetailsMixin,FeatureFiltererMixin,Destroyable],
 
         $(this.label).click(_.bind(function () {
             this.collapsed ? this.uncollapse() : this.collapse();
+            domClass.toggle(query('.fa', this.label)[0], 'fa-rotate-270');
         }, this));
 
         if ( ( this.config.style || {} ).trackLabelCss){
             labelDiv.style.cssText += ";" + trackConfig.style.trackLabelCss;
         }
 
+        var chevronElement = dojo.create('i', { className: 'fa fa-chevron-down' }, labelDiv );
         var labelText = dojo.create('span', { className: 'track-label-text' }, labelDiv );
     },
 
