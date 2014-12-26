@@ -153,14 +153,20 @@ task 'test:pl' do
   system 'prove -I tests/pl/lib -I . -lr tests'
 end
 
-desc 'Run unit tests for JS code.'
-task 'test:js' do
+desc 'Run unit tests for JS code in browser.'
+task 'test:js_in_browser' do
   require_relative 'app'
   static = Class.new(Sinatra::Base)
   static.public_dir = Dir.pwd
   App.init_config(binds: ['tcp://localhost:9293'])
   puts "* Starting jasmine test server ...."
   App.init_server.serve(static)
+end
+
+desc 'Run unit tests for JS code headless, using Capybara.'
+task "test:js" do |t|
+  require_relative 'tests/js/runner'
+  CapybaraJasmine.new.run
 end
 
 task default: [:deps, :'db:init', :'db:migrate', :configure]

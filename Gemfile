@@ -10,3 +10,5 @@ gem 'puma',                 '~> 2.8.1'
 gem 'sinatra',              '~> 1.4.4'
 
 gem 'minitest',             '~> 5.3.1'
+gem 'capybara',             '~> 2.4.4'
+gem 'capybara-webkit',      '~> 1.3.1'

@@ -159,6 +159,36 @@ require(['jasmine/jasmine']
         });
 
         /**
+         * Extend jsApiReporter for console output via Capybara.
+         */
+        jasmineInterface.jsApiReporter.consoleOutput = function () {
+            var errors = [];
+            var output = [];
+            this.passed = true;
+            for (var i in this.specs()) {
+                var spec = this.specs()[i];
+                var name = spec.fullName;
+                if (spec.status === 'failed') {
+                    for (var j in spec.failedExpectations) {
+                        var item = spec.failedExpectations[j];
+                        if (!item.passed) {
+                            this.passed = false;
+                            errors.push("Failed: " + name + "\n" + item.message);
+                            output.push("F");
+                        }
+                    }
+                } else {
+                    output.push(".");
+                }
+            }
+            output = output.join("")
+            if (errors.length > 0) {
+                output += "\n\n" + errors.join("\n\n") + "\n";
+            }
+            return output;
+        };
+
+        /**
          * The `jsApiReporter` also receives spec results, and is used by any environment that needs to extract the results  from JavaScript.
          */
         env.addReporter(jasmineInterface.jsApiReporter);
