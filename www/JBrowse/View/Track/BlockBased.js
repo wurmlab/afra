@@ -78,6 +78,7 @@ return declare( [Component,DetailsMixin,FeatureFiltererMixin,Destroyable],
         // initial height may be derived from track config
         this.height = this.config.height || 0;
         this.shown = true;
+        this.collapsed = false;
         this.empty = false;
         this.browser = args.browser;
 
@@ -101,6 +102,11 @@ return declare( [Component,DetailsMixin,FeatureFiltererMixin,Destroyable],
 
         if (!this.shown) {
             this.heightUpdateCallback(0);
+            return;
+        }
+
+        if (this.collapsed) {
+            this.heightUpdateCallback(this.label.offsetHeight);
             return;
         }
 
@@ -158,11 +164,16 @@ return declare( [Component,DetailsMixin,FeatureFiltererMixin,Destroyable],
                 id: "label_" + this.name,
                 style: {
                     position: 'absolute',
-                    top: 0
+                    top: 0,
+                    visibility: 'visible'
                 }
             },this.div);
 
         this.label = labelDiv;
+
+        $(this.label).click(_.bind(function () {
+            this.collapsed ? this.uncollapse() : this.collapse();
+        }, this));
 
         if ( ( this.config.style || {} ).trackLabelCss){
             labelDiv.style.cssText += ";" + trackConfig.style.trackLabelCss;
@@ -182,7 +193,24 @@ return declare( [Component,DetailsMixin,FeatureFiltererMixin,Destroyable],
     show: function() {
         if (!this.shown) {
             this.div.style.display = "block";
+            this.div.style.visibility = "visible";
             this.shown = true;
+        }
+    },
+
+    collapse: function () {
+        if (!this.collapsed) {
+            this.collapsed = true;
+            this.div.style.visibility = "hidden";
+            this.heightUpdateCallback(this.labelHeight);
+        }
+    },
+
+    uncollapse: function () {
+        if (this.collapsed) {
+            this.collapsed = false
+            this.div.style.visibility = "visible";
+            this.heightUpdateCallback(this.height);
         }
     },
 
