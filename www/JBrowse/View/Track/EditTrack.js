@@ -1642,6 +1642,16 @@ var EditTrack = declare(DraggableFeatureTrack,
 
     /* VIEW HELPERS - update the view based on controller events */
 
+    /**
+     * Extend superclass' changed function to refresh our additions to the UI as
+     * well.
+     */
+    changed: function () {
+        this.inherited(arguments);
+
+        this.updateControlButtons();
+    },
+
     highlightFeature: function (feature) {
         var div = this.getFeatDiv(feature);
         $(div).trigger('mousedown');
@@ -1804,7 +1814,7 @@ var EditTrack = declare(DraggableFeatureTrack,
 
     updateDoneButton: function () {
         var $done = $('#done');
-        if (this.store.features.length > 0) {
+        if (this.store.features && this.store.features.length > 0) {
             $done.removeClass('disabled');
             return;
         }
@@ -1820,8 +1830,11 @@ var EditTrack = declare(DraggableFeatureTrack,
         this.updateSetTranslationStartMenuItem();
         this.updateSetTranslationStopMenuItem();
         this.updateSetLongestORFMenuItem();
-        this.updateUndoMenuItem();
-        this.updateRedoMenuItem();
+    },
+
+    updateControlButtons: function() {
+        this.updateUndoButton();
+        this.updateRedoButton();
     },
 
     updateSetTranslationStartMenuItem: function () {
@@ -1832,7 +1845,7 @@ var EditTrack = declare(DraggableFeatureTrack,
             menuItem.removeClass('disabled');
             return;
         }
-        menuItem.addClass('disabled')
+        menuItem.addClass('disabled');
     },
 
     updateSetTranslationStopMenuItem: function () {
@@ -1844,7 +1857,7 @@ var EditTrack = declare(DraggableFeatureTrack,
             menuItem.removeClass('disabled');
             return;
         }
-        menuItem.addClass('disabled')
+        menuItem.addClass('disabled');
     },
 
     updateSetLongestORFMenuItem: function () {
@@ -1876,7 +1889,7 @@ var EditTrack = declare(DraggableFeatureTrack,
         if (selected.length > 1 ||
             this.areSubfeatures(selected) ||
             (this.filterExons(selected[0]).length <= 1)) {
-            menuItem.addClass('disabled')
+            menuItem.addClass('disabled');
             return;
         }
         menuItem.removeClass('disabled');
@@ -1891,32 +1904,28 @@ var EditTrack = declare(DraggableFeatureTrack,
         }
         var parent = selected[0].feature.parent();
         if (!parent) {
-            menuItem.addClass('disabled')
+            menuItem.addClass('disabled');
             return;
         }
         menuItem.removeClass("disabled");
     },
 
-    updateUndoMenuItem: function() {
-        var menuItem = $("#contextmenu-undo");
-        if(typeof(this.store.undoStateStack) != 'undefined'){
-            if (this.store.undoStateStack.length() > 0) {
-                menuItem.removeClass("disabled");
-                return;
-            }
+    updateUndoButton: function() {
+        var toolbarButton = $("#controls-undo");
+        if (this.store.undoStateStack && this.store.undoStateStack.length() > 0) {
+            toolbarButton.removeClass("disabled");
+            return;
         }
-        menuItem.addClass("disabled");
+        toolbarButton.addClass("disabled");
     },
 
-    updateRedoMenuItem: function() {
-        var menuItem = $("#contextmenu-redo");
-        if(typeof(this.store.redoStateStack) != 'undefined'){
-            if (this.store.redoStateStack.length() > 0) {
-                menuItem.removeClass("disabled");
-                return;
-            }
+    updateRedoButton: function() {
+        var toolbarButton = $("#controls-redo");
+        if (this.store.redoStateStack && this.store.redoStateStack.length() > 0) {
+            toolbarButton.removeClass("disabled");
+            return;
         }
-        menuItem.addClass("disabled");
+        toolbarButton.addClass("disabled");
     },
 
     //updateDuplicateMenuItem: function() {
