@@ -71,6 +71,7 @@ curator who makes a final verdict.
 * ~~Simple, non-interactive tutorials.~~
 * ~~Obtain curations from eight QMUL MSc students.~~
 * ~~Obtain contributions from 20 of undergraduate students.~~
+* ~~December 2014: Simple editor synchronization between two tabs/windows.~~
 * December 2014: Genome dashboard: Overview of contributions per genome. How many curations. How many pass auto-check.
 * December 2014: Comments on curations.
 * December 2014: Improve annotation editing experience. Make it more intuitive.
