@@ -19,13 +19,18 @@
   padding: 0px;
 }
 
-.controls-top {
-  top: 18px;
-  right: 0px;
-  z-index: 10;
-  position: absolute;
+.topbar {
   background: white;
-  opacity: 0.9;
+  border-bottom: 1px solid #ddd;
+  text-align: right;
+}
+
+.topbar > .toolbar {
+  display: inline-block;
+}
+
+.topbar > .toolbar > .btn {
+  border-color: transparent;
 }
 
 #genome {
@@ -346,7 +351,7 @@ div.track-label {
 
     color: black;
     background: white;
-    text-align: center;
+    text-align: left;
     font-weight: bold;
 
     /* Chrome-specific bug:
