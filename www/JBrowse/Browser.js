@@ -124,8 +124,8 @@ constructor: function(params) {
     FeatureEdgeMatchManager.addSelectionManager(this.featSelectionManager);
     FeatureEdgeMatchManager.addSelectionManager(this.annotSelectionManager);
 
-    // Regular expression based sequence search widget.
-    thisB.sequenceSearchManager = new RegexSequenceSearch({browser: this});
+    // Intialize regular expression based sequence search widget.
+    new RegexSequenceSearch({browser: this});
 
     dojo.addOnLoad( function() {
         thisB.loadConfig().then( function() {
@@ -1649,10 +1649,6 @@ getSequenceTrack: function()  {
         }
     }
     return null;
-},
-
-searchSequence: function (arg) {
-    this.sequenceSearchManager.createSearchTrack();
 }
 
 });

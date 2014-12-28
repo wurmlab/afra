@@ -9,15 +9,13 @@
           <div
             class="toolbar">
             <button
-              id="controls-undo"
-              class="btn btn-default disabled"
+              id="controls-undo" class="btn btn-default disabled"
               ng-click="browser.getEditTrack().undo()"
               title="Undo last edit">
               <i class="fa fa-undo"></i>
             </button>
             <button
-              id="controls-redo"
-              class="btn btn-default disabled"
+              id="controls-redo" class="btn btn-default disabled"
               ng-click="browser.getEditTrack().redo()"
               title="Redo last edit">
               <i class="fa fa-repeat"></i>
@@ -48,8 +46,8 @@
             </button>
             <button
               class="btn btn-default"
-              ng-click="browser.searchSequence()"
-              title="Search reference sequence.">
+              title="Search reference sequence."
+              data-toggle="modal" data-target="#sequence-search-modal">
               <i class="fa fa-search"></i>
             </button>
             <button
@@ -92,7 +90,9 @@
       <div id="checklist" class="panel-group">
         <div class="panel panel-default">
           <div class="panel-heading">
-            <h4 class="panel-title" data-toggle="collapse" data-parent="#checklist" data-target="#checklist-est">
+            <h4
+              class="panel-title"
+              data-toggle="collapse" data-parent="#checklist" data-target="#checklist-est">
               Consistency with available EST data
             </h4>
           </div>
@@ -129,7 +129,9 @@
 
         <div class="panel panel-default">
           <div class="panel-heading">
-            <h4 class="panel-title" data-toggle="collapse" data-parent="#checklist" data-target="#checklist-splice-sites">
+            <h4
+              class="panel-title"
+              data-toggle="collapse" data-parent="#checklist" data-target="#checklist-splice-sites">
               Splice sites
             </h4>
           </div>
@@ -159,7 +161,10 @@
 
         <div class="panel panel-default">
           <div class="panel-heading">
-            <h4 class="panel-title" data-toggle="collapse" data-parent="#checklist" href="#checklist-translation-sites">
+            <h4
+              class="panel-title"
+              href="#checklist-translation-sites"
+              data-toggle="collapse" data-parent="#checklist">
               Translation sites
             </h4>
           </div>
@@ -195,7 +200,9 @@
 
         <div class="panel panel-default panel-inverse">
           <div class="panel-heading">
-            <h4 class="panel-title" data-toggle="collapse" data-parent="#checklist" href="#checklist-homologs">
+            <h4 class="panel-title"
+              href="#checklist-homologs"
+              data-toggle="collapse" data-parent="#checklist">
               Consistency with homologs and transcriptomes
             </h4>
           </div>
@@ -266,12 +273,94 @@
     </div>
   </div>
 
+  <div
+    class="modal fade" id="sequence-search-modal"
+    tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+
+        <div class="modal-header">
+          <h4 class="modal-title">
+            Search reference sequence
+          </h4>
+        </div>
+
+        <div class="modal-body">
+          <p>
+            This tool creates tracks showing regions of the reference sequence
+            (or its translations) that match a given DNA or amino acid sequence.
+            <em>
+                The track will be added below existing tracks. Thus you may have
+                to scroll down to view search results.
+            </em>
+          </p>
+          Search for:
+          <label class="radio-inline">
+            <input type="radio" name="translate"
+            value="DNA" checked>
+            DNA
+          </label>
+          <label class="radio-inline">
+            <input type="radio" name="translate"
+            value="AA">
+            AA
+          </label>
+          <input
+            type="text" name="expr" class="form-control"
+            placeholder="Search query" autofocus>
+          <div class="checkbox">
+            <label>
+              <input
+                type="checkbox" name="caseIgnore" id="search_ignore_case"
+                value="" checked="checked">
+                Ignore Case
+            </label>
+          </div>
+          <div class="checkbox">
+            <label>
+              <input
+                type="checkbox" name="regex" id="search_as_regex"
+                value="">
+                Treat as regular expression
+            </label>
+          </div>
+          <p>Search strands:</p>
+          <div class="checkbox">
+            <label>
+              <input
+                type="checkbox" name="fwdStrand" id="search_fwdstrand"
+                value="" checked="checked">
+                Forward
+            </label>
+          </div>
+          <div class="checkbox">
+            <label>
+              <input
+                type="checkbox" name="revStrand" id="search_revstrand"
+                value="" checked="checked">
+                Reverse
+            </label>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button
+            id="create-search-track"
+            class="btn btn-primary">
+            Search
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div id="contextmenu" class="">
     <ul class="dropdown-menu" role="menu">
       <li
         role="presentation"
         id="contextmenu-get-sequence">
-        <a role="menuitem" tabindex="-1" ng-click="browser.getEditTrack().showSequenceDialog()">
+        <a role="menuitem" tabindex="-1"
+          ng-click="browser.getEditTrack().showSequenceDialog()">
           Get sequence
         </a>
       </li>
@@ -281,7 +370,8 @@
       <li
         role="presentation"
         id="contextmenu-delete">
-        <a role="menuitem" tabindex="-1" ng-click="browser.getEditTrack().deleteSelectedFeatures()">
+        <a role="menuitem" tabindex="-1"
+          ng-click="browser.getEditTrack().deleteSelectedFeatures()">
           <i class="fa fa-trash-o"></i>
           Delete
         </a>
@@ -289,7 +379,8 @@
       <li
         role="presentation"
         id="contextmenu-merge">
-        <a role="menuitem" tabindex="-1" ng-click="browser.getEditTrack().mergeSelectedFeatures()">
+        <a role="menuitem" tabindex="-1"
+          ng-click="browser.getEditTrack().mergeSelectedFeatures()">
           <i class="fa fa-link"></i>
           Merge
         </a>
@@ -297,7 +388,8 @@
       <li
         role="presentation"
         id="contextmenu-make-intron">
-        <a role="menuitem" tabindex="-1" ng-click="browser.getEditTrack().makeIntronInSelectedExon()">
+        <a role="menuitem" tabindex="-1"
+          ng-click="browser.getEditTrack().makeIntronInSelectedExon()">
           <i class="fa fa-unlink"></i>
           Make intron
         </a>
@@ -305,7 +397,8 @@
       <li
         role="presentation"
         id="contextmenu-split">
-        <a role="menuitem" tabindex="-1" ng-click="browser.getEditTrack().splitSelectedTranscript()">
+        <a role="menuitem" tabindex="-1"
+          ng-click="browser.getEditTrack().splitSelectedTranscript()">
           <i class="fa fa-unlink"></i>
           Split transcript
         </a>
@@ -313,7 +406,8 @@
       <li
         role="presentation"
         id="contextmenu-duplicate">
-        <a role="menuitem" tabindex="-1" ng-click="browser.getEditTrack().duplicateSelectedFeatures()">
+        <a role="menuitem" tabindex="-1"
+          ng-click="browser.getEditTrack().duplicateSelectedFeatures()">
           <i class="fa fa-copy"></i>
           Duplicate
         </a>
@@ -321,7 +415,8 @@
       <li
         role="presentation"
         id="contextmenu-flipstrand">
-        <a role="menuitem" tabindex="-1" ng-click="browser.getEditTrack().flipStrandForSelectedFeatures()">
+        <a role="menuitem" tabindex="-1"
+          ng-click="browser.getEditTrack().flipStrandForSelectedFeatures()">
           <i class="fa fa-exchange"></i>
           Flip strand
         </a>
@@ -332,7 +427,8 @@
       <li
         role="presentation"
         id="contextmenu-set-longest-orf">
-        <a role="menuitem" tabindex="-1" href="#" ng-click="browser.getEditTrack().setLongestORFForImpliedTranscript()">
+        <a role="menuitem" tabindex="-1" href="#"
+          ng-click="browser.getEditTrack().setLongestORFForImpliedTranscript()">
           <i class="fa fa-minus"></i>
           Use longest ORF
         </a>
@@ -340,7 +436,8 @@
       <li
         role="presentation"
         id="contextmenu-set-translation-start">
-        <a role="menuitem" tabindex="-1" ng-click="browser.getEditTrack().setTranslationStartForImpliedTranscript()">
+        <a role="menuitem" tabindex="-1"
+          ng-click="browser.getEditTrack().setTranslationStartForImpliedTranscript()">
           <i class="fa fa-ellipsis-h"></i>
           Set translation start
         </a>
@@ -348,7 +445,8 @@
       <li
         role="presentation"
         id="contextmenu-set-translation-stop">
-        <a role="menuitem" tabindex="-1" ng-click="browser.getEditTrack().setTranslationStopForImpliedTranscript()">
+        <a role="menuitem" tabindex="-1"
+          ng-click="browser.getEditTrack().setTranslationStopForImpliedTranscript()">
           <i class="fa fa-ellipsis-h"></i>
           Set translation stop
         </a>
@@ -412,7 +510,8 @@
 <pre class="pre-scrollable"></pre>
         </div>
         <div class="modal-footer">
-          <div class="btn-group pull-left" data-toggle="buttons">
+          <div class="btn-group pull-left"
+            data-toggle="buttons">
             <label
               class="btn btn-default"
               data-sequence-type="protein"
