@@ -2386,6 +2386,11 @@ layoutTracks: function() {
     this.scrollContainer.style.height = this.containerHeight + "px";
 },
 
+toggleTrackLabels: function() {
+    $('.track-label').toggle();
+    $('#toggle-track-labels i').toggleClass('fa-eye fa-eye-slash');
+},
+
 smartScrollRight: function (event) {
     var selected = this.browser.featSelectionManager.getSelection();
     if (selected.length == 0) {
