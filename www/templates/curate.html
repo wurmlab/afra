@@ -2,69 +2,77 @@
 <article class="curate">
   <div class="row">
     <div ng-class="{'col-md-9': sidebar_visible, 'col-md-12': !sidebar_visible}">
-      <div class="topbar">
-        <div class="toolbar">
+      <div
+        class="editor">
+        <div
+          class="topbar">
+          <div
+            class="toolbar">
+            <button
+              id="controls-undo"
+              class="btn btn-default disabled"
+              ng-click="browser.getEditTrack().undo()"
+              title="Undo last edit">
+              <i class="fa fa-undo"></i>
+            </button>
+            <button
+              id="controls-redo"
+              class="btn btn-default disabled"
+              ng-click="browser.getEditTrack().redo()"
+              title="Redo last edit">
+              <i class="fa fa-repeat"></i>
+            </button>
+            <button
+              class="btn btn-default"
+              ng-click='browser.view.smartScrollLeft($event)'
+              title="Move left. If annotation selected, move to next left edge.">
+              <i class="fa fa-long-arrow-left"></i>
+            </button>
+            <button
+              class="btn btn-default"
+              ng-click='browser.view.smartScrollRight($event)'
+              title="Move right. If annotation selected, move to next right edge.">
+              <i class="fa fa-long-arrow-right"></i>
+            </button>
+            <button
+              class="btn btn-default"
+              ng-click="browser.view.zoomIn()"
+              title="Zoom in">
+              <i class="fa fa-search-plus"></i>
+            </button>
+            <button
+              class="btn btn-default"
+              ng-click="browser.view.zoomOut()"
+              title="Zoom out">
+              <i class="fa fa-search-minus"></i>
+            </button>
+            <button
+              class="btn btn-default"
+              ng-click="browser.searchSequence()"
+              title="Search reference sequence.">
+              <i class="fa fa-search"></i>
+            </button>
+            <button
+              class="btn btn-default"
+              ng-click="toggle_sidebar()"
+              title="Hide / show sidebar">
+              <i class="fa" ng-class="{'fa-angle-double-right': sidebar_visible, 'fa-angle-double-left': !sidbar_visible}"></i>
+            </button>
+          </div>
+        </div>
+        <div
+          class="buffer">
+          <div id="genome"></div>
+        </div>
+        <div class="controls-bot">
           <button
-            id="controls-undo"
-            class="btn btn-default disabled"
-            ng-click="browser.getEditTrack().undo()"
-            title="Undo last edit">
-            <i class="fa fa-undo"></i>
-          </button>
-          <button
-            id="controls-redo"
-            class="btn btn-default disabled"
-            ng-click="browser.getEditTrack().redo()"
-            title="Redo last edit">
-            <i class="fa fa-repeat"></i>
-          </button>
-          <button
-            class="btn btn-default"
-            ng-click='browser.view.smartScrollLeft($event)'
-            title="Move left. If annotation selected, move to next left edge.">
-            <i class="fa fa-long-arrow-left"></i>
-          </button>
-          <button
-            class="btn btn-default"
-            ng-click='browser.view.smartScrollRight($event)'
-            title="Move right. If annotation selected, move to next right edge.">
-            <i class="fa fa-long-arrow-right"></i>
-          </button>
-          <button
-            class="btn btn-default"
-            ng-click="browser.view.zoomIn()"
-            title="Zoom in">
-            <i class="fa fa-search-plus"></i>
-          </button>
-          <button
-            class="btn btn-default"
-            ng-click="browser.view.zoomOut()"
-            title="Zoom out">
-            <i class="fa fa-search-minus"></i>
-          </button>
-          <button
-            class="btn btn-default"
-            ng-click="browser.searchSequence()"
-            title="Search reference sequence.">
-            <i class="fa fa-search"></i>
-          </button>
-          <button
-            class="btn btn-default"
-            ng-click="toggle_sidebar()"
-            title="Hide / show sidebar">
-            <i class="fa" ng-class="{'fa-angle-double-right': sidebar_visible, 'fa-angle-double-left': !sidbar_visible}"></i>
+            class="btn btn-primary btn-lg btn-block pull-right disabled" id="done"
+            ng-click="done()"
+            title="Submit changes">
+            <i class="fa fa-lg fa-check-square-o"></i>
+            Done
           </button>
         </div>
-      </div>
-      <div id="genome"></div>
-      <div class="controls-bot">
-        <button
-          class="btn btn-primary btn-lg btn-block pull-right disabled" id="done"
-          ng-click="done()"
-          title="Submit changes">
-          <i class="fa fa-lg fa-check-square-o"></i>
-          Done
-        </button>
       </div>
     </div>
 
