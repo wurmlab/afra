@@ -40,6 +40,7 @@ return declare(Component,
                 type: 'JBrowse/View/Track/CanvasFeatures',
                 label: 'search_track_' + (thisB._searchTrackCount++),
                 key: "Search reference sequence for '" + searchParams.expr + "'",
+                deletable: true,
                 metadata: {
                     category: 'Local tracks',
                     Description: "Contains all matches of the text string/regular expression '" + storeConf.searchExpr + "'"

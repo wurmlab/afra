@@ -188,6 +188,21 @@ return declare( [Component,DetailsMixin,FeatureFiltererMixin,Destroyable],
             this.collapsed ? this.uncollapse() : this.collapse();
             domClass.toggle(chevron, 'fa-caret-right fa-caret-down');
         }, this));
+
+        if (this.config.deletable) {
+            var closeButton = dojo.create('span', {
+                innerHTML: '&nbsp;'
+            }, labelDiv);
+
+            dojo.create('i', {
+                className: 'fa fa-close',
+            }, closeButton);
+
+            this.own( on( closeButton, 'click', dojo.hitch(this,function(evt){
+                this.browser.publish( '/jbrowse/v1/v/tracks/hide', [this.config]);
+                evt.stopPropagation();
+            })));
+        }
     },
 
 
