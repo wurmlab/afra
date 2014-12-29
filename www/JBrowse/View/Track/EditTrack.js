@@ -89,6 +89,7 @@ var EditTrack = declare(DraggableFeatureTrack,
      */
     makeTrackDroppable: function() {
         $(this.div).droppable({
+            tolerance: "pointer",
             accept: ".selected-feature",
             drop:   _.bind(function (event, ui) {
                 var selection = this.browser.featSelectionManager.getSelection();
