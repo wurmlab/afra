@@ -1,5 +1,6 @@
 @import url("../lib/dijit/themes/tundra/tundra.css");
 @import url("../lib/jquery.ui/themes/base/all.css");
+@import url(http://fonts.googleapis.com/css?family=Open+Sans);
 
 .curate {
   height: 100%;
@@ -64,14 +65,46 @@
 }
 
 .sidebar {
+  font-family: 'Open Sans', sans-serif;
   overflow-y: auto;
   background-color: white;
   z-index: 100;
+  padding-right: 10px;
+  padding-left: 10px;
+  border-left: 1px solid #ddd;
 }
 
-.sidebar > h4 {
-  margin-top: 0px;
-  text-decoration: underline;
+.sidebar-title {
+  width: 110%;
+  padding: 8px 0px 7px 0px;
+}
+
+.sidebar-title h4 {
+  font-size: 20px;
+  font-weight: 400;
+  margin: 0px 0px 0px 15px;
+}
+
+.sidebar-panel-heading {
+  padding-left: 10px;
+  cursor: pointer;
+  font-weight: 300;
+}
+
+.sidebar .panel-group .panel .panel-collapse .panel-body {
+  border-radius: 0px;
+  padding-top: 5px;
+  padding-bottom: 10px;
+  font-weight: 300;
+}
+
+.sidebar .panel-group .panel-default {
+  border-radius: 0px;
+  border-color: white;
+}
+
+#checklist {
+  padding-top: 10px;
 }
 
 .panel-title {

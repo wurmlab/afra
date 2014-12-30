@@ -83,19 +83,19 @@
     <div
       ng-if="sidebar_visible"
       class="col-md-3 sidebar">
-      <br>
-      <div id="feature-detail">
+      <div
+        class="sidebar-title">
+        <h4>
+          Summary of things to keep in mind
+        </h4>
       </div>
-      <h4>Summary of things to keep in mind</h4>
       <div id="checklist" class="panel-group">
         <div class="panel panel-default">
-          <div class="panel-heading">
-            <h4
-              class="panel-title"
-              data-toggle="collapse" data-parent="#checklist" data-target="#checklist-est">
-              Consistency with available EST data
-            </h4>
-          </div>
+          <h4 class="sidebar-panel-heading"
+          data-toggle="collapse" data-parent="#checklist" data-target="#checklist-est">
+            <i class="fa fa-chevron-down"></i>
+            Consistency with available EST data
+          </h4>
           <div id="checklist-est" class="panel-collapse collapse in">
             <div class="panel-body">
               <ul class="fa-ul justified">
@@ -128,13 +128,11 @@
         </div>
 
         <div class="panel panel-default">
-          <div class="panel-heading">
-            <h4
-              class="panel-title"
-              data-toggle="collapse" data-parent="#checklist" data-target="#checklist-splice-sites">
-              Splice sites
-            </h4>
-          </div>
+          <h4 class="sidebar-panel-heading"
+          data-toggle="collapse" data-parent="#checklist" data-target="#checklist-splice-sites">
+            <i class="fa fa-chevron-down fa-rotate-270"></i>
+            Splice sites
+          </h4>
           <div id="checklist-splice-sites" class="panel-collapse collapse">
             <div class="panel-body">
               <ul class="fa-ul justified">
@@ -160,14 +158,12 @@
         </div>
 
         <div class="panel panel-default">
-          <div class="panel-heading">
-            <h4
-              class="panel-title"
-              href="#checklist-translation-sites"
-              data-toggle="collapse" data-parent="#checklist">
-              Translation sites
-            </h4>
-          </div>
+          <h4 class="sidebar-panel-heading"
+          href="#checklist-translation-sites"
+          data-toggle="collapse" data-parent="#checklist">
+            <i class="fa fa-chevron-down fa-rotate-270"></i>
+            Translation sites
+          </h4>
           <div id="checklist-translation-sites" class="panel-collapse collapse">
             <div class="panel-body">
               <ul class="fa-ul justified">
@@ -199,13 +195,12 @@
         </div>
 
         <div class="panel panel-default panel-inverse">
-          <div class="panel-heading">
-            <h4 class="panel-title"
-              href="#checklist-homologs"
-              data-toggle="collapse" data-parent="#checklist">
-              Consistency with homologs and transcriptomes
-            </h4>
-          </div>
+          <h4 class="sidebar-panel-heading"
+          href="#checklist-homologs"
+          data-toggle="collapse" data-parent="#checklist">
+            <i class="fa fa-chevron-down fa-rotate-270"></i>
+            Consistency with homologs and transcriptomes
+          </h4>
           <div id="checklist-homologs" class="panel-collapse collapse">
             <div class="panel-body">
               <ul class="fa-ul justified">

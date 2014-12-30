@@ -20,6 +20,16 @@ define(['JBrowse/Browser']
 
         this.load = function (task) {
             this.browser = new Browser($.extend(task, config));
+
+            // bind events to toggle sidebar chevrons
+            var toggleChevron = function (e) {
+                $(e.target)
+                .prev('.sidebar-panel-heading')
+                .find('.fa')
+                .toggleClass('fa-rotate-270');
+            };
+            $('#checklist').on('hidden.bs.collapse', toggleChevron);
+            $('#checklist').on('shown.bs.collapse', toggleChevron);
         };
 
         this.edits = function () {
