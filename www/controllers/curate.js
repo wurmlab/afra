@@ -18,18 +18,14 @@ define(['JBrowse/Browser']
             }, 0);
         };
 
+        // Events handler to toggle chevrons on checklist headers. Called via
+        // ng-click from curate.html.
+        this.toggleChevron = function (e) {
+            $('.fa', e.target).toggleClass('fa-rotate-90');
+        };
+
         this.load = function (task) {
             this.browser = new Browser($.extend(task, config));
-
-            // bind events to toggle sidebar chevrons
-            var toggleChevron = function (e) {
-                $(e.target)
-                .prev('.sidebar-panel-heading')
-                .find('.fa')
-                .toggleClass('fa-rotate-270');
-            };
-            $('#checklist').on('hidden.bs.collapse', toggleChevron);
-            $('#checklist').on('shown.bs.collapse', toggleChevron);
         };
 
         this.edits = function () {

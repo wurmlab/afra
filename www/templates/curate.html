@@ -73,7 +73,6 @@
             class="btn btn-primary btn-lg btn-block pull-right disabled" id="done"
             ng-click="done()"
             title="Submit changes">
-            <i class="fa fa-lg fa-check-square-o"></i>
             Done
           </button>
         </div>
@@ -83,20 +82,21 @@
     <div
       ng-if="sidebar_visible"
       class="col-md-3 sidebar">
-      <div
+      <h4
         class="sidebar-title">
-        <h4>
-          Summary of things to keep in mind
-        </h4>
-      </div>
+        Summary of things to keep in mind
+      </h4>
       <div id="checklist" class="panel-group">
         <div class="panel panel-default">
-          <h4 class="sidebar-panel-heading"
-          data-toggle="collapse" data-parent="#checklist" data-target="#checklist-est">
-            <i class="fa fa-chevron-down"></i>
+          <h4
+            class="sidebar-panel-heading"
+            data-toggle="collapse" data-parent="#checklist" data-target="#checklist-est"
+            ng-click="toggleChevron($event)">
+            <i class="fa fa-caret-right fa-rotate-90"></i>
             Consistency with available EST data
           </h4>
-          <div id="checklist-est" class="panel-collapse collapse in">
+          <div
+            id="checklist-est" class="panel-collapse collapse in">
             <div class="panel-body">
               <ul class="fa-ul justified">
                 <li>
@@ -128,9 +128,11 @@
         </div>
 
         <div class="panel panel-default">
-          <h4 class="sidebar-panel-heading"
-          data-toggle="collapse" data-parent="#checklist" data-target="#checklist-splice-sites">
-            <i class="fa fa-chevron-down fa-rotate-270"></i>
+          <h4
+            class="sidebar-panel-heading"
+            data-toggle="collapse" data-parent="#checklist" data-target="#checklist-splice-sites"
+            ng-click="toggleChevron($event)">
+            <i class="fa fa-caret-right"></i>
             Splice sites
           </h4>
           <div id="checklist-splice-sites" class="panel-collapse collapse">
@@ -158,10 +160,11 @@
         </div>
 
         <div class="panel panel-default">
-          <h4 class="sidebar-panel-heading"
-          href="#checklist-translation-sites"
-          data-toggle="collapse" data-parent="#checklist">
-            <i class="fa fa-chevron-down fa-rotate-270"></i>
+          <h4
+            class="sidebar-panel-heading"
+            data-toggle="collapse" data-parent="#checklist" data-target="#checklist-translation-sites"
+            ng-click="toggleChevron($event)">
+            <i class="fa fa-caret-right"></i>
             Translation sites
           </h4>
           <div id="checklist-translation-sites" class="panel-collapse collapse">
@@ -195,10 +198,11 @@
         </div>
 
         <div class="panel panel-default panel-inverse">
-          <h4 class="sidebar-panel-heading"
-          href="#checklist-homologs"
-          data-toggle="collapse" data-parent="#checklist">
-            <i class="fa fa-chevron-down fa-rotate-270"></i>
+          <h4
+            class="sidebar-panel-heading"
+            data-toggle="collapse" data-parent="#checklist" data-target="#checklist-homologs"
+            ng-click="toggleChevron($event)">
+            <i class="fa fa-caret-right"></i>
             Consistency with homologs and transcriptomes
           </h4>
           <div id="checklist-homologs" class="panel-collapse collapse">
