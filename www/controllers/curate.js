@@ -21,7 +21,13 @@ define(['JBrowse/Browser']
         // Events handler to toggle chevrons on checklist headers. Called via
         // ng-click from curate.html.
         this.toggleChevron = function (e) {
+            // Toggle chevron on the element that was clicked.
             $('.fa', e.target).toggleClass('fa-rotate-90');
+
+            // We have an accordion setup: expanding one collapses the other.
+            // Need to change chevron on the panel that was collapsed.
+            $(e.target).parent().siblings().
+                find('.fa-rotate-90').removeClass('fa-rotate-90');
         };
 
         this.load = function (task) {
