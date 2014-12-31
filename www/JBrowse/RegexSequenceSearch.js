@@ -46,7 +46,7 @@ return declare(Component,
         var label = 'search_track_' + (this._searchTrackCount++);
 
         var searchTrackConfig = {
-          type: 'JBrowse/View/Track/CanvasFeatures',
+          type: 'JBrowse/View/Track/DraggableHTMLFeatures',
           label: label,
           key: "Search reference sequence for '" + searchParams.expr + "'",
           deletable: true,
