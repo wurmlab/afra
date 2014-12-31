@@ -1953,7 +1953,17 @@ var EditTrack = declare(DraggableFeatureTrack,
         menuItem.removeClass('disabled');
     },
 
+    /**
+     * Sorts array of features by their start and end coordinates.
+     *
+     * NOTE:
+     *   Sorting need not be stable (it's browser dependent). Though it can be
+     *   made stable very easily be sorting against original position if two
+     *   items are equal.
+     */
     sortAnnotationsByLocation: function(annots) {
+        if (!_.isArray(annots)) return;
+
         var track = this;
         return annots.sort(function(annot1, annot2) {
                                var start1 = annot1.get("start");
