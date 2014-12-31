@@ -42,9 +42,12 @@ return declare(Component,
 
         var storeName = this.browser._addStoreConfig(undefined, storeConf);
         storeConf.name = storeName;
+
+        var label = 'search_track_' + (this._searchTrackCount++);
+
         var searchTrackConfig = {
           type: 'JBrowse/View/Track/CanvasFeatures',
-          label: 'search_track_' + (this._searchTrackCount++),
+          label: label,
           key: "Search reference sequence for '" + searchParams.expr + "'",
           deletable: true,
           metadata: {
@@ -53,6 +56,15 @@ return declare(Component,
           },
           store: storeName
         };
+
+        // do something after the track has been opened by JB
+        this.browser.subscribe('/jbrowse/v1/n/tracks/visibleChanged'
+        , _.bind(function (visibleTrackNames) {
+            visibleTrackNames = visibleTrackNames[0];
+            if (_.contains(visibleTrackNames, label)) {
+                this.browser.view.scrollToBottom();
+            }
+        }, this));
 
         // send out a message about how the user wants to create the new track
         this.browser.publish( '/jbrowse/v1/v/tracks/new', [searchTrackConfig] );

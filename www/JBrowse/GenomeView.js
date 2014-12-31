@@ -2030,13 +2030,6 @@ showTracks: function( trackConfigs ) {
     this.trackDndWidget.insertNodes( false, needed );
 
     this.updateTrackList();
-
-    // DO NOT
-    // scroll the view to the bottom so we can see the new track
-    // var thisB = this;
-    // window.setTimeout( function() {
-        // thisB.setY( Infinity );
-    // }, 300 );
 },
 
 /**
@@ -2389,6 +2382,17 @@ layoutTracks: function() {
 toggleTrackLabels: function() {
     $('.track-label').toggle();
     $('#toggle-track-labels i').toggleClass('fa-eye fa-eye-slash');
+},
+
+// Scroll the view to the bottom.
+//
+// Downstream code may want to call this function after opening a track so that
+// the new track is visible.
+scrollToBottom: function () {
+    var that = this;
+    window.setTimeout(function () {
+        that.setY(Infinity);
+    }, 500);
 },
 
 smartScrollRight: function (event) {
