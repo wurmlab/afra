@@ -986,36 +986,22 @@ var EditTrack = declare(DraggableFeatureTrack,
                 }
             });
             if (cdsTerm) {
-                _.each(subfeatures, function (f) {
+                _.each(subfeatures, _.bind(function (f) {
                     if (f.get('type') === cdsTerm) {
-                        data.push({
-                            type:   'CDS',
-                            name:   f.get('name'),
-                            seq_id: f.get('seq_id'),
-                            strand: f.get('strand'),
-                            start:  f.get('start'),
-                            end:    f.get('end'),
-                        });
+                        data.push(this.copyFeature(f, {type: 'CDS'}));
                     }
-                });
+                }, this));
             }
         }
 
-        var transcript = new SimpleFeature({
-            data: {
-                type:   'transcript',
-                name:   feature.get('name'),
-                seq_id: feature.get('seq_id'),
-                strand: feature.get('strand'),
-                start:  feature.get('start'),
-                end:    feature.get('end'),
-                subfeatures: data
-            }
-        });
+        var transcript = this.createTranscript(data, feature.get('name'));
         return transcript;
     },
 
     createTranscript: function (subfeatures, name) {
+        // maintain a count of subfeatures seen, indexed by type
+        var count = {};
+
         var transcript = new SimpleFeature({
             data: {
                 type:   'transcript',
@@ -1023,9 +1009,11 @@ var EditTrack = declare(DraggableFeatureTrack,
                 seq_id: subfeatures[0].get('seq_id'),
                 strand: subfeatures[0].get('strand'),
                 subfeatures: _.map(subfeatures, function (f) {
+                    var type = f.get('type');
+                    count[type] = count[type] || 1;
                     return {
-                        type:   f.get('type'),
-                        name:   f.get('name'),
+                        type:   type,
+                        name:   name + ':' + type + count[type]++,
                         seq_id: f.get('seq_id'),
                         strand: f.get('strand'),
                         start:  f.get('start'),
