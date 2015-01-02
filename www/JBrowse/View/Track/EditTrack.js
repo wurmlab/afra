@@ -966,22 +966,17 @@ var EditTrack = declare(DraggableFeatureTrack,
             subfeatures = [feature];
         }
 
-        _.each(subfeatures, function (f) {
+        _.each(subfeatures, _.bind(function (f) {
             var l = data[data.length - 1];
-            if (l && (f.get('start') - l['end'] <= 1)) { // we are looking for introns
-                l['end'] = Math.max(l['end'], f.get('end'));
-            }
-            else {
-                data.push({
-                    type:   'exon',
-                    name:   f.get('name'),
-                    seq_id: f.get('seq_id'),
-                    strand: f.get('strand'),
-                    start:  f.get('start'),
-                    end:    f.get('end'),
+            if (l && (f.get('start') - l.get('end') <= 1)) { // we are looking for introns
+                data[data.length - 1] = this.copyFeature(l, {
+                    end: Math.max(l.get( 'end' ), f.get('end'))
                 });
             }
-        });
+            else {
+                data.push(this.copyFeature(f, {type: 'exon'}));
+            }
+        }, this));
 
         if (track.config.style.className === 'transcript') {
             var subfeatureClasses = track.config.style.subfeatureClasses;
