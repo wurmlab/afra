@@ -962,6 +962,10 @@ var EditTrack = declare(DraggableFeatureTrack,
         var subfeatures = this.sortAnnotationsByLocation(feature.get('subfeatures'))
             , data      = [];
 
+        if (!subfeatures) {
+            subfeatures = [feature];
+        }
+
         _.each(subfeatures, function (f) {
             var l = data[data.length - 1];
             if (l && (f.get('start') - l['end'] <= 1)) { // we are looking for introns
