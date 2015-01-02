@@ -32,12 +32,18 @@ end
 file '.rake/js-npm' => ['.rake', 'package.json'] do
   if system 'npm install'
     touch '.rake/js-npm'
+  else
+    abort "*** FAIL: Couldn't install JS dependencies.
+    Are NodeJS and NPM installed?"
   end
 end
 
 file '.rake/js-bower' => ['.rake/js-npm', 'bower.json'] do
   if system 'npm run-script bower'
     touch '.rake/js-bower'
+  else
+    abort "*** FAIL: Couldn't install JS dependencies.
+    Are NodeJS and NPM installed?"
   end
 end
 
