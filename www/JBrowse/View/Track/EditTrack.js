@@ -878,14 +878,17 @@ var EditTrack = declare(DraggableFeatureTrack,
     },
 
     /**
-     * Set whole CDS from the annotated start codon to the first stop codon. If
-     * stop codon not found, reading frame will extend from the start codon to
-     * the end of transcript such that length of reading frame is a multiple of
-     * 3.
+     * Set whole CDS from the given start codon, or from the annotated start
+     * codon, to the first stop codon. If stop codon is not found, reading
+     * frame will be extended from start codon to the end of transcript such
+     * that length of reading frame is a multiple of 3.
+     *
+     * Original transcript is returned if start codon not given, or start codon
+     * not annotated in the given transcript.
      */
     setORF: function (refSeq, transcript, orfStart) {
         orfStart = orfStart || this.getTranslationStart(transcript);
-        if (!orfStart) { return; }
+        if (!orfStart) { return transcript; }
 
         var cdna, orfStop, readingFrame;
         cdna          = this.getCDNA(refSeq, transcript).toLowerCase();
