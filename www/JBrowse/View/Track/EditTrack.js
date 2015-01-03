@@ -1018,14 +1018,16 @@ var EditTrack = declare(DraggableFeatureTrack,
      * exonic regions are UTR.
      */
     normalizeFeature: function (feature, track) {
-        if (feature.parent()) {
-            var subfeatures = _.select(feature.parent().children(), function (f) {
+        var parent;
+        if (parent = feature.parent()) {
+            var subfeatures = _.select(parent.children(), function (f) {
                 if (f.get('start') >= feature.get('start') &&
                     f.get('end') <= feature.get('end')) {
                     return f;
                 }
             });
-            return this.normalizeFeature(this.createTranscript(subfeatures), track);
+            return this.normalizeFeature(
+                this.createTranscript(subfeatures, parent.get('name')), track);
         }
 
         var subfeatures = this.sortAnnotationsByLocation(feature.get('subfeatures'))
