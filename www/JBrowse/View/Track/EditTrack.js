@@ -733,32 +733,43 @@ var EditTrack = declare(DraggableFeatureTrack,
      * returns `undefined`.
      */
     mergeTranscripts: function (refSeq, transcripts) {
+        // Can't merge if transcripts are on different strands.
         if (!this.areOnSameStrand(transcripts)) {
             return undefined;
         }
 
+        // Translation start of the merged transcript will be the leftmost or
+        // rightmost translation start, depending on the strand, of the
+        // original transcripts.
         var strand = transcripts[0].get('strand');
         var translationStart = _.map(transcripts, _.bind(function (transcript) {
             return this.getTranslationStart(transcript);
         }, this));
         translationStart = (strand === -1) ? _.max(translationStart) : _.min(translationStart);
 
+        // Pick exons from both transcripts. We will introduce CDS later by
+        // calculating ORF against `translationStart` (determined above).
         var exons = [];
         _.each(transcripts, _.bind(function (transcript) {
             exons = exons.concat(this.filterExons(transcript));
         }, this));
         exons = this.sortAnnotationsByLocation(exons);
+
+        // Combine partially or fully overlapping, and immediately adjacent
+        // exons into one.
+        var newexons = [];
         _.each(exons, _.bind(function (f) {
-            var last = exons[exons.length - 1];
+            var last = newexons[newexons.length - 1];
             if (last && (f.get('start') - last.get('end') <= 1)) { // we are looking for introns
-                exons[exons.length - 1] = this.copyFeature(last, {end: Math.max(last.get('end'), f.get('end'))});
+                newexons[newexons.length - 1] = this.copyFeature(last, {end: Math.max(last.get('end'), f.get('end'))});
             }
             else {
-                exons.push(f);
+                newexons.push(f);
             }
         }, this));
 
-        var newTranscript  = this.createTranscript(exons);
+        // Create new transcript from the processed exons, and insert CDS.
+        var newTranscript = this.createTranscript(newexons);
         newTranscript = this.setORF(refSeq, newTranscript, translationStart);
         newTranscript.set('name', 'afra-' + newTranscript.get('seq_id') + '-mRNA-' + counter++);
         return newTranscript;
