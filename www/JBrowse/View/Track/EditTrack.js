@@ -504,6 +504,34 @@ var EditTrack = declare(DraggableFeatureTrack,
     },
 
     /**
+     * Defining our own because _.min can give unexpected output
+     * (https://github.com/jashkenas/underscore/issues/1997).
+     *
+     * We compact (remove falsy values from) the input array first, and compute
+     * min if the compacted array isn't empty. `undefined` is returned otherwise.
+     */
+    min: function (array) {
+        array = _.compact(array);
+        if (!_.isEmpty(array)) {
+            return _.min(array);
+        }
+    },
+
+    /**
+     * Defining our own because _.max can give unexpected output
+     * (https://github.com/jashkenas/underscore/issues/1997).
+     *
+     * We compact (remove falsy values from) the input array first, and compute
+     * max if the compacted array isn't empty. `undefined` is returned otherwise.
+     */
+    max: function (array) {
+        array = _.compact(array);
+        if (!_.isEmpty(array)) {
+            return _.max(array);
+        }
+    },
+
+    /**
      * Select all features from an array of features or from subfeatures of the
      * given feature that are of the given type.
      */
@@ -745,7 +773,7 @@ var EditTrack = declare(DraggableFeatureTrack,
         var translationStart = _.map(transcripts, _.bind(function (transcript) {
             return this.getTranslationStart(transcript);
         }, this));
-        translationStart = (strand === -1) ? _.max(translationStart) : _.min(translationStart);
+        translationStart = (strand === -1) ? this.max(translationStart) : this.min(translationStart);
 
         // Pick exons from both transcripts. We will introduce CDS later by
         // calculating ORF against `translationStart` (determined above).
