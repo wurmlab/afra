@@ -95,5 +95,36 @@ var SimpleFeature = Util.fastDeclare({
 
 });
 
+SimpleFeature.toJSON = function (transcript) {
+    return JSON.stringify(transcript, function (key, value) {
+        if (key === '_parent' || key === '_uniqueID' ||  key === '__proto__') return;
+        return value;
+    });
+};
+
+// Directly constructing a transcript out of parsed JSON data
+// results in a duplicated level of nesting inside array of
+// SimpleFeature objects.
+//
+// To avoid that, we:
+// * save the subfeatures array data from the parsed data,
+// * generate the full transcript and delete the incorrect portion,
+// * generate SimpleFeature objects from saved array and insert
+//   them back into the transcript,
+// * return the corrected transcript.
+SimpleFeature.fromJSON = function (featureJSON) {
+
+    var subfeatures = featureJSON.data.subfeatures;
+    delete featureJSON.data.subfeatures;
+    var feature = new SimpleFeature(featureJSON);
+    subfeatures = _.map(subfeatures, function (f) {
+        f.parent = feature;
+        return new SimpleFeature(f);
+    });
+    if(!_.isEmpty(subfeatures))
+        feature.set('subfeatures', subfeatures);
+    return feature;
+};
+
 return SimpleFeature;
 });
