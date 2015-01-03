@@ -803,6 +803,13 @@ var EditTrack = declare(DraggableFeatureTrack,
         return newTranscript;
     },
 
+    /**
+     * Splits given exon of the given transcript at the desired coordinate to
+     * introduce an intron.
+     *
+     * The given coordinate should have 10bp flanking on both sides or the
+     * given exon will simply be clipped on that end or removed altogether.
+     */
     makeIntron: function(transcript, exon, coordinate) {
         var subfeatures = _.reject(transcript.get('subfeatures'), function (f) {
             return f.id() === exon.id();
@@ -823,6 +830,17 @@ var EditTrack = declare(DraggableFeatureTrack,
         return newTranscript;
     },
 
+    /**
+     * Splits given transcript at the given coordinate.
+     *
+     * Given coordinate should ideally be intronic, but no such check is
+     * performed by `splitTranscript`. If the given coordinate is exonic,
+     * the corresponding exon will simply be excluded from the resulting
+     * transcripts.
+     *
+     * `splitTranscript` doesn't recalculate open reading frame in the
+     * resulting transcripts.
+     */
     splitTranscript: function (transcript, coordinate) {
         var children  = transcript.children();
         var featuresOnLeft = _.select(children, function (f) {
@@ -940,6 +958,15 @@ var EditTrack = declare(DraggableFeatureTrack,
         return newTranscript;
     },
 
+    /**
+     * Flips strand for the given transcript and all its subfeatures.
+     *
+     * This function simply resets the strand attribute of given transcript and
+     * all its subfeatures, but at a conceptual and visual level, `flipStrand`
+     * a. reverses translation start and stop coordinates
+     * b. reverses splice donor and acceptor sites
+     * c. reverse complement of the reference sequence must be read
+     */
     flipStrand: function (transcript) {
         if (transcript.parent()) {
             // can't flips strand for subfeatures
