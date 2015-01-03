@@ -222,8 +222,7 @@ require(['jasmine/jasmine']
         }
 
         require([
-            'JBrowse/Browser',
-            "ExportGFF3.spec.js",
+            "JBrowse/Browser",
             "ExportGFF3.spec.js",
             "LazyArray.spec.js",
             "FeatureLayout.spec.js",
@@ -239,6 +238,7 @@ require(['jasmine/jasmine']
             "TabixIndexedFile.spec.js",
             "RESTStore.spec.js",
             "RegularizeRefSeqs.spec.js",
+            "EditTrack.spec.js",
             "GFF3.spec.js"
         ]
         , function () {
