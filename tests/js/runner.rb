@@ -13,9 +13,12 @@ class CapybaraJasmine
 
   def run
     visit '/tests/js/index.html'
+    STDERR.puts 'visited index page. waiting for test execution'
     sleep 0.05 until evaluate_script("window.jsApiReporter &&
                                    window.jsApiReporter.finished")
+    STDERR.puts 'test execution done. will print output now.'
     puts evaluate_script "window.jsApiReporter.consoleOutput()"
+    STDERR.puts 'printed the output. will exit now.'
     exit evaluate_script "window.jsApiReporter.passed"
   end
 
