@@ -8,5 +8,5 @@ install:
   - rake deps:js
 script:
   - rake test:rb
-  - xvfb-run rake test:js
+  - xvfb-run -a rake test:js
   #- prove -I tests/pl/lib -I . -lr tests
