@@ -13,10 +13,11 @@ var SimpleFeature = Util.fastDeclare({
     /**
      * @param args.data {Object} key-value data, must include 'start' and 'end'
      * @param args.parent {Feature} optional parent feature
-     * @param args.id {String} optional unique identifier.  can also be in data.uniqueID.
+     * @param args.id {String} optional unique identifier. can also be in data.uniqueID.
      *
-     * Note: args.data.subfeatures can be an array of these same args,
-     * which will be inflated to more instances of this class.
+     * NOTE:
+     *   args.data.subfeatures can be an array of these same args,
+     *   which will be inflated to more instances of this class.
      */
     constructor: function( args ) {
         args = args || {};
@@ -26,8 +27,6 @@ var SimpleFeature = Util.fastDeclare({
             this._parent ? this._parent.id()+'_'+(counter++) : 'SimpleFeature_'+(counter++)
         );
 
-        //console.log(args);
-        //console.log(this._uniqueID);
         // inflate any subfeatures that are not already feature objects
         var subfeatures;
         if(( subfeatures = this.data.subfeatures )) {
@@ -95,35 +94,29 @@ var SimpleFeature = Util.fastDeclare({
 
 });
 
-SimpleFeature.toJSON = function (transcript) {
-    return JSON.stringify(transcript, function (key, value) {
-        if (key === '_parent' || key === '_uniqueID' ||  key === '__proto__') return;
+/**
+ * Serialize a SimpleFeature object, including subfeatures if any, to JSON.
+ *
+ * NOTE:
+ *   ids are not serialized. Actually, only `data` attribue of the feature
+ *   is serialized.
+ */
+SimpleFeature.toJSON = function (feature) {
+    return JSON.stringify(feature, function (key, value) {
+        if (value && value.data) return value.data;
         return value;
     });
 };
 
-// Directly constructing a transcript out of parsed JSON data
-// results in a duplicated level of nesting inside array of
-// SimpleFeature objects.
-//
-// To avoid that, we:
-// * save the subfeatures array data from the parsed data,
-// * generate the full transcript and delete the incorrect portion,
-// * generate SimpleFeature objects from saved array and insert
-//   them back into the transcript,
-// * return the corrected transcript.
+/**
+ * Create SimpleFeature object from JSON string.
+ *
+ * NOTE:
+ *   ids will differ from the original feature.
+ */
 SimpleFeature.fromJSON = function (featureJSON) {
-
-    var subfeatures = featureJSON.data.subfeatures;
-    delete featureJSON.data.subfeatures;
-    var feature = new SimpleFeature(featureJSON);
-    subfeatures = _.map(subfeatures, function (f) {
-        f.parent = feature;
-        return new SimpleFeature(f);
-    });
-    if(!_.isEmpty(subfeatures))
-        feature.set('subfeatures', subfeatures);
-    return feature;
+    var data = JSON.parse(featureJSON);
+    return new SimpleFeature({data: data});
 };
 
 return SimpleFeature;

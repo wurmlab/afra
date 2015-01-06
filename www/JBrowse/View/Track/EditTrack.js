@@ -59,12 +59,11 @@ var EditTrack = declare(DraggableFeatureTrack,
         this.gview.browser.setGlobalKeyboardShortcut(46, this, 'deleteSelectedFeatures', true);
 
         $(window).on('storage', _.bind(function (evt) {
-            this.store.features = this.store._parseLocalStorage();
-            this.changed();
-            this.updateDoneButton();
+            this.store.syncFromLocalStorage();
+            this.changed({sync: false});
         }, this));
 
-        this.updateDoneButton();
+        this.changed({sync: false});
     },
 
     _defaultConfig: function () {
@@ -1705,10 +1704,13 @@ var EditTrack = declare(DraggableFeatureTrack,
      * Extend superclass' changed function to refresh our additions to the UI as
      * well.
      */
-    changed: function () {
+    changed: function (opts) {
         this.inherited(arguments);
 
+        this.updateDoneButton();
         this.updateControlButtons();
+        if (!(opts && opts.sync === false))
+            this.store.syncToLocalStorage();
     },
 
     highlightFeature: function (feature) {
@@ -1740,7 +1742,6 @@ var EditTrack = declare(DraggableFeatureTrack,
                     inserted.push(toInsert);
                 }, this));
                 this.changed();
-                this.updateDoneButton();
                 if (callback) {
                     callback.apply(this, inserted);
                 }
@@ -1767,7 +1768,6 @@ var EditTrack = declare(DraggableFeatureTrack,
                 removed.push(t);
             }, this));
             this.changed();
-            this.updateDoneButton();
             if (callback) {
                 callback.apply(this, removed);
             }
@@ -1862,13 +1862,11 @@ var EditTrack = declare(DraggableFeatureTrack,
     undo: function () {
         this.store.undo();
         this.changed();
-        this.updateDoneButton();
     },
 
     redo: function () {
         this.store.redo();
         this.changed();
-        this.updateDoneButton();
     },
 
     updateDoneButton: function () {

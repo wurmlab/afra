@@ -5,40 +5,28 @@ define(['underscore',
         'JBrowse/Store/Stack']
 , function(_, declare, SeqFeature, SimpleFeature, Stack) {
 
-    return declare(SeqFeature, {
+    var Scratchpad = declare(SeqFeature, {
 
         constructor: function (args) {
             this.inherited(arguments);
             this.refSeq   = args.refSeq;
-            this.features = this._makeFeatures(this.config.features || []);
 
-            // Fetch features from local storage
-            var localFeatures = this._parseLocalStorage();
-            if (localFeatures) {
-                this.features = this.features.concat(localFeatures);
+            // Pull saved state from localStorage.
+            this.syncFromLocalStorage(true);
+
+            // If no features in localStorage, start with server sent feature
+            // if any.
+            if (_.isEmpty(this.features) && this.config.features) {
+                this.features = this._makeFeatures(this.config.features);
+                this.undoStateStack = new Stack();
+                this.redoStateStack = new Stack();
             }
 
             this._calculateStats();
         },
 
-        insert: function (feature) {
-            this.features.push(feature);
-            this._updateLocalStorage();
-            this._calculateStats();
-        },
-
-        replace: function (feature) {
-            var index = _.indexOf(this.ids(), feature.id());
-            this.features[index] = feature;
-            this._updateLocalStorage();
-            this._calculateStats();
-        },
-
-        remove: function (feature) {
-            var index = _.indexOf(this.ids(), feature.id());
-            this.features.splice(index, 1);
-            this._updateLocalStorage();
-            this._calculateStats();
+        ids: function () {
+            return _.map(this.features, function (f) {return f.id();});
         },
 
         get: function (id) {
@@ -47,28 +35,99 @@ define(['underscore',
             });
         },
 
-        ids: function () {
-            return _.map(this.features, function (f) {return f.id();});
+        getFeatures: function (query, featCallback, endCallback, errorCallback) {
+            var start = query.start;
+            var end   = query.end;
+            _.each(this.features, _.bind(function (f) {
+                if (!(f.get('end') < start || f.get('start') > end)) {
+                    featCallback(f);
+                }
+            }, this));
+            if (endCallback)  { endCallback() }
         },
 
-        // Parses localStorage data and returns an array of transcripts
-        // (SimpleFeature objects). Please note that the Id of the object is
-        // not preserved in retreival process. So essentially, saved and
-        // retreived objects are different.
-        _parseLocalStorage: function () {
-            var localFeatures = JSON.parse(localStorage.getItem('features'));
-            localFeatures = _.map(localFeatures, SimpleFeature.fromJSON);
-            return localFeatures;
+        insert: function (feature) {
+            this.features.push(feature);
+            this._calculateStats();
         },
 
-        // subfeatures array contains SimpleFeature objects with back
-        // reference to their parent causing JSON.stringify to
-        // fail.
-        // We avoid that by replacing _parent values using a custom
-        // replacer function.
-        _updateLocalStorage: function () {
-            var features = SimpleFeature.toJSON(this.features);
-            localStorage.setItem('features', features);
+        replace: function (feature) {
+            var index = _.indexOf(this.ids(), feature.id());
+            this.features[index] = feature;
+            this._calculateStats();
+        },
+
+        remove: function (feature) {
+            var index = _.indexOf(this.ids(), feature.id());
+            this.features.splice(index, 1);
+            this._calculateStats();
+        },
+
+        /**
+         * Snapshot current state of the store. These snapshots are later used
+         * for undo / redo functionality.
+         */
+        backupStore: function () {
+            var undoState = this.features.slice();
+            this.undoStateStack = this.undoStateStack || new Stack() ;
+            this.undoStateStack.push(undoState);
+        },
+
+        /**
+         * Revert store to previous state.
+         */
+        undo: function () {
+            this.redoStateStack = this.redoStateStack || new Stack();
+            var redoState = this.features.slice();
+            this.redoStateStack.push(redoState);
+
+            var undoState = this.undoStateStack.pop();
+            this.features = undoState;
+        },
+
+        /**
+         * Revert store to the state before most recent undo.
+         */
+        redo: function () {
+            this.undoStateStack = this.undoStateStack || new Stack() ;
+            var undoState = this.features.slice();
+            this.undoStateStack.push(undoState);
+
+            var redoState = this.redoStateStack.pop();
+            this.features = redoState;
+        },
+
+        /**
+         * Flushes store's data (features, and undo and redo state stack) to
+         * localStorage.
+         *
+         * NOTE:
+         *   It will always overwrite existing data.
+         */
+        syncToLocalStorage: function () {
+            localStorage.setItem('id', this.browser.config.id);
+            localStorage.setItem('features', Scratchpad.featuresToJSON(this.features));
+            localStorage.setItem('undoStateStack', Stack.toJSON(this.undoStateStack));
+            localStorage.setItem('redoStateStack', Stack.toJSON(this.redoStateStack));
+        },
+
+        /**
+         * Restore store's data (features, and undo and redo state stack) from
+         * localStorage.
+         *
+         * NOTE:
+         *   It will read localStorage only if id set in localStorage is same as
+         *   id of the task opened.
+         */
+        syncFromLocalStorage: function () {
+            var id = localStorage.getItem('id');
+            id = id && parseInt(id);
+            if (id !== this.browser.config.id) {
+                return;
+            }
+            this.features = Scratchpad.featuresFromJSON(localStorage.getItem('features'));
+            this.undoStateStack = Stack.fromJSON(localStorage.getItem('undoStateStack'));
+            this.redoStateStack = Stack.fromJSON(localStorage.getItem('redoStateStack'));
         },
 
         _makeFeatures: function (fdata) {
@@ -117,42 +176,28 @@ define(['underscore',
                 maxEnd:         maxEnd,              /* 3'-most feature end   */
                 span:           (maxEnd-minStart+1)  /* min span containing all features */
             };
-        },
-
-        getFeatures: function (query, featCallback, endCallback, errorCallback) {
-            var start = query.start;
-            var end   = query.end;
-            _.each(this.features, _.bind(function (f) {
-                if (!(f.get('end') < start || f.get('start') > end)) {
-                    featCallback(f);
-                }
-            }, this));
-            if (endCallback)  { endCallback() }
-        },
-
-        undo: function () {
-            this.redoStateStack = this.redoStateStack || new Stack();
-            var redoState = this.features.slice();
-            this.redoStateStack.push(redoState);
-
-            var undoState = this.undoStateStack.pop();
-            this.features = undoState;
-        },
-
-        redo: function () {
-            this.undoStateStack = this.undoStateStack || new Stack() ;
-            var undoState = this.features.slice();
-            this.undoStateStack.push(undoState);
-
-            var redoState = this.redoStateStack.pop();
-            this.features = redoState;
-        },
-
-        backupStore: function () {
-            var undoState = this.features.slice();
-            this.undoStateStack = this.undoStateStack || new Stack() ;
-            this.undoStateStack.push(undoState);
         }
-
     });
+
+    /**
+     * Serializes an array of SimpleFeature objects to JSON.
+     */
+    Scratchpad.featuresToJSON = function (features) {
+        var featuresJSON = _.map(features, function (f) {
+            return SimpleFeature.toJSON(f)
+        });
+        return JSON.stringify(featuresJSON);
+    };
+
+    /**
+     * Constructs an array of SimpleFeature objects from JSON.
+     */
+    Scratchpad.featuresFromJSON = function (featuresJSON) {
+        var features = JSON.parse(featuresJSON);
+        return _.map(features, function (f) {
+            return SimpleFeature.fromJSON(f)
+        });
+    };
+
+    return Scratchpad;
 });
