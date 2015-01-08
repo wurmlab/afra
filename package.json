@@ -15,8 +15,7 @@
   "devDependencies": {
   },
   "scripts": {
-    "bower":         "bower install",
-    "amdfy-bionode": "urequire AMD www/lib/bionode/lib -o www/lib/bionode/amd"
+    "bower":         "bower install"
   },
   "license": "Apache Public License 2.0"
 }

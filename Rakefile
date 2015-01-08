@@ -47,10 +47,6 @@ file '.rake/js-bower' => ['.rake/js-npm', 'bower.json'] do
   end
 end
 
-file 'www/lib/bionode/amd/bionode.js' => ['.rake/js-bower'] do
-  system 'npm run-script amdfy-bionode'
-end
-
 desc 'Install Ruby dependencies.'
 task 'deps:rb' => '.rake/rb'
 
@@ -58,8 +54,7 @@ desc 'Install Perl dependencies.'
 task 'deps:pl' => '.rake/pl'
 
 desc 'Install JavaScript dependencies.'
-task 'deps:js' => ['.rake/js-npm', '.rake/js-bower',
-                   'www/lib/bionode/amd/bionode.js']
+task 'deps:js' => ['.rake/js-npm', '.rake/js-bower']
 
 desc 'Install all dependencies.'
 task 'deps' => ['deps:rb', 'deps:pl', 'deps:js']

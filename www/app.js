@@ -8,8 +8,7 @@ require.config({
         angular:    'lib/angular/angular',
         ngSanitize: 'lib/angular-sanitize/angular-sanitize',
         ngAnimate:  'lib/angular-animate/angular-animate',
-        'angular-moment': 'lib/angular-moment/angular-moment',
-        bionode:    'lib/bionode/amd/bionode'
+        'angular-moment': 'lib/angular-moment/angular-moment'
     },
     shim: {
         underscore: {
