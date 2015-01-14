@@ -72,12 +72,14 @@ curator who makes a final verdict.
 * ~~Obtain curations from eight QMUL MSc students.~~
 * ~~Obtain contributions from 20 of undergraduate students.~~
 * ~~December 2014: Simple editor synchronization between two tabs/windows.~~
-* December 2014: Genome dashboard: Overview of contributions per genome. How many curations. How many pass auto-check.
-* December 2014: Comments on curations.
-* December 2014: Improve annotation editing experience. Make it more intuitive.
-* December 2014: Extensive automated testing of annotation editing functionality.
-* December 2014: Improve page load times. Improve annotation editing performance.
-* January 2014: Interactive tutorial.
+* ~~December 2014: Improve annotation editing experience. Make it more intuitive.~~
+* ~~December 2014: Basic automated testing of annotation editing functionality.~~
+* January 2015: Improve page load times.
+* January 2015: Genome dashboard: Overview of contributions per genome. How many curations. How many pass auto-check.
+* January 2015: Comments on curations.
+* January 2015: Extensive automated testing of annotation editing functionality.
+* February 2015: Improve annotation editing performance.
+* February 2015: Interactive tutorial.
 * Spring 2015: Roll out to 200 first year students learning about gene
   structure ... and the inadequacies of Bioinformatics algorithms.
 
