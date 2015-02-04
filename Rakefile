@@ -67,7 +67,8 @@ end
 
 desc 'Create database.'
 task 'db:init', [:name] do |t, args|
-  system "createdb -e #{args[:name] || 'afra'}"
+  name = args[:name] || 'afra'
+  system "createdb -e #{name}" unless system "psql -l | grep #{name}"
 end
 
 desc 'Migrate database.'
