@@ -21,7 +21,6 @@ define( [
             'JBrowse/TouchScreenSupport',
             'JBrowse/ConfigManager',
             'JBrowse/View/InfoDialog',
-            'JBrowse/View/FileDialog',
             'JBrowse/Model/Location',
             'JBrowse/View/LocationChoiceDialog',
             'JBrowse/View/Dialog/SetHighlight',
@@ -52,7 +51,6 @@ define( [
             Touch,
             ConfigManager,
             InfoDialog,
-            FileDialog,
             Location,
             LocationChoiceDialog,
             SetHighlightDialog,
@@ -424,36 +422,6 @@ getTrackTypes: function() {
         };
 
     return this._knownTrackTypes;
-},
-
-openFileDialog: function() {
-    new FileDialog({ browser: this })
-        .show({
-            openCallback: dojo.hitch( this, function( results ) {
-                var confs = results.trackConfs || [];
-                if( confs.length ) {
-
-                    // tuck away each of the store configurations in
-                    // our store configuration, and replace them with
-                    // their names.
-                    array.forEach( confs, function( conf ) {
-                        var storeConf = conf.store;
-                        if( storeConf && typeof storeConf == 'object' ) {
-                            delete conf.store;
-                            var name = this._addStoreConfig( storeConf.name, storeConf );
-                            conf.store = name;
-                        }
-                    },this);
-
-                    // send out a message about how the user wants to create the new tracks
-                    this.publish( '/jbrowse/v1/v/tracks/new', confs );
-
-                    // if requested, send out another message that the user wants to show them
-                    if( results.trackDisposition == 'openImmediately' )
-                        this.publish( '/jbrowse/v1/v/tracks/show', confs );
-                }
-            })
-        });
 },
 
 addTracks: function( confs ) {
