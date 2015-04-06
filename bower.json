@@ -24,7 +24,6 @@
 
     "dojo":            "1.9.7",
     "dojox":           "1.9.7",
-    "util":            "dojo/util#1.9.7",
     "dijit":           "1.9.7",
     "put-selector":    "0.3.6",
     "dgrid":           "0.3.17",
