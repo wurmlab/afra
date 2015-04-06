@@ -9,12 +9,16 @@
     "email": "anurag08priyam@gmail.com"
   },
   "dependencies": {
-      "bower":        "1.4.1"
+      "bower":        "1.4.1",
+      "requirejs":    "2.1.17",
+      "less":         "1.7.5",
+      "csso":         "1.3.11"
   },
   "devDependencies": {
   },
   "scripts": {
-    "bower":         "bower install"
+    "bower":         "bower install",
+    "build":         "r.js -o build.js"
   },
   "license": "Apache Public License 2.0"
 }
