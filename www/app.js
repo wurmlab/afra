@@ -83,11 +83,20 @@ require.config({
     }
 });
 
-require(['bootstrap', 'less!styles']
-, function () {
-
-    require(['underscore', 'jquery', 'angular', 'dojo/has', 'dojo/_base/sniff', 'ngSanitize', 'ngAnimate', 'angular-moment']
-    , function (_, $, angular, has) {
+require(
+    [
+        'underscore',
+        'jquery',
+        'angular',
+        'dojo/has',
+        'dojo/_base/sniff',
+        'bootstrap',
+        'ngSanitize',
+        'ngAnimate',
+        'angular-moment',
+        'less!styles'
+    ],
+    function (_, $, angular, has) {
 
         'use strict';
 
@@ -249,4 +258,3 @@ require(['bootstrap', 'less!styles']
 
         angular.bootstrap(document, [app['name']]);
     });
-})
