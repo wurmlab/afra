@@ -2,7 +2,6 @@ define([
     'dojo/_base/declare',
     'dojo/_base/lang',
     'dojo/Deferred',
-    'dijit/MenuItem',
     'JBrowse/Component',
     'jquery.onenter',
     'bootstrap.autofocus'
@@ -11,7 +10,6 @@ function (
     declare,
     lang,
     Deferred,
-    dijitMenuItem,
     Component
 ) {
 
