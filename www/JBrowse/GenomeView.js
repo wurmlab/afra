@@ -14,7 +14,6 @@ define([
            'JBrowse/BehaviorManager',
            'JBrowse/View/Animation/Zoomer',
            'JBrowse/View/Animation/Slider',
-           'JBrowse/View/InfoDialog',
            'jquery.tripleclick'
        ], function(
            declare,
@@ -31,8 +30,7 @@ define([
            GridLinesTrack,
            BehaviorManager,
            Zoomer,
-           Slider,
-           InfoDialog
+           Slider
        ) {
 
 var dojof = Util.dojof;
