@@ -6,10 +6,32 @@
     modules: [
         {
             name: 'app',
-            include: ['controllers/dashboard', 'controllers/curate']
+            include: ['controllers/about', 'controllers/dashboard']
+        },
+        {
+            name: 'controllers/curate',
+            include: [
+                'JBrowse/Store/Sequence/StaticChunked',
+                'JBrowse/Store/SeqFeature/NCList',
+                'JBrowse/View/Track/Sequence',
+                'JBrowse/View/Track/DraggableHTMLFeatures',
+                'JBrowse/View/Track/Alignments2',
+                'JBrowse/View/Track/SNPCoverage'
+            ],
+            excludeShallow: [
+                'jquery',
+                'underscore',
+                'dojo/has',
+                'dojo/_base/sniff'
+            ]
         }
     ],
     paths: {
+        'dijit/form/_Spinner':      'empty:',
+        'dijit/form/ValidationTextBox': 'empty:',
+        'dijit/Tooltip':            'empty:',
+        'dojo/request':             'empty:',
+
         'dojo/query':               'empty:',
         'dijit/layout/ContentPane': 'empty:',
         'dijit/Dialog':             'empty:',
