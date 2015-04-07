@@ -6,9 +6,12 @@ function () {
         var scope = this;
 
         scope.describe_contribution = function (contribution) {
-            var species = contribution.task.for_species;
+            var task = contribution.task;
+            var species, locus;
+            species = task.for_species;
             species = species.split('_').join(' ');
-            return "Corrections to <em>" + species + "</em> gene.";
+            locus   = task.ref_seq_id + ':' + task.start + '..' + task.end;
+            return "Corrections to <em>" + species + "</em> gene (" + locus + ").";
         };
 
         http.get('/data/users/' + scope.user.id + '/contributions')

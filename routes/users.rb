@@ -10,6 +10,6 @@ class Users < App::Routes
   get '/data/users/:id/contributions' do |id|
     contribution = Submission.where user_id: id
     contribution.to_json only: [:status, :made_on],
-      include: {task: {only: [:id, :for_species]}}
+      include: {task: {only: [:id, :for_species, :ref_seq_id, :start, :end]}}
   end
 end
