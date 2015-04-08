@@ -41,7 +41,7 @@ return declare( FeatureDescriptionMixin, {
             eventConf.click = (this.config.style||{}).linkTemplate
                     ? { action: "newWindow", url: this.config.style.linkTemplate }
                     : { action: "contentDialog",
-                        title: '{type} {name}',
+                        title: 'Feature details',
                         content: dojo.hitch( this, 'defaultFeatureDetail' ) };
         }
 

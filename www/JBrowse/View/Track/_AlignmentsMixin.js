@@ -31,35 +31,47 @@ return declare([ MismatchesMixin, NamedFeatureFiltersMixin ], {
             className: 'detail feature-detail feature-detail-'+track.name.replace(/\s+/g,'_').toLowerCase(),
             innerHTML: ''
         });
-        var fmt = dojo.hitch( this, function( name, value ) {
-            name = Util.ucFirst( name.replace(/_/g,' ') );
-            return this.renderDetailField(container, name, value);
-        });
-        fmt( 'Name', f.get('name') );
-        fmt( 'Type', f.get('type') );
-        fmt( 'Score', f.get('score') );
-        fmt( 'Description', f.get('note') );
-        fmt(
-            'Position',
-            Util.assembleLocString({ start: f.get('start'),
-                                     end: f.get('end'),
-                                     ref: this.refSeq.name })
-            + ({'1':' (+)', '-1': ' (-)', 0: ' (no strand)' }[f.get('strand')] || '')
-        );
 
+        var def = Util.assembleLocString({
+            start: f.get('start'),
+            end: f.get('end'),
+            ref: this.refSeq.name
+        })
+        + ({'1':' (+)', '-1': ' (-)', 0: ' (no strand)' }[f.get('strand')] || '')
+        + ' ' + f.get('type')
+        + ' ' + f.get('length_on_ref') + 'bp'
+        + ' ' + f.get('name')
+        + ' ' + f.get('seq_length') + 'bp'
+        + ' ' + f.get('score');
+        dojo.create('strong', {innerHTML: def}, container);
 
-        if( f.get('seq') ) {
-            fmt('Sequence and Quality', this._renderSeqQual( f ) );
+        if (f.get('seq')) {
+            dojo.create('br', {}, container);
+            dojo.create('br', {}, container);
+            dojo.create('div', {
+                innerHTML: this._renderSeqQual(f)
+            }, container);
+            dojo.create('br', {}, container);
         }
 
+        var table = dojo.create('table', {
+            className: 'table table-condensed table-hover table-bordered'
+        }, container);
+        var tbody = dojo.create('tbody', {}, table);
         var additionalTags = array.filter(
             f.tags(), function(t) {
-                return ! {name:1,score:1,start:1,end:1,strand:1,note:1,subfeatures:1,type:1}[t.toLowerCase()];
+                return !{name:1,start:1,end:1,strand:1,
+                    note:1,subfeatures:1,type:1,qual:1,
+                    seq:1,seq_id:1,source:1,score:1,
+                    seq_length:1,length_on_ref:1}[t.toLowerCase()];
             }
         ).sort();
-
-        dojo.forEach( additionalTags, function(t) {
-                          fmt( t, f.get(t) );
+        dojo.forEach(additionalTags, function (t) {
+            var tr = dojo.create('tr', {}, tbody);
+            var name  = Util.ucFirst(t.replace(/_/g,' '));
+            var value = f.get(t);
+            dojo.create('th', {innerHTML: name}, tr)
+            dojo.create('td', {innerHTML: value}, tr)
         });
 
         return container;

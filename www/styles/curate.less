@@ -569,23 +569,6 @@ div.block:hover > div.message {
     top: 0;
 }
 
-/* styles for per-base quality table in alignment detail pages */
-.baseQuality {
-    font-family: Courier New, monospace;
-}
-table.baseQuality {
-    margin-bottom: 1em;
-}
-table.baseQuality td {
-    padding: 0 0.2em;
-    line-height: 0.95;
-    text-align: center;
-}
-table.baseQuality tr.seq td {
-    padding-top: 0.8em;
-    font-weight: bold;
-}
-
 /* CSS styles for the various types of feature glyphs */
 /*
   NOTES ON STYLING FEATURES:
@@ -1124,4 +1107,25 @@ div.sequence .dna-highlighted {
 }
 .search-dialog .dijitTextBox * {
     font-size: 110%;
+}
+
+/* BAM dialog */
+.baseQuality {
+  font-family: monospace;
+}
+.baseQuality .basePosition {
+  display: inline-block;
+  padding: 0 0.3em 0.4em 0.3em;
+}
+.baseQuality .basePosition:hover {
+  background: #f5f5f5;
+}
+.baseQuality span.seq {
+  display: block;
+  text-align: center;
+  font-weight: bold;
+}
+.baseQuality span.qual {
+  display: block;
+  text-align: center;
 }

@@ -11,8 +11,7 @@ define( [
             'dojo/query',
             'dojo/on',
             'dijit/Destroyable',
-            'JBrowse/View/InfoDialog',
-            'dijit/Dialog',
+            'JBrowse/View/Modal',
             'dijit/Menu',
             'dijit/PopupMenuItem',
             'dijit/MenuItem',
@@ -39,7 +38,6 @@ define( [
                   query,
                   on,
                   Destroyable,
-                  InfoDialog,
                   Dialog,
                   dijitMenu,
                   dijitPopupMenuItem,
@@ -1001,7 +999,7 @@ return declare( [Component,DetailsMixin,FeatureFiltererMixin,Destroyable],
             if( type == 'xhr' )
                 dialogOpts.href = spec.url;
 
-            dialog = new InfoDialog( dialogOpts );
+            dialog = new Dialog( dialogOpts );
             context.dialog = dialog;
 
             if( type == 'content' )
