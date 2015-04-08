@@ -144,15 +144,6 @@
     color: #aaa;
 }
 
-fieldset {
-    padding-left: 1em;
-    margin: 0.7em 0.5em;
-}
-fieldset > legend {
-    font-weight: bold;
-    margin-left: -1em;
-}
-
 div.container {
     position: absolute;
     z-index: 0;
@@ -164,70 +155,12 @@ div.dragWindow {
     z-index: 1;
 }
 
-div.vertical_scrollbar {
-    display: none;
-    width: 6px;
-    background: #eee;
-    background: rgba(235, 235, 235, 0.62);
-    border-left: 1px solid #DDD9D9;
-}
-div.vertical_scrollbar .vertical_position_marker {
-    background: #555;
-    opacity: 0.8;
-    border-radius: 5px;
-    width: 100%;
-    border-right: 1px solid #ccc;
-}
-
 .draggable {
     cursor: move;
 }
 
 .rubberBandAvailable {
     cursor: crosshair;
-}
-
-div.locationTrap {
-    position: absolute;
-    z-index: -10;
-    height: 0;
-    top: 0;
-    left: 0;
-    border-color: transparent;
-    border-style: solid;
-    border-bottom-color: #A9C6EB;
-    border-top: 0px dotted transparent;
-}
-
-div.locationThumb {
-    position: absolute;
-    top: 0px;
-    /* if you change this border from 2px, change GenomeView.showTrap */
-    border: 2px solid red;
-    margin: 0px -2px 0px -2px;
-    height: 23px;
-    cursor: move;
-    background: rgba(0, 121, 245, 0.1);
-}
-
-div.locationThumb.dojoMoveItem {
-    cursor: move;
-}
-
-div.topLink {
-    position: absolute;
-    right: 0;
-    top: 0;
-    z-index: 50;
-    background: white;
-    border: 1px solid #888;
-    border-width: 0 0 1px 1px;
-}
-
-a.topLink {
-    padding: 0 0.5ex 0 0.5ex;
-    text-decoration: none;
-    color: blue;
 }
 
 div.overview {
@@ -373,11 +306,6 @@ div.blank-block {
 
 /* NOTE: browsers that don't support rgba colors will fall back to all
    track labels being #bcbcbc */
-
-.notfound-dialog .message {
-    margin: 1em;
-    text-align: center;
-}
 
 .track .loading {
     background: #fafafa;
@@ -1006,19 +934,6 @@ div.generic_parent-hist {
     display: none;
 }
 
-/* Dojo and Dijit stuff */
-.dojoxGrid table {
-  margin: 0;
-}
-.dojoxGridRowSelectorStatusText {
-    display: none;
-}
-
-/* highlighting of dna residues in DNA track on mouseover */
-div.sequence .dna-highlighted {
-    background: #F9BF3A
-}
-
 /**
 *   Appearance of resizing box when dragging annotation edges.
 */
@@ -1074,39 +989,6 @@ div.sequence .dna-highlighted {
     -moz-box-shadow: 5px 5px 5px #444;
     -webkit-box-shadow: 5px 5px 5px #444;
     box-shadow: 5px 5px 5px #444;
-}
-
-/* Sequence Search */
-.search-dialog .header {
-    font-weight: bold;
-}
-
-.search-dialog .checkboxdiv {
-    display:block;
-}
-
-.search-dialog .translateContainer {
-    display:inline;
-}
-.search-dialog .translateContainer > label {
-    margin-left: 0.4em;
-}
-
-.search-dialog .intro {
-    width: 25em;
-    padding: 2em;
-}
-
-.search-dialog .section {
-    margin: 0.5em auto;
-    width: 25em;
-}
-
-.search-dialog .dijitTextBox {
-    width: 25em;
-}
-.search-dialog .dijitTextBox * {
-    font-size: 110%;
 }
 
 /* BAM dialog */
