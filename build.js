@@ -20,6 +20,7 @@
             ],
             excludeShallow: [
                 'jquery',
+                'bootstrap',
                 'underscore',
                 'dojo/has',
                 'dojo/_base/sniff'
