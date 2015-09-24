@@ -29,7 +29,9 @@
     "xstyle":          "0.3.1",
     "jDataView":       "rbuels/jDataView",
     "jszlib":          "rbuels/jszlib",
-    "FileSaver":       "dkasenberg/FileSaver.js"
+    "FileSaver":       "dkasenberg/FileSaver.js",
+
+    "gvapi":           "wurmlab/GeneValidatorApp-API"
   },
 
   "devDependencies": {

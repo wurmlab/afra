@@ -8,7 +8,8 @@ require.config({
         angular:    'lib/angular/angular',
         ngSanitize: 'lib/angular-sanitize/angular-sanitize',
         ngAnimate:  'lib/angular-animate/angular-animate',
-        'angular-moment': 'lib/angular-moment/angular-moment'
+        'angular-moment': 'lib/angular-moment/angular-moment',
+        gvapi: 'lib/gvapi/src/GeneValidatorApp-API'
     },
     shim: {
         underscore: {
@@ -32,6 +33,10 @@ require.config({
         },
         ngAnimate:  {
             deps:    ['angular']
+        },
+        gvapi:      {
+            exports: 'GV',
+            deps:    ['jquery']
         }
     },
     packages:[{

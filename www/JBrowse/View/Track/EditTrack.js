@@ -12,7 +12,8 @@ define([
             'JBrowse/View/GranularRectLayout',
             'JBrowse/CodonTable',
             'FileSaver/FileSaver',
-            'JBrowse/Store/Stack'
+            'JBrowse/Store/Stack',
+            'gvapi'
         ],
         function(declare,
                  $,
@@ -27,7 +28,8 @@ define([
                  Layout,
                  CodonTable,
                  saveAs,
-                 Stack) {
+                 Stack,
+                 GV) {
 
 var counter = 1;
 
@@ -474,6 +476,34 @@ var EditTrack = declare(DraggableFeatureTrack,
             var file = 'afra-' + _.values(this.gview.visibleRegion()).join('_') + '-' + type +  '.fa';
             saveAs(new Blob([data], {type: 'text/plain'}), file);
         }, this), 0);
+    },
+
+    sendToGeneValidator: function () {
+        var transcripts = this.selectionManager.getSelectedFeatures();
+        this.getRefSeq(function (refSeq) {
+            var fasta = [];
+            _.each(transcripts, _.bind(function (transcript) {
+                var ref = transcript.get('seq_id');
+                var seq = this.getProtein(refSeq, transcript, 0);
+                var name = transcript.get('name');
+                var strand = transcript.get('strand');
+                var coords = this.getCDSCoordinates(transcript, {ignoreStrand: true});
+                var sequenceType = 'protein';
+
+                if (seq) {
+                    var _fasta = '>' + (name ? (name + ' ') : '')                                       // identifier    |
+                    + ref + ':' + transcript.get('start') + '..' + transcript.get('end')                // coordinates   |
+                    + ' (' + (strand === 1 ? '+' : '-') + ')'                                           // strand        | defline
+                    + ' ' + sequenceType                                                                // sequence type |
+                    + ' ' + seq.length + (sequenceType === 'protein' ? 'aa' : 'bp')                     // length        |
+                    + "\n"
+                    + seq;
+
+                    fasta.push(_fasta);
+                }
+            }, this));
+            GV.sendToGeneValidator('http://genevalidator.sbcs.qmul.ac.uk', fasta.join("\n"), 'nr');
+        });
     },
 
     /* end CONTROLLERS - bridge between the view and model layer */
