@@ -98,22 +98,22 @@ else {
     die $error if $error;
 }
 
-#--build command lines
 my %commands = (
 
-    #MAKER anotations
-    #gene            => [ '--key' => "Gene spans",
-                         #'--className' =>  'feature5',
-                         #'--type' => 'gene',
-                         #'--noSubfeatures'
-                       #],
+    # consensus gene models
     maker           => [ '--key' => "MAKER",
                          '--className' => 'transcript',
                          '--subfeatureClasses' => '{"exon": "exon", "CDS": "CDS", "five_prime_UTR": "five_prime_UTR", "three_prime_UTR": "three_prime_UTR"}',
-                         '--type'  => 'mRNA'
+                         '--type'  => 'mRNA',
                        ],
 
-    #ab initio gene predictions
+    Gnomon          => [ '--key' => "Gnomon",
+                         '--className' => 'transcript',
+                         '--subfeatureClasses' => '{"exon": "exon", "CDS": "CDS", "five_prime_UTR": "five_prime_UTR", "three_prime_UTR": "three_prime_UTR"}',
+                         '--type'  => 'mRNA',
+                       ],
+
+    # ab initio gene predictions
     snap_masked     => [ '--key' => "SNAP",
                          '--className' => 'transcript',
                          '--subfeatureClasses' => '{"match_part": "CDS"}',
@@ -168,42 +168,47 @@ my %commands = (
                          '--type' => 'match:model_gff',
                        ],
 
-    #evidence alignments
+    # evidence alignments
     blastn          => [ '--key' =>  "BLASTN",
                          '--className' => 'generic_parent',
                          '--subfeatureClasses' => '{"match_part": "match_part"}',
                          '--type' => 'expressed_sequence_match:blastn',
                        ],
+
     blastx          => [ '--key' =>  "BLASTX",
                          '--className' => 'generic_parent',
                          '--subfeatureClasses' => '{"match_part": "match_part"}',
                          '--type' => 'protein_match:blastx',
                        ],
+
     tblastx         => [ '--key' =>  "TBLASTX",
                          '--className' => 'generic_parent',
                          '--subfeatureClasses' => '{"match_part": "match_part"}',
                          '--type' => 'translated_nucleotide_match:tblastx',
                        ],
+
     est2genome      => [ '--key' => "est2genome",
                          '--className' => 'generic_parent',
                          '--subfeatureClasses' => '{"match_part": "match_part"}',
                          '--type' => 'expressed_sequence_match:est2genome',
                        ],
+
     protein2genome  => [ '--key' =>  "protein2genome",
                          '--className' => 'generic_parent',
                          '--subfeatureClasses' => '{"match_part": "match_part"}',
                          '--type' => 'protein_match:protein2genome',
                        ],
+
     cdna2genome     => [ '--key' =>  "cdna2genome",
                          '--className' => 'generic_parent',
                          '--subfeatureClasses' => '{"match_part": "match_part"}',
                          '--type' => 'expressed_sequence_match:cdna2genome',
                        ],
 
-    est_gff         => [ '--key' => "ESTs",
-                         '--className' => 'generic_parent',
-                         '--subfeatureClasses' => '{"match_part": "est2genome_part"}',
-                         '--type' => 'expressed_sequence_match:est_gff',
+    'est_gff:cufflinks' => [ '--key' => "RNASeq assembly",
+                           '--className' => 'transcript',
+                           '--subfeatureClasses' => '{"match_part": "CDS"}',
+                           '--type' => 'expressed_sequence_match:est_gff:cufflinks',
                        ],
 
     protein_gff     => [ '--key' =>  "Proteins",
@@ -218,8 +223,8 @@ my %commands = (
                          '--type' => 'expressed_sequence_match:altest_gff',
                        ],
 
-    #repeats
-    repeatmasker   =>  [ '--key'        =>  "RepeatMasker",
+    # repeats
+    repeatmasker   =>  [ '--key'        => "RepeatMasker",
                          '--className'  => 'generic_parent',
                          '--subfeatureClasses' => '{"match_part": "match_part"}',
                          '--type' => 'match:repeatmasker',

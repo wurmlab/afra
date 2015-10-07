@@ -123,12 +123,10 @@ task 'configure' do
 end
 
 desc 'Import'
-task 'import', [:annotations_file] do |t, args|
+task 'import', [:inp_dir] do |t, args|
   require_relative 'app'
-  App.init_config
-  App.load_services
-  annotations_file = args[:annotations_file]
-  Importer.new(annotations_file).run
+  App.init_config; App.load_services
+  Importer.new(args[:inp_dir] || ENV['inp_dir']).run
 end
 
 desc 'Export'

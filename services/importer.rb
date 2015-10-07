@@ -1,12 +1,32 @@
 require 'json'
+require 'yaml'
+require 'rake'
 
-# Import annotations into the system from a GFF file.
+# Imports annotations and other evidence from the given directory into the
+# system.
+#
+# Annotations in GFF files are formated to JB-JSON. BAM files are copied
+# alongside JB-JSON and track metadata is recorded for them in trackList.json.
+# Subsequently trackList.json is re-written in accordance with trackMeta.yaml.
+#
+# trackMeta.yaml provides a means to introduce new or update existing keys in
+# trackList.json. In particular we use it to define the order in which tracks
+# will be listed in the curation interface and to change track label.
+#
+# TODO
+#   * Import incrementally. So that we don't have to reimport everything when
+#     a new line of evidence is added.
+#   * Filter against trackMeta.yaml and then merge thus providing a means to
+#     hide certain tracks.
+#   * Don't import any annotations into Postgres and separate task creation
+#     from import.
 class Importer
 
-  def initialize(annotations_file)
-    @annotations_file = annotations_file
-    @species, @asm_id = annotations_file.split('/')[-2..-1]
-    @asm_id.sub!(/(\.gff)$/, '')
+  include FileUtils
+
+  def initialize(inp_dir)
+    @species, @asm_id = inp_dir.split('/')[-2..-1]
+    @inp_dir = inp_dir
   end
 
   def run
@@ -19,36 +39,42 @@ class Importer
     end
   end
 
-  attr_reader :annotations_file, :species, :asm_id, :genome
+  attr_reader :inp_dir, :species, :asm_id
 
-  # This is where JBrowse formatted data from the GFF file will go.
-  def jb_store
-    @jb_store ||= File.join('data', 'jbrowse', species, asm_id)
+  attr_reader :genome
+
+  def out_dir
+    @out_dir ||= File.join('data', 'jbrowse', species, asm_id)
   end
 
-  # This is where JBrowse will have written trackList.json after GFF has been
-  # formatted.
   def track_list_file
-    @track_list_file ||= File.join(jb_store, 'trackList.json')
+    File.join(out_dir, 'trackList.json')
   end
 
-  # Contents of trackList.json.
+  def track_meta_file
+    File.join(inp_dir, 'trackMeta.yaml')
+  end
+
   def track_list
     @track_list ||= JSON.load File.read track_list_file
   end
 
-  # The order in which we will want tracks to be displayed.
-  #
-  # TODO: later on we could read this from a YAML file.
-  def track_order
-    @track_order ||= %w{DNA Edit maker augustus_masked snap_masked est_gff
-      est2genome protein2genome blastn blastx tblastx
-      repeatmasker}
+  def track_meta
+    @track_meta ||= YAML.load File.read track_meta_file
   end
 
   # GFF -> JB JSON
+  # BAM -> JB track list
   def format
-    system "bin/gff2jbrowse.pl -o #{jb_store} '#{annotations_file}'"
+    Dir["#{inp_dir}/*.gff"].each do |gff_file|
+      sh "bin/gff2jbrowse.pl --out #{out_dir} #{gff_file}"
+    end
+
+    Dir["#{inp_dir}/*.bam"].each do |bam_file|
+      bam_name = File.basename(bam_file, '.bam')
+      sh "bin/add-bam-track.pl --in #{track_list_file}"                        \
+         " --label #{bam_name} --bam_url tracks/#{bam_name}.bam"
+    end
   end
 
   # Register some metadata about the GFF file we are importing.
@@ -58,7 +84,7 @@ class Importer
 
   # Bulk insert refseqs from given GFF file into Postgres.
   def register_ref_seqs
-    ref_seqs_file = File.join(jb_store, 'seq', 'refSeqs.json')
+    ref_seqs_file = File.join(out_dir, 'seq', 'refSeqs.json')
     ref_seqs_json = JSON.load File.read ref_seqs_file
 
     ref_seqs = []
@@ -79,7 +105,7 @@ class Importer
   #   test data to get an idea of how JBrowse keeps data.
   def register_annotations
     values = []
-    Dir[File.join(jb_store, 'tracks', 'maker', '*')].each do |ref|
+    Dir[File.join(out_dir, 'tracks', 'maker', '*')].each do |ref|
         track_data = JSON.load File.read File.join(ref, 'trackData.json')
         values.concat nclist_to_features(ref,
                                          track_data['intervals']['classes'],
@@ -91,9 +117,8 @@ class Importer
   # Rewrite `trackList.json` to suit our needs better.
   def update_tracklist
     track_list['tracks'].each do |track|
-      order = track_order.index(track['label'])
-      order = track_order.length unless order
-      track['order'] = order
+      track_meta[track['label']]['order'] ||= track_list.length
+      track.update track_meta[track['label']]
     end
     File.write track_list_file, JSON.pretty_generate(track_list)
   end
