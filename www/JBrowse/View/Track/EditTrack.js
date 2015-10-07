@@ -479,7 +479,9 @@ var EditTrack = declare(DraggableFeatureTrack,
     },
 
     sendToGeneValidator: function () {
+        var resultsPage = window.open('http://genevalidator.sbcs.qmul.ac.uk/GeneValidator/loading.html', '_blank');
         var transcripts = this.selectionManager.getSelectedFeatures();
+
         this.getRefSeq(function (refSeq) {
             var fasta = [];
             _.each(transcripts, _.bind(function (transcript) {
@@ -502,7 +504,10 @@ var EditTrack = declare(DraggableFeatureTrack,
                     fasta.push(_fasta);
                 }
             }, this));
-            GV.sendToGeneValidator('http://genevalidator.sbcs.qmul.ac.uk', fasta.join("\n"), 'nr');
+
+            GV
+            .sendToGeneValidator('http://genevalidator.sbcs.qmul.ac.uk', fasta.join("\n"), 'nr', 'all', 'results_url')
+            .then(function (resultsURL) { resultsPage.location.href = resultsURL; });
         });
     },
 
