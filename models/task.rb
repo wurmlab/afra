@@ -11,87 +11,80 @@ class Task < Sequel::Model
     ref_seq.species
   end
 
+  # Return all submissions for this task by the given user.
+  def filter_submissions(user:)
+    submissions.find { |s| user == s.user }
+  end
+
   class << self
     def distribution_dataset
       db[:task_distribution]
     end
 
-    def give(to: nil)
-      raise "Task can only be given 'to' a User" unless to.is_a? User
+    def give_to(user:)
+      raise "Task can only be given to a User" unless user.is_a? User
 
-      # First check if a task was already assigned to the user.
-      if t = distribution_dataset.where(user_id: to.id).first
+      # If a task is already assigned to the user, give her the same task.
+      if t = distribution_dataset.where(user_id: user.id).first
         return Task.with_pk(t[:task_id])
       end
 
-      # Assign user a new task.
-      available_tasks = where(id: to.tasks.map(&:id)).invert.where(state: 'ready').where(difficulty: 1)
-      available_tasks_with_highest_priority = available_tasks.where(priority: available_tasks.max(:priority))
-      task = available_tasks_with_highest_priority.offset(Sequel.function(:floor, Sequel.function(:random) * available_tasks_with_highest_priority.count)).first
-      task.set_running_state and task.add_to_distributed_list(to)
+      # Select tasks that haven't been done by the user already, subset the
+      # list at a random offset and pick the task with the highest priority.
+      available_tasks = where(id: user.tasks.map(&:id)).invert.where(difficulty: 1)
+      available_tasks = available_tasks.offset(Sequel.function(:floor, Sequel.function(:random) * available_tasks.count))
+      task = available_tasks.where(priority: available_tasks.max(:priority)).first
+
+      # Book keeping.
+      mark_assignment(task: task, user: user)
+
+      task
     end
-  end
 
-  def register_submission(data, user)
-    Task.db.transaction do
-      Submission.create data: data, task_id: self.id, user_id: user.id
-      increment_priority and set_ready_state and remove_from_distributed_list(user)
+    # Save submission from a user. Automatically inserts or updates.
+    def save_submission(task:, data:, user:)
+      update_submission(task: task, data: data, user: user) or
+        insert_submission(task: task, data: data, user: user)
     end
-  end
 
-  def update_submission(data, user)
-    submission = filter_submission from: user
-    return unless submission
-    Task.db.transaction do
-      submission.data = data
-      submission.revised_on = DateTime.now
-      submission.save
-      set_ready_state and remove_from_distributed_list(user)
+    private
+
+    # Note that the given task has been assigned to the given user.
+    def mark_assignment(task:, user:)
+      distribution_dataset.insert(task_id: task.id, user_id: user.id)
     end
-  end
 
-  def filter_submission(from:)
-    submissions.find{|s| from == s.user}
-  end
-
-  def auto_check
-    submissions.each_cons(2) do |s1, s2|
-      return false unless s1 == s2
+    # Note that the given task has been completed by the given user.
+    def mark_completion(task:, user:)
+      entry = distribution_dataset.where(task_id: task.id, user_id: user.id)
+      entry.delete if entry.first
     end
-    true
-  end
 
-  def set_ready_state
-    self.state = 'ready'
-    self.save
-    self
-  end
+    # Save a new submission from the user.
+    def insert_submission(task:, data:, user:)
+      db.transaction do
+        Submission.create task_id: task.id, data: data, user_id: user.id
+        mark_completion task: task, user: user
+        bump_priority task: task
+      end
+    end
 
-  def set_running_state
-    self.state = 'running'
-    self.save
-    self
-  end
+    # Update user submission.
+    def update_submission(task:, data:, user:)
+      submission = task.filter_submissions user: user
+      return unless submission
 
-  def distribution_dataset
-    self.class.distribution_dataset
-  end
+      db.transaction do
+        submission.revised_on = DateTime.now
+        submission.data = data
+        submission.save
+      end
+    end
 
-  def add_to_distributed_list(user)
-    distribution_dataset.insert(task_id: self.id, user_id: user.id)
-    self
-  end
-
-  # Remove from distribution list if present.
-  def remove_from_distributed_list(user)
-    entry = distribution_dataset.where(task_id: self.id, user_id: user.id)
-    entry.delete if entry.first
-    self
-  end
-
-  def increment_priority
-    self.priority += 1
-    self.save
-    self
+    # Update priority of the given task by 1.
+    def bump_priority(task:)
+      task.priority += 1
+      task.save
+    end
   end
 end

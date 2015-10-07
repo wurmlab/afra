@@ -34,6 +34,12 @@ define(['JBrowse/Browser']
             this.browser = new Browser($.extend(task, config));
         };
 
+        this.name = function () {
+            var names = this.browser && this.browser.config &&
+                this.browser.config.meta && this.browser.config.meta.names || [];
+            return 'Curate ' + names.join(' & ');
+        };
+
         this.edits = function () {
             return this.browser.getEditTrack().store.features;
         };

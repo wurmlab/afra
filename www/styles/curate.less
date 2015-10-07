@@ -43,9 +43,17 @@
   border-bottom: 1px solid #ddd;
   text-align: right;
 }
-
-.topbar > .toolbar {
+.statusbar, .toolbar {
   display: inline-block;
+}
+.statusbar {
+  width: 62%;
+  text-align: left;
+  padding: 0 0 0 3px;
+  overflow-x: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  vertical-align:  middle;
 }
 
 .topbar > .toolbar > .btn {

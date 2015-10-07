@@ -24,11 +24,18 @@ Sequel.migration do
         null:      false,
         default:   0
 
-      String      :state,
-        null:      false,
-        default:   'ready'
+      # Store meta data about the task as a JSON object.
+      #
+      # meta = {
+      #   species:  ...,
+      #   asm_id: ...,
+      #   name: ...,
+      # }
+      column      :meta, :json,
+        default:   Sequel.pg_json({})
       validate do
-        includes %w|ready running auto-check|, :state
+        meta = Sequel.pg_json_op(:meta)
+        presence meta['names']
       end
 
       column      :created_at, 'timestamp with time zone',

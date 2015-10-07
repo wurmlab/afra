@@ -167,9 +167,10 @@ class Importer
     # ]
     loci_all_ref = genome.mRNAs.
       select(Sequel.function(:array_agg, Sequel.lit('"id" ORDER BY "start"')).as(:ids),
-      Sequel.function(:array_agg, Sequel.lit('"start" ORDER BY "start"')).as(:start_coordinates),
-      Sequel.function(:array_agg, Sequel.lit('"end" ORDER BY "start"')).as(:end_coordinates),
-      :ref_seq_id).group(:ref_seq_id)
+             Sequel.function(:array_agg, Sequel.lit('"name" ORDER BY "start"')).as(:names),
+             Sequel.function(:array_agg, Sequel.lit('"end" ORDER BY "start"')).as(:end_coordinates),
+             Sequel.function(:array_agg, Sequel.lit('"start" ORDER BY "start"')).as(:start_coordinates),
+             :ref_seq_id).group(:ref_seq_id)
 
     loci_all_ref.each do |loci_one_ref|
       groups = call_overlaps loci_one_ref
@@ -193,12 +194,14 @@ class Importer
     loci_one_ref[:ids].each_with_index do |id, i|
       start = loci_one_ref[:start_coordinates][i]
       _end  = loci_one_ref[:end_coordinates][i]
+      name  = loci_one_ref[:names][i]
 
       if not groups.empty? and start < groups.last[:end] # overlap
         groups.last[:ids] << id
+        groups.last[:meta][:names] << name
         groups.last[:end] = [groups.last[:end], _end].max
       else
-        groups << {ref_seq_id: ref, start: start, end: _end, ids: [id]}
+        groups << {ref_seq_id: ref, start: start, end: _end, ids: [id], meta: {names: [name]}}
       end
     end
     groups

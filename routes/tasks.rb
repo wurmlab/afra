@@ -17,10 +17,11 @@ class Tasks < App::Routes
       baseUrl: "data/jbrowse/#{task.ref_seq.species}/#{task.ref_seq.asm_id}/",
       include: ["data/jbrowse/#{task.ref_seq.species}/#{task.ref_seq.asm_id}/trackList.json", "data/jbrowse/edit-track.json"],
       start:   task.start,
-      end:     task.end
+      end:     task.end,
+      meta:    task.meta
     }
 
-    if s = task.filter_submission(from: user)
+    if s = task.filter_submissions(user: user)
       data[:stores] = {
         "scratchpad" => {
           type: "JBrowse/Store/SeqFeature/ScratchPad",
@@ -39,7 +40,7 @@ class Tasks < App::Routes
   # Give user a new task at random or the last task she was on.
   get '/data/tasks/next' do
     user = AccessToken.user(request.session[:token])
-    task = Task.give to: user
+    task = Task.give_to user: user
 
     task_data(task, user).to_json
   end
@@ -56,12 +57,11 @@ class Tasks < App::Routes
   end
 
   # Save new or update existing submission made by the user.
-  post '/data/tasks/:id' do
-    data = JSON.parse request.body.read
+  post '/data/tasks/:id' do |id|
     user = AccessToken.user(request.session[:token])
-    task = Task.with_pk params[:id]
-    task.update_submission(data, user) or
-      task.register_submission(data, user)
-    200
+    data = JSON.parse request.body.read
+    task = Task.with_pk id
+
+    Task.save_submission(task: task, data: data, user: user) and 200
   end
 end
