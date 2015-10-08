@@ -5,7 +5,7 @@ require 'rake'
 # Imports annotations and other evidence from the given directory into the
 # system.
 #
-# Annotations in GFF files are formated to JB-JSON. BAM files are copied
+# Annotations in GFF files are formated to JB-JSON. BAM files are symlinked
 # alongside JB-JSON and track metadata is recorded for them in trackList.json.
 # Subsequently trackList.json is re-written in accordance with trackMeta.yaml.
 #
@@ -16,8 +16,6 @@ require 'rake'
 # TODO
 #   * Import incrementally. So that we don't have to reimport everything when
 #     a new line of evidence is added.
-#   * Filter against trackMeta.yaml and then merge thus providing a means to
-#     hide certain tracks.
 #   * Don't import any annotations into Postgres and separate task creation
 #     from import.
 class Importer
@@ -72,8 +70,20 @@ class Importer
 
     Dir["#{inp_dir}/*.bam"].each do |bam_file|
       bam_name = File.basename(bam_file, '.bam')
+
+      # Symlink BAM & BAI.
+      ln_sf "../../../../annotations/#{species}/#{asm_id}/#{bam_name}.bam",
+        "#{out_dir}/tracks/#{bam_name}.bam"
+      ln_sf "../../../../annotations/#{species}/#{asm_id}/#{bam_name}.bam.bai",
+        "#{out_dir}/tracks/#{bam_name}.bam.bai"
+
+      # Add alignment track.
       sh "bin/add-bam-track.pl --in #{track_list_file}"                        \
          " --label #{bam_name} --bam_url tracks/#{bam_name}.bam"
+
+      # Add coverage track.
+      sh "bin/add-bam-track.pl --in #{track_list_file} --coverage"             \
+         " --label #{bam_name}_coverage --bam_url tracks/#{bam_name}.bam"      \
     end
   end
 
@@ -116,10 +126,14 @@ class Importer
 
   # Rewrite `trackList.json` to suit our needs better.
   def update_tracklist
-    track_list['tracks'].each do |track|
-      track_meta[track['label']]['order'] ||= track_list.length
-      track.update track_meta[track['label']]
+    tracks = track_list['tracks'].select { |track| track_meta[track['label']] }
+    tracks.each do |track|
+      meta = track_meta[track['label']]
+      meta['order'] ||= tracks.length
+      track.update meta
     end
+
+    track_list['tracks'] = tracks
     File.write track_list_file, JSON.pretty_generate(track_list)
   end
 

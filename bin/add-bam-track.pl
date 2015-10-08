@@ -46,8 +46,6 @@ sub parse_options {
         pod2usage( -verbose => 2 ) if $help;
 	pod2usage("Missing label option") if !$label;
 	pod2usage("Missing bam_url option") if !$bam_url;
-	pod2usage("Missing min_score option") if $coverage && !defined $min_score;
-	pod2usage("Missing max_score option") if $coverage && !defined $max_score;
 	$key ||= $label;
         $in_file  ||= 'data/trackList.json';
         $out_file ||= $in_file;
@@ -104,8 +102,12 @@ sub add_bam_track {
           }
 	}
 	else {
-		$bam_entry->{min_score} = $min_score;
-		$bam_entry->{max_score} = $max_score;
+    if ($min_score) {
+      $bam_entry->{min_score} = $min_score;
+    }
+    if ($max_score) {
+      $bam_entry->{max_score} = $max_score;
+    }
 	}
 	my $out;
 	$out = new IO::File($out_file, "w") or
