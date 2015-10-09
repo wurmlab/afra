@@ -94,6 +94,24 @@
             style="color: red; display: none;">Couldn't log you in via Facebook.
           </p>
         </div>
+        <div ng-switch-when="login2">
+          <div class="form-group col-sm-12 login2">
+            <input
+            type="input" name="name" class="form-control"
+            placeholder="Full name">
+            <br>
+            <input
+            type="input" name="email" class="form-control"
+            placeholder="Email address">
+            <br>
+            <a
+              class="btn btn-primary btn-block"
+              ng-click="signin_em()">
+              <i class="fa fa-sign-in"></i>
+              Login
+            </a>
+          </div>
+        </div>
         <div ng-switch-default>
           <p
             class="text-justify">

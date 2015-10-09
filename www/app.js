@@ -119,9 +119,8 @@ require(
                         switch (status)
                         {
                             case 401:
-                                root_scope.signin_em() || root_scope.view_login();
-                            return q.reject(response);
-
+                                root_scope.view_login();
+                                return q.reject(response);
                             default:
                                 return q.reject(response);
                         };
@@ -180,15 +179,19 @@ require(
             };
 
             root_scope.signin_em = function () {
-                var email = location.search()['login'];
-                if (email && email !== true && email !== '') {
+                var name = $('.login2 input[name="name"]').val();
+                var email = $('.login2 input[name="email"]').val();
+
+                if (name !== '' && email !== '') {
                     http.post('/signin', JSON.stringify({
-                        email:         email,
+                        name: name,
+                        email: email,
+                        picture:  '',
                         authorization: ''
                     }))
                     .then(function (response) {
                         root_scope.user = response.data;
-                        location.search('login', null);
+                        location.search('login2', null);
                         root_scope.view_current();
                     });
                     return true;
