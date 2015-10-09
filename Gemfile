@@ -8,6 +8,7 @@ gem 'bcrypt',               '~> 3.1.7'
 
 gem 'puma',                 '~> 2.8.1'
 gem 'sinatra',              '~> 1.4.4'
+gem 'ruby-saml',            '~> 1.0.0'
 
 group :development do
   gem 'minitest',             '~> 5.3.1'

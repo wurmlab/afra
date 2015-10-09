@@ -94,6 +94,18 @@
             style="color: red; display: none;">Couldn't log you in via Facebook.
           </p>
         </div>
+        <div ng-switch-when="eduroam">
+          <a
+            class="btn btn-primary btn-lg btn-block"
+            href="http://afra.sbcs.qmul.ac.uk/saml/login">
+            Login with QM
+          </a>
+          <br>
+          <p
+            class="login-error text-center"
+            style="color: red; display: none;">Couldn't log you in via QM.
+          </p>
+        </div>
         <div ng-switch-default>
           <p
             class="text-justify">

@@ -223,6 +223,14 @@ require(
                 }, { scope: 'email' });
             };
 
+            root_scope.signin_ed = function () {
+                //var ret = encodeURIComponent(window.location.href);
+                //var ent = 'https://idp.shibboleth.qmul.ac.uk/idp/shibboleth?shib-return-uri=' + ret;
+                //var url = "https://shibboleth.highwire.org/session/init?entityID=" + ent + "&hw-shib-return-uri=" + ret;
+
+                //window.location.href = ent;
+            };
+
             root_scope.signout = function () {
                 http.post('signout').
                     then(function () {

@@ -1,0 +1,210 @@
+/**
+jvascript: doLogin('https://idp.shibboleth.qmul.ac.uk/idp/shibboleth', 'Queen Mary, University of London', 'true', 'oupjournals', 'http%3A%2F%2Fbioinformatics.oxfordjournals.org%2Fcontent%2Fearly%2F2015%2F10%2F08%2Fbioinformatics.btv542.full', 'prod');">Queen Mary, University of London</a>"
+*/
+
+$(document).ready(function() {
+    var urlVars = $.getUrlVars();
+    var uri = urlVars['uri'];
+    var subcode = urlVars['subcode'];
+    var env = urlVars['env'];
+    var disableFilter = urlVars['show-all-idps'];
+    var div = 'hw-login-shib-div';
+
+    debugConsole('Activate shibboleth for '+subcode+' and return to '+uri);
+    debugConsole('Environment: '+env);
+    if (disableFilter != null && disableFilter == 'true') {
+        debugConsole('Show all institutions is enabled: ' + disableFilter);
+    } else {
+        debugConsole('Filter institutions by subcode: ' + subcode);
+    }
+
+    if (uri == null || uri == '') {
+        debugConsole('Missing return uri parameter');
+        uri = document.location.protocol + "//" + document.location.host;
+        debugConsole('Try to gracefully re-assign uri to hostname: '+uri);
+    }
+
+    activateShibboleth(div, subcode, uri, env, disableFilter);
+});
+
+$.extend({
+    getUrlVars: function(){
+        var vars = [], hash;
+        var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+        for(var i = 0; i < hashes.length; i++) {
+            hash = hashes[i].split('=');
+            vars.push(hash[0]);
+            vars[hash[0]] = hash[1];
+        }
+        return vars;
+    },
+    getUrlVar: function(name){
+        return $.getUrlVars()[name];
+    }
+});
+
+function debugConsole(text) {
+    var urlVars = $.getUrlVars();
+    var env = urlVars['env'];
+    if (window.console && env != null && (env == 'debug' || env == 'dev')) {
+        console.log(text);
+    }
+}
+
+function activateShibboleth(targetDiv, subcode, uri, env, disableFilter) {
+    checkParams(subcode, uri);
+    debugConsole('Environment: '+env);
+    if (targetDiv == null) {
+        debugConsole('Missing target div parameter');
+        throw new Error('Missing target div parameter');
+        return false;
+    }
+
+    var submitForm = buildNewShibForm(subcode, uri, env);
+    $("#"+targetDiv).append('<div id="shib-favorites-div"></div>');
+    $("#"+targetDiv).append(submitForm);
+
+    $("#shib-submit-form").submit( function() {
+        debugConsole('Handling form submit event.');
+
+        $(this).attr("disabled", "disabled");
+
+        var entityID = $('#shib-idp-select option:selected').val();
+
+        debugConsole("Saving latest selection: entityID="+entityID+", subcode="+subcode, ", env="+env);
+        saveLastSelection();
+
+        debugConsole("Issue login with uri="+uri+", subcode="+subcode+", env="+env);
+
+        var host = "https://shibboleth.highwire.org";
+        var sessionInitiator = host + '/session/init?entityID='+entityID+'&hw-shib-return-uri='+uri+'&subcode='+subcode+'&env='+env;
+
+        debugConsole('Redirect user to '+sessionInitiator);
+        window.location.href = sessionInitiator;
+        debugConsole('Done redirect to '+sessionInitiator);
+        return false;
+    });
+
+    $("#shib-idp-div").hide();
+    $("#shib-no-idp-div").hide();
+
+    return true;
+}
+
+function checkParams(subcode, uri) {
+    if (subcode == null || subcode == "") {
+        debugConsole('Missing subscription code parameter');
+        throw new Error('Missing subscription code parameter');
+        return false;
+    }
+    if (uri == null || uri == "") {
+        debugConsole('Missing return uri parameter');
+        throw new Error('Missing return uri parameter');
+        return false;
+    }
+    return true;
+}
+
+function buildNewShibForm(subcode, uri, env) {
+    debugConsole('Build a new shibboleth form for '+subcode+'. Return to '+uri);
+    debugConsole('Environment: '+env);
+    checkParams(subcode, uri);
+
+    var host = "https://shibboleth.highwire.org";
+    var sessionInitiator = host + '/session/init?hw-shib-return-uri='+uri+'&subcode='+subcode+'&env='+env;
+
+    var submitForm = '<form id="shib-submit-form" method="GET" action="'+sessionInitiator+'"> \
+    <label for="federation">Location: </label> \
+    <select type="select" name="federation" id="shib-fed-select"> \
+    </select> \
+    <div id="shib-idp-div"> \
+    <label for="entityID">Institution: </label> \
+    <select type="select" name="entityID" id="shib-idp-select"></select> \
+    <input type="submit" value="Select" id="shib-select-button" name="shib-select-button" /> \
+    <br/> \
+    <input id="shib-idp-cache" type="checkbox" checked="true" \
+    name="rememberIdP" value="true"> \
+    </input> \
+    <label for="rememberIdP">Remember this selection</label> \
+    </div> \
+    <div id="shib-no-idp-div"> \
+    <p>No institutions within selected location are currently configured for access. \
+    Please contact your librarian for assistance on selecting correct location. \
+    </p> \
+    </div> \
+    </form>';
+
+    return submitForm;
+}
+
+function doLogin(entityID, description, save, subcode, uri, env) {
+    debugConsole('Initiate login via institution '+entityID);
+    checkParams(subcode, uri);   
+    if (entityID == null) {
+        debugConsole('Missing entityID parameter');
+        throw new Error('Missing entityID parameter');
+        return false;
+    }
+
+    /*
+     * Redirect user to authenticate with Shibboleth Service Provider.
+     *
+     * 'entityID' parameter indicates the Institution to trigger Shibboleth authentication
+     * session with. This parameter is required, and the name should be preserved. The
+     * entityID is going to be forwarded the user authentication request by the Shibboleth
+     * security Apache module (Shibboleth.sso) running on HighWire's Shibboleth Service
+     * Provider (SP) system.
+     *
+     * NB: The value of the entityID MUST NOT be encoded as the Apache module on the SP
+     * will not recognize it, as it would not correspond to the institution's entityID
+     * in the federation's metadata.
+     *
+     * 'hw-shib-return-uri' parameter indicates where the user should be redirected
+     * after a new Shibboleth session with the selected Identity Provider is established.
+     * HighWire's Shibboleth Service Provider (SP) 'https://shibboleth.highwire.org'
+     * will store the value of the 'hw-shib-return-uri' query parameter in a corresponding
+     * cookie. This way, the SP knows where to forward the response after the user is
+     * authenticated by the Institution and a new Shibboleth session is created.
+     * Do not modify the query parameter name, as that would require changes on the
+     * SP end in the httpd.conf (for the rewrite rules, and the cookie creation flag),
+     * and in the SP ShibbolethSessionServlet that executes upon authentication completion
+     * to recover the cookie and to redirect the user to the usi indicated with the value
+     * stored in the 'hw-shib-return-uri' cookie.
+     *
+     * NB: The value of the 'hw-shib-return-uri' MUST be encoded so the SP can properly
+     * store it in the corresponding cookie using regular expressions in the Apache
+     * RewriteRules.
+     *
+     * NB: The 'hw-shib-return-uri' parameter MUST appear last, after the entityID to
+     * be properly stored on the SP in a cookie using Apache RewriteRules.
+     */
+    debugConsole('Is URI '+uri+' encoded? ' + isEncoded(uri));
+    if (!isEncoded(uri)) {
+        uri = encodeURIComponent(uri);
+        debugConsole('Update URI '+uri+'. Is it encoded? ' + isEncoded(uri));
+    }
+
+    var host = "https://shibboleth.highwire.org";
+    var sessionInitiator = host + '/session/init?entityID='+entityID+'&hw-shib-return-uri='+uri+'&subcode='+subcode+'&env='+env;
+
+    debugConsole('sessionInitiator='+sessionInitiator);
+    window.location.href = sessionInitiator;
+    debugConsole('Redirecting user to '+sessionInitiator);
+}
+
+function ajaxBefore(xhrObj) {
+    xhrObj.setRequestHeader("STROMA","true");
+}
+
+function ajaxErr(req, msg, e) {
+    debugConsole("Ajax failed. Req: "+req+", msg: "+msg);
+    debugConsole("Error: "+e);
+}
+
+function ajaxComplete(req, msg) {
+    debugConsole("Ajax completed. Req: "+req+", msg: "+msg);
+}
+
+function isEncoded(str){
+    return decodeURIComponent(str) !== str;
+}

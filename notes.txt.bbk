@@ -1,0 +1,445 @@
+/**
+Cookies
+-------
+hw-shib-idp-choice - probably just the preference
+
+jvascript: doLogin('https://idp.shibboleth.qmul.ac.uk/idp/shibboleth', 'Queen Mary, University of London', 'true', 'oupjournals', 'http%3A%2F%2Fbioinformatics.oxfordjournals.org%2Fcontent%2Fearly%2F2015%2F10%2F08%2Fbioinformatics.btv542.full', 'prod');">Queen Mary, University of London</a>"
+*/
+
+$(document).ready(function() {
+    var urlVars = $.getUrlVars();
+    var uri = urlVars['uri'];
+    var subcode = urlVars['subcode'];
+    var env = urlVars['env'];
+    var disableFilter = urlVars['show-all-idps'];
+    var div = 'hw-login-shib-div';
+
+    debugConsole('Activate shibboleth for '+subcode+' and return to '+uri);
+    debugConsole('Environment: '+env);
+    if (disableFilter != null && disableFilter == 'true') {
+        debugConsole('Show all institutions is enabled: ' + disableFilter);
+    } else {
+        debugConsole('Filter institutions by subcode: ' + subcode);
+    }
+
+    if (uri == null || uri == '') {
+        debugConsole('Missing return uri parameter');
+        uri = document.location.protocol + "//" + document.location.host;
+        debugConsole('Try to gracefully re-assign uri to hostname: '+uri);
+    }
+
+    activateShibboleth(div, subcode, uri, env, disableFilter);
+});
+
+$.extend({
+    getUrlVars: function(){
+        var vars = [], hash;
+        var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+        for(var i = 0; i < hashes.length; i++) {
+            hash = hashes[i].split('=');
+            vars.push(hash[0]);
+            vars[hash[0]] = hash[1];
+        }
+        return vars;
+    },
+    getUrlVar: function(name){
+        return $.getUrlVars()[name];
+    }
+});
+
+function debugConsole(text) {
+    var urlVars = $.getUrlVars();
+    var env = urlVars['env'];
+    if (window.console && env != null && (env == 'debug' || env == 'dev')) {
+        console.log(text);
+    }
+}
+
+function activateShibboleth(targetDiv, subcode, uri, env, disableFilter) {
+    checkParams(subcode, uri);
+    debugConsole('Environment: '+env);
+    if (targetDiv == null) {
+        debugConsole('Missing target div parameter');
+        throw new Error('Missing target div parameter');
+        return false;
+    }
+
+    var submitForm = buildNewShibForm(subcode, uri, env);
+    $("#"+targetDiv).append('<div id="shib-favorites-div"></div>');
+    $("#"+targetDiv).append(submitForm);
+
+    if ( !checkCookieSupport() ) {
+        debugConsole("Cookies are not enabled on the browser.");
+        var noCookiesText = '<span id="no-cookie-support"> \
+        <p>This method of authentication requires cookie support.</p> \
+        <p>Please enable cookies in your browser, and try again.</p> \
+        </span>';
+        $("#shib-submit-form").empty().append($(noCookiesText));
+        return false;
+    }
+
+    $('#shib-fed-select').change(function() {
+        debugConsole('Handle federation selection .change(). Federation selected: '+this.value+", subcode: "+subcode);
+        getInstitutions(this.value, subcode, disableFilter);
+    });
+
+    $("#shib-submit-form").submit( function() {
+        debugConsole('Handling form submit event.');
+
+        $(this).attr("disabled", "disabled");
+
+        var entityID = $('#shib-idp-select option:selected').val();
+
+        debugConsole("Saving latest selection: entityID="+entityID+", subcode="+subcode, ", env="+env);
+        saveLastSelection();
+
+        debugConsole("Issue login with uri="+uri+", subcode="+subcode+", env="+env);
+
+        var host = "https://shibboleth.highwire.org";
+        var sessionInitiator = host + '/session/init?entityID='+entityID+'&hw-shib-return-uri='+uri+'&subcode='+subcode+'&env='+env;
+
+        debugConsole('Redirect user to '+sessionInitiator);
+        window.location.href = sessionInitiator;
+        debugConsole('Done redirect to '+sessionInitiator);
+        return false;
+    });
+
+    $("#shib-idp-div").hide();
+    $("#shib-no-idp-div").hide();
+    getFederations(subcode, disableFilter);
+    displayFavorites(subcode, uri, env);
+
+    return true;
+}
+
+function checkParams(subcode, uri) {
+    if (subcode == null || subcode == "") {
+        debugConsole('Missing subscription code parameter');
+        throw new Error('Missing subscription code parameter');
+        return false;
+    }
+    if (uri == null || uri == "") {
+        debugConsole('Missing return uri parameter');
+        throw new Error('Missing return uri parameter');
+        return false;
+    }
+    return true;
+}
+
+function buildNewShibForm(subcode, uri, env) {
+    debugConsole('Build a new shibboleth form for '+subcode+'. Return to '+uri);
+    debugConsole('Environment: '+env);
+    checkParams(subcode, uri);
+
+    var host = "https://shibboleth.highwire.org";
+    var sessionInitiator = host + '/session/init?hw-shib-return-uri='+uri+'&subcode='+subcode+'&env='+env;
+
+    var submitForm = '<form id="shib-submit-form" method="GET" action="'+sessionInitiator+'"> \
+    <label for="federation">Location: </label> \
+    <select type="select" name="federation" id="shib-fed-select"> \
+    </select> \
+    <div id="shib-idp-div"> \
+    <label for="entityID">Institution: </label> \
+    <select type="select" name="entityID" id="shib-idp-select"></select> \
+    <input type="submit" value="Select" id="shib-select-button" name="shib-select-button" /> \
+    <br/> \
+    <input id="shib-idp-cache" type="checkbox" checked="true" \
+    name="rememberIdP" value="true"> \
+    </input> \
+    <label for="rememberIdP">Remember this selection</label> \
+    </div> \
+    <div id="shib-no-idp-div"> \
+    <p>No institutions within selected location are currently configured for access. \
+    Please contact your librarian for assistance on selecting correct location. \
+    </p> \
+    </div> \
+    </form>';
+
+    return submitForm;
+}
+
+function saveLastSelection() {
+    debugConsole('Determine whether to save latest Institutional selection in a cookie.');
+
+    /* store current entityID selection in a cookie to display before selection form */
+    if ($('#shib-idp-cache').is(':checked')) {
+        var entityID = $('#shib-idp-select option:selected').val();
+        var description = $('#shib-idp-select option:selected').text();
+        debugConsole('Save latest selected institution '+entityID+' - '+description);
+        saveFavorites(entityID, description);
+    }
+}
+
+function doLogin(entityID, description, save, subcode, uri, env) {
+    debugConsole('Initiate login via institution '+entityID);
+    checkParams(subcode, uri);   
+    if (entityID == null) {
+        debugConsole('Missing entityID parameter');
+        throw new Error('Missing entityID parameter');
+        return false;
+    }
+
+    /* store current entityID selection in a cookie to display before selection form */
+    if (save == 'true') {
+        debugConsole('Cache selection institution '+entityID+' - '+description);
+        saveFavorites(entityID, description);
+    }
+
+    /*
+     * Redirect user to authenticate with Shibboleth Service Provider.
+     *
+     * 'entityID' parameter indicates the Institution to trigger Shibboleth authentication
+     * session with. This parameter is required, and the name should be preserved. The
+     * entityID is going to be forwarded the user authentication request by the Shibboleth
+     * security Apache module (Shibboleth.sso) running on HighWire's Shibboleth Service
+     * Provider (SP) system.
+     *
+     * NB: The value of the entityID MUST NOT be encoded as the Apache module on the SP
+     * will not recognize it, as it would not correspond to the institution's entityID
+     * in the federation's metadata.
+     *
+     * 'hw-shib-return-uri' parameter indicates where the user should be redirected
+     * after a new Shibboleth session with the selected Identity Provider is established.
+     * HighWire's Shibboleth Service Provider (SP) 'https://shibboleth.highwire.org'
+     * will store the value of the 'hw-shib-return-uri' query parameter in a corresponding
+     * cookie. This way, the SP knows where to forward the response after the user is
+     * authenticated by the Institution and a new Shibboleth session is created.
+     * Do not modify the query parameter name, as that would require changes on the
+     * SP end in the httpd.conf (for the rewrite rules, and the cookie creation flag),
+     * and in the SP ShibbolethSessionServlet that executes upon authentication completion
+     * to recover the cookie and to redirect the user to the usi indicated with the value
+     * stored in the 'hw-shib-return-uri' cookie.
+     *
+     * NB: The value of the 'hw-shib-return-uri' MUST be encoded so the SP can properly
+     * store it in the corresponding cookie using regular expressions in the Apache
+     * RewriteRules.
+     *
+     * NB: The 'hw-shib-return-uri' parameter MUST appear last, after the entityID to
+     * be properly stored on the SP in a cookie using Apache RewriteRules.
+     */
+    debugConsole('Is URI '+uri+' encoded? ' + isEncoded(uri));
+    if (!isEncoded(uri)) {
+        uri = encodeURIComponent(uri);
+        debugConsole('Update URI '+uri+'. Is it encoded? ' + isEncoded(uri));
+    }
+
+    var host = "https://shibboleth.highwire.org";
+    var sessionInitiator = host + '/session/init?entityID='+entityID+'&hw-shib-return-uri='+uri+'&subcode='+subcode+'&env='+env;
+
+    debugConsole('sessionInitiator='+sessionInitiator);
+    window.location.href = sessionInitiator;
+    debugConsole('Redirecting user to '+sessionInitiator);
+}
+
+function getFederations(subcode, disableFilter) {
+    var host = document.location.protocol + "//" + document.location.host;
+    var ajaxUrl = host + '/ajaxproxy/soa/shibboleth?action=getFederations&data-type=xml';
+
+    if (disableFilter != null && disableFilter == 'true') {
+        debugConsole('Get all available Shibboleth federations.');
+    } else {
+        debugConsole("Obtain supported federations, filter by subcode "+subcode);
+        ajaxUrl += '&subcode='+subcode;
+    }
+    debugConsole('Get Shibboleth federations with url='+ajaxUrl);
+    var optionsCount = 0;
+
+    /*
+     * Even though SOA returns an XML document, set type to html in order to be allowed from Firenze servlet
+     * and to parse as an XML file in the success function of the AJAX call.
+     */
+    $.ajax({
+        type:     "GET",
+        url:      ajaxUrl,
+        dataType: "xml",
+        success:  function(xml) {
+        /*
+           if (xml == null) {
+           debugConsole("Found no supported federations.");
+           var noFedsFoundText = '<span id="shib-feds-missing"> \
+           <p>This method of authentication is not supported for your institution at this time.</p> \
+           </span>';
+           $("#shib-submit-form").empty().append($(noFedsFoundText));
+           }
+           */
+            $("#shib-fed-select").empty();
+            $(xml).find("federation").each(function() {
+                debugConsole("Populate federations");
+                /*
+                 * Display only those federations that have the Hide-From-Where-Are-You-From flag not set.
+                 * When the flag is set to 'true' it means, the federation should not be displayed in the
+                 * list of available federation options.
+                 */
+                if ( $(this).find("hideFromWAYF").text() == 'false' ) {
+                    ++optionsCount;
+                    debugConsole("Found federation " + optionsCount + ": " + $(this).find("name").text() + " = " + $(this).find("key").text());
+                    //$("#shib-fed-select").append(new Option( $(this).find("name").text() , $(this).find("key").text() ));
+                    $("#shib-fed-select").append("<option value='" + $(this).find("key").text() + "'>" + $(this).find("name").text() + "</option>");
+                }
+            });
+            $("#shib-fed-select").prepend('<option disabled="true" selected="selected">Select your institution location...</option>');
+            if (optionsCount < 1) {
+                debugConsole("Found no federation options to display.");
+                var noFedsFoundText = '<span id="shib-feds-missing"> \
+                <p>This method of authentication is not supported for your institution at this time.</p> \
+                </span>';
+                $("#shib-submit-form").empty().append($(noFedsFoundText));
+            }
+        }
+    });
+}
+
+function getInstitutions(fedkey, subcode, disableFilter) {
+
+    var host = document.location.protocol + "//" + document.location.host;
+    var ajaxUrl = host + '/ajaxproxy/soa/shibboleth?action=getInstitutions&data-type=xml&key='+fedkey;
+    var optionsCount = 0;
+
+    if (disableFilter != null && disableFilter == 'true') {
+        debugConsole('Get all available Shibboleth idps for federation '+fedkey);
+    } else {
+        debugConsole("Update idps for federation "+fedkey+", filter by subcode "+subcode);
+        ajaxUrl += '&subcode='+subcode;
+    }
+    debugConsole('Get Shibboleth institutions with url='+ajaxUrl);
+
+    /*
+     * Even though SOA returns an XML document, set type to html in order to be allowed from Firenze servlet
+     * and to parse as an XML file in the success function of the AJAX call.
+     */
+    $.ajax({
+        type:     "GET",
+        url:      ajaxUrl,
+        dataType: "xml",
+        success:  function(xml) {
+            if (xml == null) {
+                debugConsole("Error locating supported institutions.");
+                $('#shib-idp-div').hide();
+                $('#shib-no-idp-div').show();
+            }
+            $('#shib-idp-div').show();
+            $('#shib-no-idp-div').hide();
+            $("#shib-idp-select").empty();
+            $(xml).find("institution").each(function() {
+                debugConsole("Populate institutions");
+                /*
+                 * Display only those federations that have the Hide-From-Where-Are-You-From flag not set.
+                 * When the flag is set to 'true' it means, the federation should not be displayed in the
+                 * list of available federation options.
+                 */
+                if ( $(this).find("hideFromWAYF").text() == 'false' ) {
+                    ++optionsCount;
+                    //$("#shib-idp-select").append(new Option( $(this).find("name").text() , $(this).find("entityId").text() ));
+                    $("#shib-idp-select").append("<option value='" + $(this).find("entityId").text() + "'>" + $(this).find("name").text() + "</option>");
+                }
+            });
+
+            var idpCount = $("#shib-idp-select :selected").length;
+            if (idpCount == 0) {
+                debugConsole('Found no institutions for '+fedkey);
+                $('#shib-idp-div').hide();
+                $('#shib-no-idp-div').show();
+            } else {
+                debugConsole('Successfully found institutions for '+fedkey);
+                $("#shib-idp-select").prepend('<option disabled="true" selected="selected">Select your institution...</option>');
+                $("#shib-idp-select").width($("#shib-fed-select").width());
+            }
+
+        }
+    });
+}
+
+function displayFavorites(subcode, uri, env) {
+    debugConsole('Environment: '+env);
+    var idpCookieName = "hw-shib-idp-choice";
+    var idpCookie = getCookie(idpCookieName);
+    if (idpCookie == null) {
+        debugConsole('No previous institutional selections found.');
+        return false;
+    } else {
+        debugConsole('Found previous institutional selections '+idpCookie);
+        checkParams(subcode, uri); 
+
+        $("#shib-favorites-div").empty();
+        var split = decodeURIComponent(idpCookie).split('\t');
+        for (var i = 0; i < split.length; i++) {
+            var idpInfo = split[i].split(" = ");
+            var idpId = idpInfo[0];
+            var idpText = idpInfo[1];
+            var link = '<a href="javascript: doLogin(\'+idpId+'\', \''+idpText+'\', \'true\', \''+subcode+'\', \''+uri+'\', \''+env+'\');">'+idpText+'</a><br/>';
+            $("#shib-favorites-div").append(link);
+        }
+        $("#shib-favorites-div").append('<hr/></br/>');
+    }
+
+    debugConsole('Done displaying previous selections');
+}
+
+function saveFavorites(entityId, entityIdText) {
+    var idpCookieName = "hw-shib-idp-choice";
+    var idpCookie = getCookie(idpCookieName);
+    var newValue = entityId + ' = ' + entityIdText;
+
+    if (idpCookie == null) {
+        debugConsole('Create new cookie "'+idpCookieName+'"="'+entityId+'" to store selections.');
+    } else {
+        debugConsole('Update "'+idpCookieName+'" cookie with recent selection '+entityId);
+
+        var prevValue = decodeURIComponent(idpCookie);
+        var split = prevValue.split('\t');
+        var included = 1;
+        for (var i = 0; i < split.length && included < 5; i++) {     
+            var name_value = split[i].split(" = ");
+            var prevIdp = name_value[0];
+            var prevIdpText = name_value[1];
+            debugConsole('Old prevIdp '+prevIdp+', text '+prevIdpText);
+
+            if (entityId != prevIdp) {
+                debugConsole('Append previous value '+prevIdp);
+                newValue += '\t' + prevIdp + ' = ' + prevIdpText;
+                ++included;
+                debugConsole('Update cookie value with '+newValue);
+            }
+        }
+    }
+
+    /*
+     * Set a cookiet to expire in 30 days
+     * Arguments are ( name, value, expires, path, domain, secure )
+     */
+    setCookie(idpCookieName, encodeURIComponent(newValue), 30, '/', null, null);   
+    debugConsole('Done saving previous selctions');
+}
+
+function ajaxBefore(xhrObj) {
+    xhrObj.setRequestHeader("STROMA","true");
+}
+
+function ajaxErr(req, msg, e) {
+    debugConsole("Ajax failed. Req: "+req+", msg: "+msg);
+    debugConsole("Error: "+e);
+}
+
+function ajaxComplete(req, msg) {
+    debugConsole("Ajax completed. Req: "+req+", msg: "+msg);
+}
+
+function isEncoded(str){
+    return decodeURIComponent(str) !== str;
+}
+
+
+function checkCookieSupport() {
+    var cookieEnabled=(navigator.cookieEnabled) ? true : false ;
+
+    /* Check if Internet Explorer */
+    if (typeof navigator.cookieEnabled == "undefined" && !cookieEnabled) {
+        document.cookie = "hwshib-cookie-ck" ;  
+        cookieEnabled = (document.cookie.indexOf("hwshib-cookie-ck") != -1) ? true : false ;
+    }
+
+    debugConsole("Current cookie support: "+cookieEnabled);
+
+    return cookieEnabled ; 
+}
+')'}}}
