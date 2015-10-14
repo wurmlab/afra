@@ -50,7 +50,9 @@ class Tasks < App::Routes
   #
   # FIXME: allow this URL only if the user has attempted this task already.
   get  '/data/tasks/:id' do |id|
-    user = AccessToken.user(request.session[:token])
+    user =
+      User.with_pk(params[:uid]) ||
+      AccessToken.user(request.session[:token])
     task = Task.with_pk id
 
     task_data(task, user).to_json

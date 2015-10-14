@@ -1,0 +1,80 @@
+<ng-include src="'templates/_nav.html'"></ng-include>
+
+<article class="container dashboard">
+  <ng-include src="'templates/_incompatible-browser-alert.html'"></ng-include>
+
+  <div class="row">
+    <!-- left sidebar -->
+    <div class="col-md-3">
+      <a
+        href='#'
+        class="thumbnail">
+        <img
+        ng-src="{{user.picture}}"
+        height="220" width="260"
+        alt="Profile pic">
+      </a>
+      <h3>
+        {{user.name}}
+        <br>
+        <small>
+          beginner
+        </small>
+      </h3>
+      <p>
+        <i class="fa fa-clock-o"></i>
+        Started {{user.joined_on | amDateFormat: 'MMMM Do, YYYY'}}
+      </p>
+      <p>
+        <a
+          href="mailto:a.priyam@qmul.ac.uk?subject=[afra] curation certificate"
+          target="_blank" title="Emails admin. You must have contributed 100hrs.">
+          <i class="fa fa-fw fa-certificate"></i>
+          Request Curation Certificate.
+        </a>
+        <br>
+        <a
+          href="mailto:a.priyam@qmul.ac.uk?subject=[afra] associate curator status"
+          target="_blank" title="Emails admin. You must have contributed 100hrs.">
+          <i class="fa fa-fw fa-graduation-cap"></i>
+          Request Associate Curator Status.
+        </a>
+      </p>
+    </div>
+
+    <!-- content pane -->
+    <div class="col-md-9 details">
+      <h3>Contribution activity</h3>
+      <ul
+        class="list-group">
+        <li
+          class="list-group-item"
+          ng-repeat="user in users">
+          <h4
+            class="list-group-item-heading">
+            {{user.name}} &lt;{{user.email}}&gt;
+          </h4>
+          <p
+            class="list-group-item-text">
+            <ul
+              class="list-group">
+              <li
+                class="list-group-item"
+                ng-repeat="contribution in user.contributions">
+                <a
+                  ng-href="curate?id={{contribution.task.id}}&uid={{user.id}}"
+                  ng-bind-html="describe_contribution(contribution)">
+                </a>
+                <span
+                  am-time-ago="contribution.made_on"
+                  class="time pull-right">
+                </span>
+              </li>
+            </ul>
+          </p>
+        </li>
+      </ul>
+    </div>
+  </div>
+</article>
+

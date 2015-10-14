@@ -48,7 +48,17 @@ define(['JBrowse/Browser']
 
         var get = function () {
             var params = location.search();
-            return http.get('data/tasks/' + (params.id || 'next'))
+            var url = 'data/tasks/';
+            if (params.id) {
+                url = url + params.id;
+                if (params.uid) {
+                    url = url + '?uid=' + params.uid;
+                }
+            }
+            else {
+                url = url + 'next';
+            }
+            return http.get(url)
             .then(function (response) {
                 return response.data;
             });

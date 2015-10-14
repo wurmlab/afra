@@ -3,6 +3,10 @@ class Users < App::Routes
     content_type 'application/json'
   end
 
+  get '/data/users' do
+    User.all.to_json
+  end
+
   get '/data/users/:id' do
     'test'
   end
