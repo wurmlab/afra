@@ -30,61 +30,51 @@ class Task < Sequel::Model
       end
 
       # Select tasks that haven't been done by the user already, subset the
-      # list at a random offset and pick the task with the highest priority.
-      available_tasks = where(id: user.tasks.map(&:id)).invert.where(difficulty: 1)
-      available_tasks = available_tasks.offset(Sequel.function(:floor, Sequel.function(:random) * available_tasks.count))
-      task = available_tasks.where(priority: available_tasks.max(:priority)).first
+      # list at a random offset and pick the task with the highest priority
+      # from the resulting view.
+      tasks_for_user_view = "tasks_for_user_#{user.id}".intern
+      tasks_for_user = where(id: user.tasks.map(&:id)).invert.where(difficulty: 1)
+      tasks_for_user = tasks_for_user.offset(rand(tasks_for_user.count))
+      db.create_or_replace_view(tasks_for_user_view, tasks_for_user)
 
-      # Book keeping.
-      mark_assignment(task: task, user: user)
+      tasks_for_user = db[tasks_for_user_view]
+      task_for_user = tasks_for_user.where(priority: tasks_for_user.max(:priority))
+      task_for_user = Task.with_pk(task_for_user.first[:id])
+      db.drop_view(tasks_for_user_view)
 
-      task
+      mark_assignment(task: task_for_user, user: user)
+      task_for_user
     end
 
     # Save submission from a user. Automatically inserts or updates.
     def save_submission(task:, data:, user:)
-      update_submission(task: task, data: data, user: user) or
-        insert_submission(task: task, data: data, user: user)
+      db.transaction do
+        submission = task.filter_submissions user: user
+
+        if not submission
+          Submission.create data: data, task_id: task.id, user_id: user.id
+          task.update(priority: task.priority + 1)
+          mark_completion task: task, user: user
+        else
+          submission.update data: data, revised_on: DateTime.now
+        end
+      end
     end
 
     private
 
     # Note that the given task has been assigned to the given user.
     def mark_assignment(task:, user:)
+      entry = distribution_dataset.where(task_id: task.id, user_id: user.id)
+      raise "A task already assigned to a user" if entry.count != 0 # won't happen
       distribution_dataset.insert(task_id: task.id, user_id: user.id)
     end
 
     # Note that the given task has been completed by the given user.
     def mark_completion(task:, user:)
       entry = distribution_dataset.where(task_id: task.id, user_id: user.id)
-      entry.delete if entry.first
-    end
-
-    # Save a new submission from the user.
-    def insert_submission(task:, data:, user:)
-      db.transaction do
-        Submission.create task_id: task.id, data: data, user_id: user.id
-        mark_completion task: task, user: user
-        bump_priority task: task
-      end
-    end
-
-    # Update user submission.
-    def update_submission(task:, data:, user:)
-      submission = task.filter_submissions user: user
-      return unless submission
-
-      db.transaction do
-        submission.revised_on = DateTime.now
-        submission.data = data
-        submission.save
-      end
-    end
-
-    # Update priority of the given task by 1.
-    def bump_priority(task:)
-      task.priority += 1
-      task.save
+      raise "Task was not assigned to the user" if entry.count != 1 # won't happen
+      entry.delete
     end
   end
 end
