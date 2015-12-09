@@ -103,5 +103,5 @@ Please [email](mailto:a.priyam@qmul.ac.uk) if you:
 <p align="center">
 Afra is Copyright (©) 2013 Queen Mary, University of London.
 <br/>
-Parts of Afra are forked from or inspired by <a href="http://jbrowse.org/">JBrowse</a> and <a href="http://genomearchitect.org/">WebApollo</a>.
+Parts of Afra are a derivative work of <a href="http://jbrowse.org/">JBrowse</a> and <a href="http://genomearchitect.org/">WebApollo</a> which are respectively copyright (c) 2000-2006 The Perl Foundation and copyright (c) 2010 Regents of the University of California.
 </p>

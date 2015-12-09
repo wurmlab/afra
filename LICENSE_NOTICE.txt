@@ -1,5 +1,4 @@
-Parts of Afra may be considered a derivative work of JBrowse (JB) and WebApollo
-(WA).
+Parts of Afra are a derivative work of JBrowse (JB) and WebApollo (WA).
 
 1. JB is multi-licensed under GNU Lesser Public License (LGPL) 2.1 and above,
    and Artistic License (AL) 2.0. We choose to use JB under AL 2.0.
