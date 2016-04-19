@@ -74,14 +74,15 @@ curator who makes a final verdict.
 * ~~December 2014: Simple editor synchronization between two tabs/windows.~~
 * ~~December 2014: Improve annotation editing experience. Make it more intuitive.~~
 * ~~December 2014: Basic automated testing of annotation editing functionality.~~
-* April 2015: Improve page load times.
-* April 2015: Genome dashboard: Overview of contributions per genome. How many curations. How many pass auto-check.
-* April 2015: Comments on curations.
-* May 2015: Extensive automated testing of annotation editing functionality.
-* May 2015: Improve annotation editing performance.
-* June 2015: Interactive tutorial.
-* Roll out to 200 first year students learning about gene structure ... and the
-  inadequacies of Bioinformatics algorithms.
+
+Todos:
+* Improve page load times.
+* Partially done genome dashboard: Overview of contributions per genome. How many curations. How many pass auto-check.
+* Comments on curations.
+* Extensive automated testing of annotation editing functionality.
+* Improve annotation editing performance.
+* Interactive tutorial.
+* Roll out to 200 first year students learning about gene structure ... and the inadequacies of Bioinformatics algorithms.
 
 ### Contributions are welcome
 
