@@ -66,7 +66,7 @@ class Task < Sequel::Model
     # Note that the given task has been assigned to the given user.
     def mark_assignment(task:, user:)
       entry = distribution_dataset.where(task_id: task.id, user_id: user.id)
-      raise "A task already assigned to a user" if entry.count != 0 # won't happen
+      raise "A task is already assigned to the user" if entry.count != 0 # won't happen
       distribution_dataset.insert(task_id: task.id, user_id: user.id)
     end
 
