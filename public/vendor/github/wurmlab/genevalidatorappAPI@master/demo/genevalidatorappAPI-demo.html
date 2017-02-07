@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>genevalidatorappAPI</title>
+    <link href="//maxcdn.bootstrapcdn.com/bootswatch/3.3.1/flatly/bootstrap.min.css" rel="stylesheet">
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    <style type="text/css">
+    body {padding-top: 105px;}pre {margin-top: 10px;margin-bottom: 20px;}pre p {margin: 15px;}.menu_item {line-height: 31px !important;}.normal-font p {font-size: 15px;}.page-header {margin-top: -105px;padding-top: 105px;}
+    </style>
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head>
+
+<body>
+    <div class="navbar navbar-default navbar-fixed-top">
+        <div class="container">
+            <div class="navbar-header">
+                <a href="#" class="navbar-brand menu_item">GeneValidator API</a>
+                <button class="navbar-toggle" type="button" data-toggle="collapse" data-target="#navbar-main">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+            </div>
+            <div class="navbar-collapse collapse" id="navbar-main">
+                <ul class="nav navbar-nav">
+                    <li><a href="https://wurmlab.github.io/tools/genevalidator" target="_blank" class="menu_item">GeneValidator</a></li>
+                    <li><a href="#usage" class="menu_item">Usage</a></li>
+                    <li><a href="#demo" class="menu_item">Demo</a></li>
+                    <li><a href="http://genevalidator.sbcs.qmul.ac.uk" target="_blank" class="menu_item">GeneValidatorApp</a></li>
+                    <li><a href="https://wurmlab.github.io" target="_blank" class="menu_item">Wurm Lab</a></li>
+                </ul>
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="https://github.com/wurmlab/genevalidatorappAPI" target="_blank"><span class="i fa fa-2x fa-github"></span></a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="container">
+        <div class="jumbotron">
+            <h1>GeneValidatorApp API</h1>
+            <p>This is a very simple, easy-to-use API for <a href="https://wurmlab.github.io/tools/genevalidator" target="_blank">GeneValidator</a>. It allows you to validates genes within your own Web Applications or Javascript-supporting programs.</p>
+            <p>
+                <a href="https://github.com/wurmlab/genevalidatorappAPI" target="_blank" class="btn btn-primary btn-lg"><span class="i fa fa-github"></span>&nbsp;&nbsp;See Source</a>&nbsp;&nbsp;
+                <button type="button" onclick="send()" class="btn btn-primary btn-lg">See Demo</button>
+            </p>
+        </div>
+        <div class="page-header" id="usage">
+            <h1>Usage</h1>
+        </div>
+        <div class="jumbotron normal-font">
+            <ol>
+                <li>Add the GeneValidatorApp-API script to your HTML</li>
+                <pre class="prettyprint"><p>&lt;script type="text/javascript" src="genevalidatorapp-API.min.js"&gt;&lt;/script&gt;</p></pre>
+                <li>Run the <code>GV.sendToGeneValidator()</code> function as follows:</li>
+                <pre class="prettyprint"><p>GV.sendToGeneValidator(genevalidatorAppUrl, sequence, database, validations, outputType)</p></pre>
+                <p>The <code>GV.sendToGeneValidator()</code> function has the following arguments:</p>
+                <ul>
+                    <li>
+                        <p><strong>genevalidatorAppUrl</strong>
+                            <br> This the url link to the GeneValidatorApp
+                            <br>
+                            <em><strong>Example:</strong> "http://genevalidator.sbcs.qmul.ac.uk"</em>
+                        </p>
+                    </li>
+                    <li>
+                        <p><strong>sequence</strong>
+                            <br> This is the sequence(s) that are to be analysed by GeneValidator.
+                            <br>Sequences should be in a single line with no new line characters within the sequence ('\n'). If an sequence id is present, the id should start with a forward arrow character ('>') and there must be a new line character between the id and sequence. Muliple Sequences are allowed - there should a new line character between sequences ('\n').
+                            <br>
+                            <em><strong>Example: </strong> <span style="word-break: break-all;">">seqid1\nTTCTACTCCCCCAAAACACGGCGGGACGTTGAGCAGCCTCTAGTGAACGGTCCCCTGCAT\n>seqid2\nGAGCGGGGTTTCTTCTACTCCCCCAAAACACGGCGGGACGTTGAGCAGCCTCTAGTGAACGGTCCCC"</span></em>
+                        </p>
+                    </li>
+                    <li>
+                        <p><strong>database</strong>
+                            <br> This is the name of the chosen database that you wish GeneValidator to use. Possible options can be seen under 'Advanced Parameters' on the GeneValidatorApp.
+                            <br>
+                            <em>Example:"SwissProt"</em>
+                        </p>
+                    </li>
+                    <li>
+                        <p><strong>validations (Optional)</strong>
+                            <br> This is an string of all the validations that you want to run. Each validation must be separated by a comma.
+                            <em>Example: "length_cluster, length_rank, duplication, gene_merge, multiple_alignment, blast_reading_frame, open_reading_frame"</em>
+                        </p>
+                    </li>
+                    <li>
+                        <p><strong>outputType (Optional)</strong>
+                            <br> It is also possible to specify the output type:
+                            <ul>
+                                <li><code>open_link</code> (default): This opens the GV results in a new tab. Note: when running the <code>GV.sendToGeneValidator()</code> function asynchronously, the new opened tab will be blocked by the browser. In such a case use <code>results_url</code> instead and manually open the link outside the asynchronous code.</li>
+                                <li><code>results_url</code>*: This return a promise with a link to the GV results.</li>
+                                <li><code>json_url</code>*: This return a promise with a link to the GV results in JSON format.</li>
+                                <br>
+                                <strong>Note:</strong> Since the <code>results_url</code> and the <code>json_url</code> arguments return a promise, it is necessary to update your scripts as follows:
+                            </ul>
+                        </p>
+                        <pre class="prettyprint">
+<p>
+function send() {
+  var loadingUrl = genevalidatorAppUrl + '/GeneValidator/loading.html'
+  var resultsPage = window.open(loadingUrl, '_blank');
+  ...
+  var gvRun = GV.sendToGeneValidator(genevalidatorAppUrl, sequence, database, validations, outputType)
+  gvRun.then( function(url) {
+    resultsPage.location.href = url
+  })
+}
+</p>
+</pre>
+                    </li>
+                </ul>
+            </ol>
+        </div>
+        <div class="page-header" id="demo">
+            <h1>Demo</h1>
+        </div>
+        <div class="jumbotron normal-font">
+            <p>One could create a wrapper function from which the <code>GV.sendToGeneValidator()</code> function is called:</p>
+            <pre class="prettyprint">
+<p>//simple wrapper function for the GV.sendToGeneValidator() function
+function send(){
+  var genevalidatorAppUrl = "http://genevalidator.sbcs.qmul.ac.uk";
+
+  var sequence = ">gi|514746961|ref|XM_005019748.1| PREDICTED: Anas platyrhynchos insulin (INS), mRNA\nATGGCTCTCTGGATCCGGTCGCTGCCTCTCCTGGCCCTTCTTGCTCTTTCTGGCCCTGGGATCAGCCACGCAGCTGCCAACCAGCACCTCTGTGGCTCCCACTTGGTTGAGGCTCTCTACCTGGTGTGTGGGGAGCGGGGTTTCTTCTACTCCCCCAAAACACGGCGGGACGTTGAGCAGCCTCTAGTGAACGGTCCCCTGCATGGCGAGGTGGGAGAGCTGCCGTTCCAGCATGAGGAATACCAGAAAGTCAAGCGAGGCATCGTTGAGCAATGCTGTGAAAACCCGTGCTCCCTCTACCAACTGGAAAACTACTGCAACTAG\n>gi|514746961|ref|XM_005019748.1|dup PREDICTED: Anas platyrhynchos insulin (INS), mRNA - Contains a duplication\nATGGCTCTCTGGATCCGGTCGCTGCCTCTCCTGGCCCTTCTTGCTCTTTCTGGCCCTGGGATCAGCCACGCAGCTGCCAACCAGCACCTCTGTGGCTCCCACTTGGTTGAGGCTCTCTACCTGGTGTGTGGGGAGCGGGGTTTCTTCTACTCCCCCAAAACACGGCGGGACGTTGAGCAGCCTCTAGTGAACGGTCCCCTGCATGGCGAGGTGGGAGAGCTGCCGTTCCAGCATGAGGAATACCAGACAGCACCTCTGTGGCTCCCACTTGGTTGAGGCTCTCTACCTGGTGTGTGGGGAGCGGGGTTTCTTCTACTCCCCCAAAACACGGCGGGACGTTGAGCAGCCTCTAGTGAACGGTCCCCTGCATGGCGAGGTGGGAGAGCTGCCGTTCCAGCATGAGGAATACCAGAAAGTCAAGCGAGGCATCGTTGAGCAATGCTGTGAAAACCCGTGCTCCCTCTACCAACTGGAAAACTACTGCAACTAG";
+
+  var database = "SwissProt;"
+
+  var validations = "length_cluster, length_rank, duplication, gene_merge, multiple_alignment, blast_reading_frame, open_reading_frame";
+
+  var outputType = 'open_link' // Other options include: 'results_url' or 'json_url'
+
+  var GvRun = GV.sendToGeneValidator(genevalidatorAppUrl, sequence, database, validations, outputType);
+
+  // // when outputType is equal to 'results_url' or 'json_url'
+  //
+  // var loadingUrl = genevalidatorAppUrl + '/GeneValidator/loading.html'
+  // var resultsPage = window.open(loadingUrl, '_blank');
+  //
+  // GvRun.then( function(url) {
+  //  resultsPage.location.href = url
+  // })
+
+}
+</p></pre>
+            <p>One could then call this <code>send()</code> function in the HTML:</p>
+            <pre class="prettyprint">
+<p>&lt;button type="button" onclick="send()" class="btn btn-primary"&gt;Click here to send&lt;/button&gt;</p>
+</pre>
+            <hr>
+            <h4>Try the button below...</h4>
+            <button type="button" onclick="send()" class="btn btn-primary">Click here to send</button>
+        </div>
+    </div>
+    <!-- jQuery -->
+    <script src="//code.jquery.com/jquery.js"></script>
+    <!-- Bootstrap JavaScript -->
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+    <!-- Prettify (for styling the code in this demo) -->
+    <script src="https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js"></script>
+    <!-- GeneValidatorApp-API Javascript -->
+    <script type="text/javascript" src="../build/genevalidatorappAPI.min.js"></script>
+    <!-- Custom Method to run the demo -->
+    <script type="text/javascript">
+    //simple method that calls the GV api method
+    function send() {
+        var genevalidatorAppUrl = "http://genevalidator.sbcs.qmul.ac.uk";
+
+        var sequence = ">gi|514746961|ref|XM_005019748.1| PREDICTED: Anas platyrhynchos insulin (INS), mRNA\nATGGCTCTCTGGATCCGGTCGCTGCCTCTCCTGGCCCTTCTTGCTCTTTCTGGCCCTGGGATCAGCCACGCAGCTGCCAACCAGCACCTCTGTGGCTCCCACTTGGTTGAGGCTCTCTACCTGGTGTGTGGGGAGCGGGGTTTCTTCTACTCCCCCAAAACACGGCGGGACGTTGAGCAGCCTCTAGTGAACGGTCCCCTGCATGGCGAGGTGGGAGAGCTGCCGTTCCAGCATGAGGAATACCAGAAAGTCAAGCGAGGCATCGTTGAGCAATGCTGTGAAAACCCGTGCTCCCTCTACCAACTGGAAAACTACTGCAACTAG\n>gi|514746961|ref|XM_005019748.1|dup PREDICTED: Anas platyrhynchos insulin (INS), mRNA - Contains a duplication\nATGGCTCTCTGGATCCGGTCGCTGCCTCTCCTGGCCCTTCTTGCTCTTTCTGGCCCTGGGATCAGCCACGCAGCTGCCAACCAGCACCTCTGTGGCTCCCACTTGGTTGAGGCTCTCTACCTGGTGTGTGGGGAGCGGGGTTTCTTCTACTCCCCCAAAACACGGCGGGACGTTGAGCAGCCTCTAGTGAACGGTCCCCTGCATGGCGAGGTGGGAGAGCTGCCGTTCCAGCATGAGGAATACCAGACAGCACCTCTGTGGCTCCCACTTGGTTGAGGCTCTCTACCTGGTGTGTGGGGAGCGGGGTTTCTTCTACTCCCCCAAAACACGGCGGGACGTTGAGCAGCCTCTAGTGAACGGTCCCCTGCATGGCGAGGTGGGAGAGCTGCCGTTCCAGCATGAGGAATACCAGAAAGTCAAGCGAGGCATCGTTGAGCAATGCTGTGAAAACCCGTGCTCCCTCTACCAACTGGAAAACTACTGCAACTAG";
+
+        var database = "SwissProt";
+
+        var validations = "length_cluster, length_rank, duplication, gene_merge, multiple_alignment, blast_reading_frame, open_reading_frame";
+
+        var outputType = 'open_link';
+        GV.sendToGeneValidator(genevalidatorAppUrl, sequence, database, validations, outputType);
+    }
+    </script>
+</body>
+
+</html>

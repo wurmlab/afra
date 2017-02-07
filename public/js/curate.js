@@ -1,0 +1,572 @@
+                        //ng-class="{'col-md-9': sidebar_visible, 'col-md-12': !sidebar_visible}">
+
+import React from 'react';
+import Browser from 'JBrowse/Browser';
+
+export default class About extends React.Component {
+    render () {
+        return (
+            <article
+                class="curate">
+                <div
+                    class="row">
+                    <div
+                        class="col-md-9">
+                        <div
+                            class="editor">
+                            <div
+                                class="topbar">
+                                <div
+                                    class="statusbar">
+                                    <strong ng-bind="name()"></strong>
+                                </div>
+                                <div
+                                    class="toolbar">
+                                    <button
+                                        id="controls-undo" class="btn btn-default disabled"
+                                        ng-click="browser.getEditTrack().undo()"
+                                        title="Undo last edit">
+                                        <i class="fa fa-undo"></i>
+                                    </button>
+                                    <button
+                                        id="controls-redo" class="btn btn-default disabled"
+                                        ng-click="browser.getEditTrack().redo()"
+                                        title="Redo last edit">
+                                        <i class="fa fa-repeat"></i>
+                                    </button>
+                                    <button
+                                        class="btn btn-default"
+                                        ng-click='browser.view.smartScrollLeft($event)'
+                                        title="Move left. If annotation selected, move to next left edge.">
+                                        <i class="fa fa-long-arrow-left"></i>
+                                    </button>
+                                    <button
+                                        class="btn btn-default"
+                                        ng-click='browser.view.smartScrollRight($event)'
+                                        title="Move right. If annotation selected, move to next right edge.">
+                                        <i class="fa fa-long-arrow-right"></i>
+                                    </button>
+                                    <button
+                                        class="btn btn-default"
+                                        ng-click="browser.view.zoomIn()"
+                                        title="Zoom in">
+                                        <i class="fa fa-search-plus"></i>
+                                    </button>
+                                    <button
+                                        class="btn btn-default"
+                                        ng-click="browser.view.zoomOut()"
+                                        title="Zoom out">
+                                        <i class="fa fa-search-minus"></i>
+                                    </button>
+                                    <button
+                                        class="btn btn-default"
+                                        title="Search reference sequence."
+                                        data-toggle="modal" data-target="#sequence-search-modal">
+                                        <i class="fa fa-search"></i>
+                                    </button>
+                                    <button
+                                        class="btn btn-default" id="toggle-track-labels"
+                                        ng-click="browser.view.toggleTrackLabels()"
+                                        title="Toggle track labels">
+                                        <i class="fa fa-eye"></i>
+                                    </button>
+                                    <button
+                                        class="btn btn-default"
+                                        ng-click="toggle_sidebar()"
+                                        title="Hide / show sidebar">
+                                        <i class="fa" ng-class="{'fa-angle-double-right': sidebar_visible, 'fa-angle-double-left': !sidbar_visible}"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div
+                                id="genome" class="buffer">
+                            </div>
+                            <div class="controls-bot">
+                                <button
+                                    class="btn btn-primary btn-lg btn-block pull-right disabled" id="done"
+                                    ng-click="done()"
+                                    title="Submit changes">
+                                    Done
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div
+                        ng-if="sidebar_visible"
+                        class="col-md-3 sidebar">
+                        <h4
+                            class="sidebar-title">
+                            Summary of things to keep in mind
+                        </h4>
+                        <div id="checklist" class="panel-group">
+                            <div class="panel panel-default">
+                                <h4
+                                    class="sidebar-panel-heading"
+                                    data-toggle="collapse" data-parent="#checklist" data-target="#checklist-est"
+                                    ng-click="toggleChevron($event)">
+                                    <i class="fa fa-angle-right fa-rotate-90"></i>
+                                    &nbsp;&nbsp;Consistency with available EST data
+                                </h4>
+                                <div
+                                    id="checklist-est" class="panel-collapse collapse in">
+                                    <div class="panel-body">
+                                        <ul class="fa-ul justified">
+                                            <li>
+                                                <i class="fa-li fa fa-angle-right"></i>
+                                                Scrolling along the length of the gene prediction, check the
+                                                edges of the prediction don’t conflict with EST data.
+                                            </li>
+                                            <li>
+                                                <i class="fa-li fa fa-angle-right"></i>
+                                                Extend exons if EST data extends beyond consensus prediction.
+                                            </li>
+                                            <li>
+                                                <i class="fa-li fa fa-angle-right"></i>
+                                                Add exons if EST evidence includes additional exons; remove
+                                                exons that are largely unsupported. 
+                                            </li>
+                                            <li>
+                                                <i class="fa-li fa fa-angle-right"></i>
+                                                Consider whether EST evidence is best explained by the
+                                                existence of  alternative transcripts.
+                                            </li>
+                                            <li>
+                                                <i class="fa-li fa fa-angle-right"></i>
+                                                Check no introns are missing.
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="panel panel-default">
+                                <h4
+                                    class="sidebar-panel-heading"
+                                    data-toggle="collapse" data-parent="#checklist" data-target="#checklist-splice-sites"
+                                    ng-click="toggleChevron($event)">
+                                    <i class="fa fa-angle-right"></i>
+                                    &nbsp;&nbsp;Splice sites
+                                </h4>
+                                <div id="checklist-splice-sites" class="panel-collapse collapse">
+                                    <div class="panel-body">
+                                        <ul class="fa-ul justified">
+                                            <li>
+                                                <i class="fa-li fa fa-angle-right"></i>
+                                                Introns generally begin with GT and end in AG (read more on
+                                                <a href="http://en.wikipedia.org/wiki/RNA_splicing"
+                                                    target="_blank">RNA splicing</a>).
+                                            </li>
+                                            <li>
+                                                <i class="fa-li fa fa-angle-right"></i>
+                                                You may need to shift the start and ends of introns to ensure
+                                                exon reading frame stays appropriate.
+                                            </li>
+                                            <li>
+                                                <i class="fa-li fa fa-angle-right"></i>
+                                                If you conclude that the most likely splice donor is GC, flag
+                                                the gene model with an appropriate justification.
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="panel panel-default">
+                                <h4
+                                    class="sidebar-panel-heading"
+                                    data-toggle="collapse" data-parent="#checklist" data-target="#checklist-translation-sites"
+                                    ng-click="toggleChevron($event)">
+                                    <i class="fa fa-angle-right"></i>
+                                    &nbsp;&nbsp;Translation sites
+                                </h4>
+                                <div id="checklist-translation-sites" class="panel-collapse collapse">
+                                    <div class="panel-body">
+                                        <ul class="fa-ul justified">
+                                            <li>
+                                                <i class="fa-li fa fa-angle-right"></i>
+                                                The translation start codon is generally ATG - in either the
+                                                first or the second exon.
+                                            </li>
+                                            <li>
+                                                <i class="fa-li fa fa-angle-right"></i>
+                                                If the translation start is unclear, select an in-frame ATG
+                                                upstream in the same exon or the next as translation start.
+                                                Alternatively, an additional exon could be required.
+                                            </li>
+                                            <li>
+                                                <i class="fa-li fa fa-angle-right"></i>
+                                                If you conclude that a gene’s the most likely start codon is
+                                                non-ATG, check if this is the case in homologs. Flag the gene
+                                                model with an appropriate justification.
+                                            </li>
+                                            <li>
+                                                <i class="fa-li fa fa-angle-right"></i>
+                                                If the translation stop is not a stop codon (unlikely),
+                                                resize exon to the first in-frame stop codon.
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="panel panel-default panel-inverse">
+                                <h4
+                                    class="sidebar-panel-heading"
+                                    data-toggle="collapse" data-parent="#checklist" data-target="#checklist-homologs"
+                                    ng-click="toggleChevron($event)">
+                                    <i class="fa fa-angle-right"></i>
+                                    &nbsp;&nbsp;Consistency with homologs and transcriptomes
+                                </h4>
+                                <div id="checklist-homologs" class="panel-collapse collapse">
+                                    <div class="panel-body">
+                                        <ul class="fa-ul justified">
+                                            <li>
+                                                <i class="fa-li fa fa-angle-right"></i>
+                                                Check that the length of your gene prediction is similar to
+                                                lengths of homologs (e.g. with <a
+                                                    href="http://www.uniprot.org/blast/"
+                                                    target="_blank">Uniprot BLASTP</a> or <a
+                                                    target="_blank" href="http://blast.ncbi.nlm.nih.gov/Blast.cgi?PROGRAM=blastp&PAGE_TYPE=BlastSearch&LINK_LOC=blasthome">NCBI
+                                                    BLASTP</a>)
+                                            </li>
+                                            <li>
+                                                <i class="fa-li fa fa-angle-right"></i>
+                                                Check that individual exons have lengths similar to
+                                                homologous exons.
+                                            </li>
+                                            <li>
+                                                <i class="fa-li fa fa-angle-right"></i>
+                                                Check that the overall gene structure is similar to structure
+                                                of homologous genes (including same number of exons).
+                                            </li>
+                                            <li>
+                                                <i class="fa-li fa fa-angle-right"></i>
+                                                Check that a <a
+                                                    href="http://www.ebi.ac.uk/Tools/psa/emboss_needle/nucleotide.html"
+                                                    target="_blank">pairwise alignment</a> of your prediction
+                                                with assembled transcriptome includes no unexplained gaps.
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div
+                    class="modal fade" id="thanks"
+                    tabindex="-1"
+                    data-backdrop="static" data-keyboard="false">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h4 class="modal-title">Great job!</h4>
+                            </div>
+                            <div class="modal-body">
+                                <p>
+                                    Would you like to contribute more?
+                                </p>
+                            </div>
+                            <div class="modal-footer">
+                                <button
+                                    ng-click="contribute_more()"
+                                    class="btn btn-primary">
+                                    Contribute more
+                                </button>
+                                <button
+                                    ng-click="go_back_to_dashboard()"
+                                    class="btn btn-primary">
+                                    Go back to Dashboard
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div
+                    class="modal fade" id="sequence-search-modal"
+                    tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+
+                            <div class="modal-header">
+                                <h4 class="modal-title">
+                                    Search reference sequence
+                                </h4>
+                            </div>
+
+                            <div class="modal-body">
+                                <p>
+                                    This tool creates tracks showing regions of the reference sequence
+                                    (or its translations) that match a given DNA or amino acid sequence.
+                                </p>
+                                Search for:
+                                <label class="radio-inline">
+                                    <input type="radio" name="translate" value="DNA" checked/>DNA
+                                </label>
+                                <label class="radio-inline">
+                                    <input type="radio" name="translate" value="AA"/> AA
+                                </label>
+                                <input
+                                    type="text" name="expr" class="form-control"
+                                    placeholder="Search query" autofocus/>
+                                <div class="checkbox">
+                                    <label>
+                                        <input
+                                            type="checkbox" name="caseIgnore" id="search_ignore_case"
+                                            value="" checked="checked"/>
+                                        Ignore Case
+                                    </label>
+                                </div>
+                                <div class="checkbox">
+                                    <label>
+                                        <input
+                                            type="checkbox" name="regex" id="search_as_regex"
+                                            value=""/>
+                                        Treat as regular expression
+                                    </label>
+                                </div>
+                                <p>Search strands:</p>
+                                <div class="checkbox">
+                                    <label>
+                                        <input
+                                            type="checkbox" name="fwdStrand" id="search_fwdstrand"
+                                            value="" checked="checked"/>
+                                        Forward
+                                    </label>
+                                </div>
+                                <div class="checkbox">
+                                    <label>
+                                        <input
+                                            type="checkbox" name="revStrand" id="search_revstrand"
+                                            value="" checked="checked"/>
+                                        Reverse
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="modal-footer">
+                                <button
+                                    id="create-search-track"
+                                    class="btn btn-primary">
+                                    Search
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="contextmenu" class="">
+                    <ul class="dropdown-menu" role="menu">
+                        <li
+                            role="presentation"
+                            id="contextmenu-get-sequence">
+                            <a role="menuitem" tabindex="-1"
+                                ng-click="browser.getEditTrack().showSequenceDialog()">
+                                Get sequence
+                            </a>
+                        </li>
+                        <li
+                            role="presentation"
+                            id="contextmenu-send-to-genevalidator">
+                            <a role="menuitem" tabindex="-1"
+                                ng-click="browser.getEditTrack().sendToGeneValidator()">
+                                Send to GeneValidator
+                            </a>
+                        </li>
+
+                        <li role="presentation" class="divider"></li>
+
+                        <li
+                            role="presentation"
+                            id="contextmenu-delete">
+                            <a role="menuitem" tabindex="-1"
+                                ng-click="browser.getEditTrack().deleteSelectedFeatures()">
+                                <i class="fa fa-trash-o"></i>
+                                Delete
+                            </a>
+                        </li>
+                        <li
+                            role="presentation"
+                            id="contextmenu-merge">
+                            <a role="menuitem" tabindex="-1"
+                                ng-click="browser.getEditTrack().mergeSelectedFeatures()">
+                                <i class="fa fa-link"></i>
+                                Merge
+                            </a>
+                        </li>
+                        <li
+                            role="presentation"
+                            id="contextmenu-make-intron">
+                            <a role="menuitem" tabindex="-1"
+                                ng-click="browser.getEditTrack().makeIntronInSelectedExon()">
+                                <i class="fa fa-unlink"></i>
+                                Make intron
+                            </a>
+                        </li>
+                        <li
+                            role="presentation"
+                            id="contextmenu-split">
+                            <a role="menuitem" tabindex="-1"
+                                ng-click="browser.getEditTrack().splitSelectedTranscript()">
+                                <i class="fa fa-unlink"></i>
+                                Split transcript
+                            </a>
+                        </li>
+                        <li
+                            role="presentation"
+                            id="contextmenu-duplicate">
+                            <a role="menuitem" tabindex="-1"
+                                ng-click="browser.getEditTrack().duplicateSelectedFeatures()">
+                                <i class="fa fa-copy"></i>
+                                Duplicate
+                            </a>
+                        </li>
+                        <li
+                            role="presentation"
+                            id="contextmenu-flipstrand">
+                            <a role="menuitem" tabindex="-1"
+                                ng-click="browser.getEditTrack().flipStrandForSelectedFeatures()">
+                                <i class="fa fa-exchange"></i>
+                                Flip strand
+                            </a>
+                        </li>
+
+                        <li role="presentation" class="divider"></li>
+
+                        <li
+                            role="presentation"
+                            id="contextmenu-set-longest-orf">
+                            <a role="menuitem" tabindex="-1" href="#"
+                                ng-click="browser.getEditTrack().setLongestORFForImpliedTranscript()">
+                                <i class="fa fa-minus"></i>
+                                Use longest ORF
+                            </a>
+                        </li>
+                        <li
+                            role="presentation"
+                            id="contextmenu-set-translation-start">
+                            <a role="menuitem" tabindex="-1"
+                                ng-click="browser.getEditTrack().setTranslationStartForImpliedTranscript()">
+                                <i class="fa fa-ellipsis-h"></i>
+                                Set translation start
+                            </a>
+                        </li>
+                        <li
+                            role="presentation"
+                            id="contextmenu-set-translation-stop">
+                            <a role="menuitem" tabindex="-1"
+                                ng-click="browser.getEditTrack().setTranslationStopForImpliedTranscript()">
+                                <i class="fa fa-ellipsis-h"></i>
+                                Set translation stop
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div
+                    class="modal" id="which-strand"
+                    data-keyboard="false" data-backdrop="static">
+                    <div
+                        class="modal-dialog">
+                        <div
+                            class="modal-content">
+                            <div
+                                class="modal-header">
+                                <h4
+                                    class="modal-title">
+                                    Which strand?
+                                </h4>
+                            </div>
+                            <div
+                                class="modal-body">
+                                <p>
+                                    Merging annotations on opposite strands. Which strand should the resulting feature be on?
+                                </p>
+                            </div>
+                            <div class="modal-footer">
+                                <button
+                                    class="btn btn-default"
+                                    value="-1"
+                                    data-dismiss="modal">
+                                    <i class="fa fa-long-arrow-left"></i>
+                                    Reverse strand
+                                </button>
+                                <button
+                                    class="btn btn-default"
+                                    value="1"
+                                    data-dismiss="modal">
+                                    <i class="fa fa-long-arrow-right"></i>
+                                    Forward strand
+                                </button>
+                                <button
+                                    class="btn btn-danger"
+                                    value="0"
+                                    data-dismiss="modal">
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal fade" id="sequence" tabindex="-1">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h4 class="modal-title">Reference sequence ...</h4>
+                            </div>
+                            <div class="modal-body">
+                                <pre class="pre-scrollable"></pre>
+                            </div>
+                            <div class="modal-footer">
+                                <div class="btn-group pull-left"
+                                    data-toggle="buttons">
+                                    <label
+                                        class="btn btn-default"
+                                        data-sequence-type="protein"
+                                        ng-click="browser.getEditTrack().showSequenceDialog()">
+                                        <input type="radio"/>Protein
+                                    </label>
+                                    <label
+                                        class="btn btn-default"
+                                        data-sequence-type="CDS"
+                                        ng-click="browser.getEditTrack().showSequenceDialog()">
+                                        <input type="radio"/>CDS
+                                    </label>
+                                    <label
+                                        class="btn btn-default"
+                                        data-sequence-type="cDNA"
+                                        ng-click="browser.getEditTrack().showSequenceDialog()">
+                                        <input type="radio"/>cDNA
+                                    </label>
+                                    <label
+                                        class="btn btn-default active"
+                                        data-sequence-type="genomic"
+                                        ng-click="browser.getEditTrack().showSequenceDialog()">
+                                        <input type="radio"/>Genomic
+                                    </label>
+                                </div>
+                                <div
+                                    id="bp"
+                                    class="input-group col-sm-3 pull-left"
+                                    style="display: none;">
+                                    <span class="input-group-addon">±</span>
+                                    <input type="number" class="form-control"/>
+                                </div>
+                                <button
+                                    class="btn btn-default pull-right" id="download"
+                                    ng-click="browser.getEditTrack().downloadSequence()">
+                                    <i class="fa fa-download"></i>
+                                    Download
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+        );
+    }
+}

@@ -1,0 +1,1 @@
+module.exports = require("npm:dojo@1.9.7/main");

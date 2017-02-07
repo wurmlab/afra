@@ -1,0 +1,5 @@
+MultipleErrors: /Users/priyam/.jspm/packages/npm/jquery@2.1.3/src/intro.js:45:1: Unexpected token End of File
+/Users/priyam/.jspm/packages/npm/jquery@2.1.3/src/intro.js:45:1: Unexpected token End of File
+/Users/priyam/.jspm/packages/npm/jquery@2.1.3/src/intro.js:45:1: Unexpected token End of File
+
+MultipleErrors: /Users/priyam/.jspm/packages/npm/jquery@2.1.3/src/outro.js:1:1: Unexpected token }

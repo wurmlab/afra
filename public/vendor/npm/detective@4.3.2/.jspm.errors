@@ -1,0 +1,12 @@
+MultipleErrors: /Users/priyam/.jspm/packages/npm/detective@4.3.2/test/files/es6-module.js:3:1: Unexpected reserved word export
+/Users/priyam/.jspm/packages/npm/detective@4.3.2/test/files/es6-module.js:3:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/detective@4.3.2/test/files/es6-module.js:3:8: Unexpected reserved word default
+/Users/priyam/.jspm/packages/npm/detective@4.3.2/test/files/es6-module.js:3:16: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/detective@4.3.2/test/files/es6-module.js:3:25: Unexpected token (
+/Users/priyam/.jspm/packages/npm/detective@4.3.2/test/files/es6-module.js:3:26: Unexpected token )
+/Users/priyam/.jspm/packages/npm/detective@4.3.2/test/files/es6-module.js:4:9: Unexpected token b
+/Users/priyam/.jspm/packages/npm/detective@4.3.2/test/files/es6-module.js:4:11: Unexpected token =
+/Users/priyam/.jspm/packages/npm/detective@4.3.2/test/files/es6-module.js:4:13: Unexpected token require
+/Users/priyam/.jspm/packages/npm/detective@4.3.2/test/files/es6-module.js:4:20: Unexpected token (
+/Users/priyam/.jspm/packages/npm/detective@4.3.2/test/files/es6-module.js:4:21: Unexpected token 'b'
+/Users/priyam/.jspm/packages/npm/detective@4.3.2/test/files/es6-module.js:4:24: Unexpected token )

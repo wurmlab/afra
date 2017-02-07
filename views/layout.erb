@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Afra</title>
+  <meta name="author" content="Anurag Priyam">
+  <meta name="author" content="Yannick Wurm">
+
+  <!-- CSS -->
+  <% if settings.production? %>
+    <link rel="stylesheet" media="screen,print" type="text/css" href="css/afra.min.css"/>
+  <% else %>
+    <link rel="stylesheet" media="screen,print" type="text/css" href="css/afra.css"/>
+  <% end %>
+</head>
+
+<body>
+  <div class="navbar navbar-inverse navbar-fixed-top">
+    <section class="container">
+      <a href="about" class="navbar-brand">
+        Afra
+      </a>
+      <ul
+        id="user-links"
+        ng-show="user.name"
+        class="nav navbar-nav navbar-right">
+        <li>
+          <a
+            target="_blank"
+            href="http://afra.sbcs.qmul.ac.uk:8080">
+            <i class="fa fa-fw fa-group"></i>
+            Help & Support
+          </a>
+        </li>
+        <li class="divider-vertical"></li>
+        <li>
+          <a
+            href="/">
+            <span ng-bind="user.name"></span>
+          </a>
+        </li>
+        <li>
+          <a
+            href="#"
+            data-toggle="modal"
+            data-target="#logout"
+            title="Logout">
+            <i class="fa fa-lg fa-sign-out"></i>
+          </a>
+        </li>
+      </ul>
+    </section>
+  </div>
+
+  <div
+    class="container">
+    <noscript>
+      <div
+        class="nojs-error">
+        <h3>Afra can't work without JavaScript.</h3>
+        <ul>
+          <li>Please see if you can enable JavaScript in your browser's preferences.</li>
+          <li>If your browser doesn't support JavaScript, please consider upgrading to the latest version or using Firefox or Chrome.</li>
+        </ul>
+      </div>
+    </noscript>
+  </div>
+
+  <!-- for facebook login -->
+  <div id="fb-root"></div>
+
+  <!-- for react router -->
+  <div id="view"></div>
+
+  <footer>
+    <hr class="soften">
+    <p>
+      By <a href="http://wurmlab.github.io">Wurm Lab</a>, <a href="http://sbcs.qmul.ac.uk">Queen Mary, University of London</a>.
+      Funded by <a href="http://www.bbsrc.ac.uk/home/home.aspx">BBSRC</a> and <a href="http://www.qminnovation.co.uk/">QMI</a>.
+      <br>
+      Parts of Afra are a derivative work of <a href="http://jbrowse.org/">JBrowse</a> and <a href="http://genomearchitect.org/">WebApollo</a>.
+      <br>
+      <a
+        href="https://github.com/yeban/afra"
+        target="_blank" title="To view code, file bugs, request features.">
+        <i class="fa fa-github"></i>
+        View source code.
+      </a>
+    </p>
+    <p>
+      <a href="http://www.bbsrc.ac.uk/home/home.aspx"><img src="img/nostrap-bbsrc-colour.png" width="90"></a>
+      <a href="http://sbcs.qmul.ac.uk"><img src="img/qmul-logo.png" width="90"></a>
+    </p>
+  </footer>
+
+  <!-- logout dialog -->
+  <div id="logout" class="modal fade">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 class="modal-title">
+            You leaving?
+          </h4>
+        </div>
+        <div class="modal-body">
+          <p>Things were getting interesting ...</p>
+        </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-default"
+            data-dismiss="modal">
+            I changed my mind
+          </button>
+          <button
+            type="button"
+            class="btn btn-primary"
+            ng-click="signout()">
+            I'll be back later
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="spinner" class="modal">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-body centered">
+          <h2>Loading ...</h2>
+          <i class="fa fa-spinner fa-5x fa-spin"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JS -->
+  <% if settings.production? %>
+    <script src="afra.min.js"></script>
+  <% else %>
+    <script src="vendor/system.js"></script>
+    <script src="config.js"></script>
+    <script>
+      System.import('js/afra.js')
+    </script>
+  <% end %>
+</body>
+</html>

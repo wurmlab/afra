@@ -1,0 +1,425 @@
+MultipleErrors: /Users/priyam/.jspm/packages/npm/acorn@3.3.0/dist/acorn_loose.es.js:1:1: Unexpected reserved word import
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/dist/acorn_loose.es.js:1:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/dist/acorn_loose.es.js:1:115: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/dist/acorn_loose.es.js:1:120: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/dist/acorn_loose.es.js:1261:1: Unexpected reserved word export
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/dist/acorn_loose.es.js:1261:8: Semi-colon expected
+
+MultipleErrors: /Users/priyam/.jspm/packages/npm/acorn@3.3.0/dist/acorn.es.js:3112:1: Unexpected reserved word export
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/dist/acorn.es.js:3112:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/dist/acorn.es.js:3112:148: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/dist/acorn.es.js:3112:151: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/dist/acorn.es.js:3112:179: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/dist/acorn.es.js:3112:182: Semi-colon expected
+
+MultipleErrors: /Users/priyam/.jspm/packages/npm/acorn@3.3.0/dist/walk.es.js:342:1: Unexpected reserved word export
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/dist/walk.es.js:342:8: Semi-colon expected
+
+MultipleErrors: /Users/priyam/.jspm/packages/npm/acorn@3.3.0/rollup/config.bin.js:1:1: Unexpected reserved word import
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/rollup/config.bin.js:1:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/rollup/config.bin.js:1:14: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/rollup/config.bin.js:1:19: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/rollup/config.bin.js:3:1: Unexpected reserved word export
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/rollup/config.bin.js:3:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/rollup/config.bin.js:3:8: Unexpected reserved word default
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/rollup/config.bin.js:3:16: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/rollup/config.bin.js:5:7: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/rollup/config.bin.js:5:7: Unexpected token :
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/rollup/config.bin.js:5:9: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/rollup/config.bin.js:6:9: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/rollup/config.bin.js:6:9: Unexpected token :
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/rollup/config.bin.js:6:11: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/rollup/config.bin.js:7:9: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/rollup/config.bin.js:7:9: Unexpected token :
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/rollup/config.bin.js:7:11: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/rollup/config.bin.js:8:11: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/rollup/config.bin.js:8:11: Unexpected token :
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/rollup/config.bin.js:9:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/rollup/config.bin.js:9:8: Unexpected token :
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/rollup/config.bin.js:9:10: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/rollup/config.bin.js:11:4: Unexpected token ,
+
+MultipleErrors: /Users/priyam/.jspm/packages/npm/acorn@3.3.0/rollup/config.loose.js:1:1: Unexpected reserved word import
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/rollup/config.loose.js:1:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/rollup/config.loose.js:1:14: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/rollup/config.loose.js:1:19: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/rollup/config.loose.js:3:1: Unexpected reserved word export
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/rollup/config.loose.js:3:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/rollup/config.loose.js:3:8: Unexpected reserved word default
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/rollup/config.loose.js:3:16: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/rollup/config.loose.js:5:13: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/rollup/config.loose.js:5:13: Unexpected token :
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/rollup/config.loose.js:5:15: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/rollup/config.loose.js:6:11: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/rollup/config.loose.js:6:11: Unexpected token :
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/rollup/config.loose.js:7:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/rollup/config.loose.js:7:8: Unexpected token :
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/rollup/config.loose.js:7:10: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/rollup/config.loose.js:9:4: Unexpected token ,
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/rollup/config.loose.js:12:4: Unexpected token ,
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/rollup/config.loose.js:17:10: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/rollup/config.loose.js:17:10: Unexpected token :
+
+MultipleErrors: /Users/priyam/.jspm/packages/npm/acorn@3.3.0/rollup/config.main.js:1:1: Unexpected reserved word import
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/rollup/config.main.js:1:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/rollup/config.main.js:1:14: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/rollup/config.main.js:1:19: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/rollup/config.main.js:3:1: Unexpected reserved word export
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/rollup/config.main.js:3:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/rollup/config.main.js:3:8: Unexpected reserved word default
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/rollup/config.main.js:3:16: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/rollup/config.main.js:5:12: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/rollup/config.main.js:5:12: Unexpected token :
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/rollup/config.main.js:5:14: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/rollup/config.main.js:6:9: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/rollup/config.main.js:6:9: Unexpected token :
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/rollup/config.main.js:7:9: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/rollup/config.main.js:7:9: Unexpected token :
+
+MultipleErrors: /Users/priyam/.jspm/packages/npm/acorn@3.3.0/rollup/config.walk.js:1:1: Unexpected reserved word import
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/rollup/config.walk.js:1:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/rollup/config.walk.js:1:14: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/rollup/config.walk.js:1:19: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/rollup/config.walk.js:3:1: Unexpected reserved word export
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/rollup/config.walk.js:3:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/rollup/config.walk.js:3:8: Unexpected reserved word default
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/rollup/config.walk.js:3:16: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/rollup/config.walk.js:5:12: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/rollup/config.walk.js:5:12: Unexpected token :
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/rollup/config.walk.js:5:14: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/rollup/config.walk.js:6:9: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/rollup/config.walk.js:6:9: Unexpected token :
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/rollup/config.walk.js:7:9: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/rollup/config.walk.js:7:9: Unexpected token :
+
+MultipleErrors: /Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/bin/acorn.js:1:21: Unexpected reserved word import
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/bin/acorn.js:1:28: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/bin/acorn.js:1:44: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/bin/acorn.js:2:1: Unexpected reserved word import
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/bin/acorn.js:2:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/bin/acorn.js:2:22: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/bin/acorn.js:2:25: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/bin/acorn.js:2:40: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/bin/acorn.js:3:1: Unexpected reserved word import
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/bin/acorn.js:3:13: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/bin/acorn.js:3:19: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/bin/acorn.js:3:24: Semi-colon expected
+
+MultipleErrors: /Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/expression.js:19:1: Unexpected reserved word import
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/expression.js:19:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/expression.js:19:15: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/expression.js:19:18: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/expression.js:19:27: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/expression.js:20:1: Unexpected reserved word import
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/expression.js:20:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/expression.js:20:22: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/expression.js:21:1: Unexpected reserved word import
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/expression.js:21:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/expression.js:21:35: Semi-colon expected
+
+MultipleErrors: /Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/identifier.js:3:1: Unexpected reserved word export
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/identifier.js:3:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/identifier.js:16:1: Unexpected reserved word export
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/identifier.js:16:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/identifier.js:60:1: Unexpected reserved word export
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/identifier.js:60:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/identifier.js:72:1: Unexpected reserved word export
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/identifier.js:72:8: Semi-colon expected
+
+MultipleErrors: /Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/location.js:1:1: Unexpected reserved word import
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/location.js:1:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/location.js:1:22: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/location.js:2:1: Unexpected reserved word import
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/location.js:2:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/location.js:2:37: Semi-colon expected
+
+MultipleErrors: /Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/locutil.js:1:1: Unexpected reserved word import
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/locutil.js:1:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/locutil.js:1:26: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/locutil.js:6:1: Unexpected reserved word export
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/locutil.js:6:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/locutil.js:17:1: Unexpected reserved word export
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/locutil.js:17:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/locutil.js:31:1: Unexpected reserved word export
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/locutil.js:31:8: Semi-colon expected
+
+MultipleErrors: /Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/loose/expression.js:1:1: Unexpected reserved word import
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/loose/expression.js:1:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/loose/expression.js:1:27: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/loose/expression.js:2:1: Unexpected reserved word import
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/loose/expression.js:2:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/loose/expression.js:2:23: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/loose/expression.js:3:1: Unexpected reserved word import
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/loose/expression.js:3:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/loose/expression.js:3:18: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/loose/expression.js:3:21: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/loose/expression.js:3:30: Semi-colon expected
+
+MultipleErrors: /Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/loose/parseutil.js:1:1: Unexpected reserved word export
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/loose/parseutil.js:1:8: Semi-colon expected
+
+MultipleErrors: /Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/loose/state.js:1:1: Unexpected reserved word import
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/loose/state.js:1:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/loose/state.js:1:45: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/loose/state.js:1:48: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/loose/state.js:1:85: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/loose/state.js:4:1: Unexpected reserved word export
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/loose/state.js:4:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/loose/state.js:6:1: Unexpected reserved word export
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/loose/state.js:6:8: Semi-colon expected
+
+MultipleErrors: /Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/loose/statement.js:1:1: Unexpected reserved word import
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/loose/statement.js:1:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/loose/statement.js:1:27: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/loose/statement.js:2:1: Unexpected reserved word import
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/loose/statement.js:2:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/loose/statement.js:2:23: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/loose/statement.js:3:1: Unexpected reserved word import
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/loose/statement.js:3:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/loose/statement.js:3:31: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/loose/statement.js:3:34: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/loose/statement.js:3:43: Semi-colon expected
+
+MultipleErrors: /Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/loose/tokenize.js:1:1: Unexpected reserved word import
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/loose/tokenize.js:1:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/loose/tokenize.js:1:18: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/loose/tokenize.js:1:21: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/loose/tokenize.js:1:89: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/loose/tokenize.js:2:1: Unexpected reserved word import
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/loose/tokenize.js:2:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/loose/tokenize.js:2:27: Semi-colon expected
+
+MultipleErrors: /Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/lval.js:1:1: Unexpected reserved word import
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/lval.js:1:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/lval.js:1:15: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/lval.js:1:18: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/lval.js:1:27: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/lval.js:2:1: Unexpected reserved word import
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/lval.js:2:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/lval.js:2:22: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/lval.js:3:1: Unexpected reserved word import
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/lval.js:3:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/lval.js:3:19: Semi-colon expected
+
+MultipleErrors: /Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/node.js:1:1: Unexpected reserved word import
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/node.js:1:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/node.js:1:22: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/node.js:2:1: Unexpected reserved word import
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/node.js:2:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/node.js:2:30: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/node.js:4:1: Unexpected reserved word export
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/node.js:4:8: Semi-colon expected
+
+MultipleErrors: /Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/options.js:1:21: Unexpected reserved word import
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/options.js:1:28: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/options.js:1:48: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/options.js:2:1: Unexpected reserved word import
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/options.js:2:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/options.js:2:30: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/options.js:7:1: Unexpected reserved word export
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/options.js:7:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/options.js:89:1: Unexpected reserved word export
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/options.js:89:8: Semi-colon expected
+
+MultipleErrors: /Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/parseutil.js:1:1: Unexpected reserved word import
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/parseutil.js:1:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/parseutil.js:1:15: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/parseutil.js:1:18: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/parseutil.js:1:27: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/parseutil.js:2:1: Unexpected reserved word import
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/parseutil.js:2:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/parseutil.js:2:22: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/parseutil.js:3:1: Unexpected reserved word import
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/parseutil.js:3:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/parseutil.js:3:25: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/parseutil.js:92:1: Unexpected reserved word export
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/parseutil.js:92:8: Semi-colon expected
+
+MultipleErrors: /Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/state.js:1:1: Unexpected reserved word import
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/state.js:1:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/state.js:1:39: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/state.js:2:1: Unexpected reserved word import
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/state.js:2:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/state.js:2:15: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/state.js:2:18: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/state.js:2:27: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/state.js:3:1: Unexpected reserved word import
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/state.js:3:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/state.js:3:25: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/state.js:4:1: Unexpected reserved word import
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/state.js:4:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/state.js:4:26: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/state.js:7:1: Unexpected reserved word export
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/state.js:7:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/state.js:13:1: Unexpected reserved word export
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/state.js:13:8: Semi-colon expected
+
+MultipleErrors: /Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/tokencontext.js:5:1: Unexpected reserved word import
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/tokencontext.js:5:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/tokencontext.js:5:22: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/tokencontext.js:6:1: Unexpected reserved word import
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/tokencontext.js:6:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/tokencontext.js:6:15: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/tokencontext.js:6:18: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/tokencontext.js:6:27: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/tokencontext.js:7:1: Unexpected reserved word import
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/tokencontext.js:7:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/tokencontext.js:7:25: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/tokencontext.js:9:1: Unexpected reserved word export
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/tokencontext.js:9:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/tokencontext.js:18:1: Unexpected reserved word export
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/tokencontext.js:18:8: Semi-colon expected
+
+MultipleErrors: /Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/statement.js:1:1: Unexpected reserved word import
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/statement.js:1:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/statement.js:1:15: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/statement.js:1:18: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/statement.js:1:27: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/statement.js:2:1: Unexpected reserved word import
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/statement.js:2:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/statement.js:2:22: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/statement.js:3:1: Unexpected reserved word import
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/statement.js:3:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/statement.js:3:41: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/statement.js:4:1: Unexpected reserved word import
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/statement.js:4:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/statement.js:4:51: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/statement.js:5:1: Unexpected reserved word import
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/statement.js:5:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/statement.js:5:35: Semi-colon expected
+
+MultipleErrors: /Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/tokentype.js:24:1: Unexpected reserved word export
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/tokentype.js:24:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/tokentype.js:46:1: Unexpected reserved word export
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/tokentype.js:46:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/tokentype.js:54:1: Unexpected reserved word export
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/tokentype.js:54:8: Semi-colon expected
+
+MultipleErrors: /Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/tokenize.js:1:1: Unexpected reserved word import
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/tokenize.js:1:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/tokenize.js:1:51: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/tokenize.js:2:1: Unexpected reserved word import
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/tokenize.js:2:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/tokenize.js:2:15: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/tokenize.js:2:18: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/tokenize.js:2:31: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/tokenize.js:2:34: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/tokenize.js:2:53: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/tokenize.js:3:1: Unexpected reserved word import
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/tokenize.js:3:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/tokenize.js:3:22: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/tokenize.js:4:1: Unexpected reserved word import
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/tokenize.js:4:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/tokenize.js:4:30: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/tokenize.js:5:1: Unexpected reserved word import
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/tokenize.js:5:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/tokenize.js:5:68: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/tokenize.js:11:1: Unexpected reserved word export
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/tokenize.js:11:8: Semi-colon expected
+
+MultipleErrors: /Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/util.js:1:1: Unexpected reserved word export
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/util.js:1:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/util.js:7:1: Unexpected reserved word export
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/util.js:7:8: Semi-colon expected
+
+MultipleErrors: /Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/whitespace.js:4:1: Unexpected reserved word export
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/whitespace.js:4:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/whitespace.js:5:1: Unexpected reserved word export
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/whitespace.js:5:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/whitespace.js:7:1: Unexpected reserved word export
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/whitespace.js:7:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/whitespace.js:11:1: Unexpected reserved word export
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/whitespace.js:11:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/whitespace.js:13:1: Unexpected reserved word export
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/whitespace.js:13:8: Semi-colon expected
+
+MultipleErrors: /Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/index.js:22:1: Unexpected reserved word import
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/index.js:22:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/index.js:22:22: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/index.js:23:1: Unexpected reserved word import
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/index.js:23:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/index.js:24:1: Unexpected reserved word import
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/index.js:24:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/index.js:25:1: Unexpected reserved word import
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/index.js:25:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/index.js:26:1: Unexpected reserved word import
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/index.js:26:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/index.js:27:1: Unexpected reserved word import
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/index.js:27:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/index.js:29:1: Unexpected reserved word export
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/index.js:29:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/index.js:29:31: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/index.js:30:1: Unexpected reserved word export
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/index.js:30:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/index.js:30:30: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/index.js:31:1: Unexpected reserved word export
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/index.js:31:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/index.js:31:53: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/index.js:32:1: Unexpected reserved word export
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/index.js:32:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/index.js:32:20: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/index.js:33:1: Unexpected reserved word export
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/index.js:33:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/index.js:33:26: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/index.js:33:29: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/index.js:33:44: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/index.js:34:1: Unexpected reserved word export
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/index.js:34:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/index.js:34:27: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/index.js:34:30: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/index.js:34:48: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/index.js:35:1: Unexpected reserved word export
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/index.js:35:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/index.js:35:51: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/index.js:36:1: Unexpected reserved word export
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/index.js:36:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/index.js:36:21: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/index.js:37:1: Unexpected reserved word export
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/index.js:37:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/index.js:37:48: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/index.js:39:1: Unexpected reserved word export
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/index.js:39:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/index.js:48:1: Unexpected reserved word export
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/index.js:48:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/index.js:56:1: Unexpected reserved word export
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/index.js:56:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/index.js:65:1: Unexpected reserved word export
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/index.js:65:8: Semi-colon expected
+
+MultipleErrors: /Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/loose/index.js:32:1: Unexpected reserved word import
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/loose/index.js:32:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/loose/index.js:32:14: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/loose/index.js:32:19: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/loose/index.js:33:1: Unexpected reserved word import
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/loose/index.js:33:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/loose/index.js:33:41: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/loose/index.js:34:1: Unexpected reserved word import
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/loose/index.js:34:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/loose/index.js:35:1: Unexpected reserved word import
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/loose/index.js:35:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/loose/index.js:36:1: Unexpected reserved word import
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/loose/index.js:36:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/loose/index.js:38:1: Unexpected reserved word export
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/loose/index.js:38:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/loose/index.js:38:41: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/loose/index.js:42:1: Unexpected reserved word export
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/loose/index.js:42:8: Semi-colon expected
+
+MultipleErrors: /Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/walk/index.js:19:1: Unexpected reserved word export
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/walk/index.js:19:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/walk/index.js:31:1: Unexpected reserved word export
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/walk/index.js:31:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/walk/index.js:49:1: Unexpected reserved word export
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/walk/index.js:49:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/walk/index.js:72:1: Unexpected reserved word export
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/walk/index.js:72:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/walk/index.js:94:1: Unexpected reserved word export
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/walk/index.js:94:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/walk/index.js:111:1: Unexpected reserved word export
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/walk/index.js:111:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/walk/index.js:128:1: Unexpected reserved word export
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/walk/index.js:128:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/walk/index.js:151:1: Unexpected reserved word export
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/walk/index.js:151:8: Semi-colon expected
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/walk/index.js:163:1: Unexpected reserved word export
+/Users/priyam/.jspm/packages/npm/acorn@3.3.0/src/walk/index.js:163:8: Semi-colon expected

@@ -1,0 +1,1 @@
+module.exports = require("npm:detective@4.3.2/index.js");

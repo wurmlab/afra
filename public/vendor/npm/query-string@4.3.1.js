@@ -1,0 +1,1 @@
+module.exports = require("npm:query-string@4.3.1/index");

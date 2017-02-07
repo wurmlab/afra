@@ -1,0 +1,1 @@
+module.exports = require("npm:put-selector@0.3.6/put");

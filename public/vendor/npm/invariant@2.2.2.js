@@ -1,0 +1,1 @@
+module.exports = require("npm:invariant@2.2.2/browser.js");

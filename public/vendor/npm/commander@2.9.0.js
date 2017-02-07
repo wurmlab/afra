@@ -1,0 +1,1 @@
+module.exports = require("npm:commander@2.9.0/index");

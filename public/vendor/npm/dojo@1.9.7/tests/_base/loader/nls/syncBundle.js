@@ -1,0 +1,5 @@
+/* */ 
+"format cjs";
+({
+	syncBundle:"syncBundle"
+})
