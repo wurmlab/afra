@@ -97,10 +97,7 @@ describe( 'GFF3 parser', function() {
            xhr( '../data/gff3_with_syncs.result.json', { handleAs: 'json' } )
                .then( function(data) { referenceResult = data; } );
 
-           waitsFor( function() { return parseFinished && referenceResult; } );
-           runs( function() {
-               expect( stuff ).toEqual( referenceResult );
-           });
+           expect( stuff ).toEqual( referenceResult );
    });
 });
 
@@ -122,13 +119,9 @@ describe( 'GFF3 store', function() {
                    function(e) { console.error(e); }
                );
 
-               waitsFor( function() { return done; } );
-               runs( function() {
-                         //console.log( features );
-                         expect( features.length ).toEqual( 197 );
-                         expect( features[6].get('subfeatures').length ).toEqual( 3 );
-                         expect( features[6].get('subfeatures')[0].get('subfeatures').length ).toEqual( 6 );
-                     });
+               expect( features.length ).toEqual( 197 );
+               expect( features[6].get('subfeatures').length ).toEqual( 3 );
+               expect( features[6].get('subfeatures')[0].get('subfeatures').length ).toEqual( 6 );
            }).call();
 
            (function() {
@@ -142,13 +135,10 @@ describe( 'GFF3 store', function() {
                    function(e) { console.error(e); }
                );
 
-               waitsFor( function() { return done; } );
-               runs( function() {
-                         //console.log( features );
-                         expect( features.length ).toEqual( 13 );
-                         // expect( features[191].get('subfeatures').length ).toEqual( 3 );
-                         // expect( features[191].get('subfeatures')[0].get('subfeatures').length ).toEqual( 6 );
-                     });
+               //console.log( features );
+               expect( features.length ).toEqual( 13 );
+               // expect( features[191].get('subfeatures').length ).toEqual( 3 );
+               // expect( features[191].get('subfeatures')[0].get('subfeatures').length ).toEqual( 6 );
            }).call();
 
            (function() {
@@ -162,14 +152,11 @@ describe( 'GFF3 store', function() {
                    function(e) { console.error(e); }
                );
 
-               waitsFor( function() { return done; } );
-               runs( function() {
-                         //console.log( features );
-                         expect( features.length ).toEqual( 4 );
-                         // expect( features[191].get('subfeatures').length ).toEqual( 3 );
-                         // expect( features[191].get('subfeatures')[0].get('subfeatures').length ).toEqual( 6 );
-                         expect( features[3].get('note') ).toEqual( 'ああ、この機能は、世界中を旅しています！' );
-                     });
+               //console.log( features );
+               expect( features.length ).toEqual( 4 );
+               // expect( features[191].get('subfeatures').length ).toEqual( 3 );
+               // expect( features[191].get('subfeatures')[0].get('subfeatures').length ).toEqual( 6 );
+               expect( features[3].get('note') ).toEqual( 'ああ、この機能は、世界中を旅しています！' );
            }).call();
    });
 });

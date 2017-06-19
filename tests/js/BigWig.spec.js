@@ -25,10 +25,7 @@ require([
             v.readWigData( 'nonexistent', 1, 10000, function(features) {
                 wigData = features;
             }, errorFunc );
-            waitsFor(function() { return wigData; });
-            runs(function() {
-                expect(wigData.length).toEqual(0);
-            });
+            expect(wigData.length).toEqual(0);
         });
         it('reads some good data unzoomed', function() {
             var v = b.getUnzoomedView();
@@ -36,14 +33,10 @@ require([
             v.readWigData( browser.regularizeReferenceName('ctgA'), 0, 10000, function(features) {
                 wigData = features;
             }, errorFunc );
-            waitsFor(function() { return wigData; },1000);
-            runs(function() {
-                expect(wigData.length).toBeGreaterThan(100);
-                dojo.forEach( wigData.slice(1,20), function(feature) {
-                    expect(feature.get('start')).toBeGreaterThan(0);
-                    expect(feature.get('end')).toBeLessThan(10000);
-                });
-                     //console.log(wigData);
+            expect(wigData.length).toBeGreaterThan(100);
+            dojo.forEach( wigData.slice(1,20), function(feature) {
+                expect(feature.get('start')).toBeGreaterThan(0);
+                expect(feature.get('end')).toBeLessThan(10000);
             });
         });
 
@@ -53,15 +46,10 @@ require([
             v.readWigData( browser.regularizeReferenceName('ctgA'), 100, 20000, function(features) {
                 wigData = features;
             }, errorFunc );
-            waitsFor(function() { return wigData; },500);
-            runs(function() {
-                expect(wigData.length).toEqual(2);
-                dojo.forEach( wigData, function(feature) {
-                    expect(feature.get('start')).toBeGreaterThan( -1 );
-                    expect(feature.get('end')).toBeLessThan( 40000 );
-                });
-                     //console.log(wigData);
-            });
+            expect(wigData.length).toEqual(2);
+            dojo.forEach( wigData, function(feature) {
+                expect(feature.get('start')).toBeGreaterThan( -1 );
+                expect(feature.get('end')).toBeLessThan( 40000 );
         });
 
         it('reads the file stats (the totalSummary section)', function() {
@@ -69,17 +57,13 @@ require([
                b.getGlobalStats(function(s) {
                                 stats = s;
                });
-               waitsFor(function() { return stats; });
-               runs( function() {
-                   //console.log(stats);
-                   expect(stats.basesCovered).toEqual(50690);
-                   expect(stats.scoreMin).toEqual(100);
-                   expect(stats.scoreMax).toEqual(899);
-                   expect(stats.scoreSum).toEqual(16863706);
-                   expect(stats.scoreSumSquares).toEqual(8911515204);
-                   expect(stats.scoreStdDev).toEqual(255.20080383762445);
-                   expect(stats.scoreMean).toEqual(332.6830933122904);
-               });
+               expect(stats.basesCovered).toEqual(50690);
+               expect(stats.scoreMin).toEqual(100);
+               expect(stats.scoreMax).toEqual(899);
+               expect(stats.scoreSum).toEqual(16863706);
+               expect(stats.scoreSumSquares).toEqual(8911515204);
+               expect(stats.scoreStdDev).toEqual(255.20080383762445);
+               expect(stats.scoreMean).toEqual(332.6830933122904);
         });
 
         it('reads good data when zoomed very little', function() {
@@ -88,15 +72,11 @@ require([
             v.readWigData( browser.regularizeReferenceName('ctgA'), 19999, 24999, function(features) {
                 wigData = features;
             }, errorFunc );
-            waitsFor(function() { return wigData; },1000);
-            runs(function() {
-                expect(wigData.length).toBeGreaterThan(19);
-                expect(wigData.length).toBeLessThan(1000);
-                dojo.forEach( wigData, function(feature) {
-                    expect(feature.get('start')).toBeGreaterThan(10000);
-                    expect(feature.get('end')).toBeLessThan(30000);
-                });
-                     //console.log(wigData);
+            expect(wigData.length).toBeGreaterThan(19);
+            expect(wigData.length).toBeLessThan(1000);
+            dojo.forEach( wigData, function(feature) {
+                expect(feature.get('start')).toBeGreaterThan(10000);
+                expect(feature.get('end')).toBeLessThan(30000);
             });
         });
 
@@ -118,10 +98,7 @@ require([
             v.readWigData( 'nonexistent', 1, 10000, function(features) {
                 wigData = features;
             }, errorFunc );
-            waitsFor(function() { return wigData; });
-            runs(function() {
-                expect(wigData.length).toEqual(0);
-            });
+            expect(wigData.length).toEqual(0);
         });
         it('reads some good data unzoomed', function() {
             var v = b.getUnzoomedView();
@@ -129,10 +106,7 @@ require([
             v.readWigData( browser.regularizeReferenceName('ctgA'), 0, 10000, function(features) {
                 wigData = features;
             }, errorFunc );
-            waitsFor(function() { return wigData; },1000);
-            runs(function() {
-                expect(wigData.length).toEqual(0);
-            });
+            expect(wigData.length).toEqual(0);
         });
 
         it('reads some good data when zoomed out', function() {
@@ -141,28 +115,21 @@ require([
             v.readWigData( browser.regularizeReferenceName('ctgA'), 100, 20000, function(features) {
                 wigData = features;
             }, errorFunc );
-            waitsFor(function() { return wigData; },500);
-            runs(function() {
-                expect(wigData.length).toEqual(0);
-            });
+            expect(wigData.length).toEqual(0);
         });
 
         it('reads the file stats (the totalSummary section)', function() {
                var stats;
                b.getGlobalStats(function(s) {
-                                stats = s;
+                    stats = s;
                });
-               waitsFor(function() { return stats; });
-               runs( function() {
-                   console.log(stats);
-                   expect(stats.basesCovered).toEqual(0);
-                   expect(stats.scoreMin).toEqual(0);
-                   expect(stats.scoreMax).toEqual(3);
-                   expect(stats.scoreSum).toEqual(0);
-                   expect(stats.scoreSumSquares).toEqual(0);
-                   expect(stats.scoreStdDev).toEqual(0);
-                   expect(stats.scoreMean).toEqual(0);
-               });
+               expect(stats.basesCovered).toEqual(0);
+               expect(stats.scoreMin).toEqual(0);
+               expect(stats.scoreMax).toEqual(3);
+               expect(stats.scoreSum).toEqual(0);
+               expect(stats.scoreSumSquares).toEqual(0);
+               expect(stats.scoreStdDev).toEqual(0);
+               expect(stats.scoreMean).toEqual(0);
         });
 
         it('reads good data when zoomed very little', function() {
@@ -171,10 +138,7 @@ require([
             v.readWigData( browser.regularizeReferenceName('ctgA'), 19999, 24999, function(features) {
                 wigData = features;
             }, errorFunc );
-            waitsFor(function() { return wigData; },1000);
-            runs(function() {
-                expect(wigData.length).toEqual( 0 );
-            });
+            expect(wigData.length).toEqual( 0 );
         });
 
     });
@@ -196,10 +160,7 @@ require([
                              v.readWigData( 'nonexistent', 1, 10000, function(features) {
                                                 wigData = features;
                                             });
-                             waitsFor(function() { return wigData; });
-                             runs(function() {
-                                      expect(wigData.length).toEqual(0);
-                                  });
+                              expect(wigData.length).toEqual(0);
                          });
 
                       it('reads some good data unzoomed', function() {
@@ -208,15 +169,11 @@ require([
                              v.readWigData( 'SL2.40ch01', 1, 100000, function(features) {
                                                 wigData = features;
                                             });
-                             waitsFor(function() { return wigData; },1000);
-                             runs(function() {
-                                      expect(wigData.length).toBeGreaterThan(10000);
-                                      dojo.forEach( wigData.slice(0,20), function(feature) {
-                                                        expect(feature.get('start')).toBeGreaterThan(0);
-                                                        expect(feature.get('end')).toBeLessThan(100001);
-                                                    });
-                                      //console.log(wigData);
-                                  });
+                              expect(wigData.length).toBeGreaterThan(10000);
+                              dojo.forEach( wigData.slice(0,20), function(feature) {
+                                                expect(feature.get('start')).toBeGreaterThan(0);
+                                                expect(feature.get('end')).toBeLessThan(100001);
+                                            });
                          });
 
                       it('reads some good data when zoomed', function() {
@@ -225,16 +182,12 @@ require([
                              v.readWigData( 'SL2.40ch01', 100000, 2000000, function(features) {
                                                 wigData = features;
                                             });
-                             waitsFor(function() { return wigData; },1000);
-                             runs(function() {
-                                      expect(wigData.length).toBeGreaterThan(19);
-                                      expect(wigData.length).toBeLessThan(100);
-                                      dojo.forEach( wigData, function(feature) {
-                                                        expect(feature.get('start')).toBeGreaterThan(80000);
-                                                        expect(feature.get('end')).toBeLessThan(2050000);
-                                                    });
-                                      //console.log(wigData);
-                                  });
+                              expect(wigData.length).toBeGreaterThan(19);
+                              expect(wigData.length).toBeLessThan(100);
+                              dojo.forEach( wigData, function(feature) {
+                                                expect(feature.get('start')).toBeGreaterThan(80000);
+                                                expect(feature.get('end')).toBeLessThan(2050000);
+                                            });
                          });
 
                       it('reads the file stats (the totalSummary section)', function() {
@@ -254,16 +207,12 @@ require([
                              v.readWigData( 'SL2.40ch01', 19999, 24999, function(features) {
                                                 wigData = features;
                                             });
-                             waitsFor(function() { return wigData; },1000);
-                             runs(function() {
-                                      expect(wigData.length).toBeGreaterThan(19);
-                                      expect(wigData.length).toBeLessThan(1000);
-                                      dojo.forEach( wigData, function(feature) {
-                                                        expect(feature.get('start')).toBeGreaterThan(10000);
-                                                        expect(feature.get('end')).toBeLessThan(30000);
-                                                    });
-                                      //console.log(wigData);
-                                  });
+                              expect(wigData.length).toBeGreaterThan(19);
+                              expect(wigData.length).toBeLessThan(1000);
+                              dojo.forEach( wigData, function(feature) {
+                                                expect(feature.get('start')).toBeGreaterThan(10000);
+                                                expect(feature.get('end')).toBeLessThan(30000);
+                                            });
                          });
 
                   });
