@@ -115,6 +115,10 @@ describe( "Edit Track", function() {
         expect(editTrack.flipStrand(transcript_data.input[0]).get('strand')).toEqual(-1);
     });
 
+    it('tests setLongestORF', function() {
+        expect(compareFeatures(transcript_data.orf[2], editTrack.setLongestORF(refSeq, transcript_data.input[1]))).toEqual(true);
+    });
+
     it('tests transcriptToCDNA', function() {
         expect(editTrack.transcriptToCDNA(transcript_data.input[3], 4)).toEqual(0);
     });
