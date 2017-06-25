@@ -138,6 +138,10 @@ describe( "Edit Track", function() {
         expect(editTrack.filterFeatures(transcript_data.input[0], 'exon')[0].get('start')).toEqual(16946);
     });
 
+    it('tests copyFeature', function() {
+        expect(editTrack.copyFeature(transcript_data.input[0], {start: 16949}).get('start')).toEqual(16949);
+    });
+
     it('tests transcriptToCDNA', function() {
         expect(editTrack.transcriptToCDNA(transcript_data.input[3], 4)).toEqual(0);
     });
