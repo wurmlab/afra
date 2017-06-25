@@ -1114,14 +1114,14 @@ var EditTrack = declare(DraggableFeatureTrack,
                 subfeatures: _.map(subfeatures, function (f) {
                     var type = f.get('type');
                     count[type] = count[type] || 1;
-                    return {
+                    return {'data': {
                         type:   type,
                         name:   name + ':' + type + count[type]++,
                         seq_id: f.get('seq_id'),
                         strand: f.get('strand'),
                         start:  f.get('start'),
                         end:    f.get('end'),
-                    };
+                    }};
                 })
             }
         });

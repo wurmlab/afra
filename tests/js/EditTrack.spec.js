@@ -149,6 +149,12 @@ describe( "Edit Track", function() {
         expect(merged.get('start')).toEqual(16946);
     });
 
+    it('tests createTranscript', function() {
+        var subfeatures = editTrack.filterFeatures(transcript_data.input[1], 'CDS');
+        var newTranscript = editTrack.createTranscript(subfeatures, 'test-transcript')
+        expect(newTranscript.get('seq_id')).toBe('Si_gnF.scaffold02797');
+    });
+
     it('tests transcriptToCDNA', function() {
         expect(editTrack.transcriptToCDNA(transcript_data.input[3], 4)).toEqual(0);
     });
