@@ -111,6 +111,10 @@ describe( "Edit Track", function() {
         expect(editTrack.getWholeCDSCoordinates(transcript_data.input[1])).toEqual([19977, 18796]);
     });
 
+    it('tests flipStrand', function() {
+        expect(editTrack.flipStrand(transcript_data.input[0]).get('strand')).toEqual(-1);
+    });
+
     it('tests transcriptToCDNA', function() {
         expect(editTrack.transcriptToCDNA(transcript_data.input[3], 4)).toEqual(0);
     });
