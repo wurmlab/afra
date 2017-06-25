@@ -760,9 +760,12 @@ var EditTrack = declare(DraggableFeatureTrack,
         if (this.filterExons(transcript).length <= 1) {
             return;
         }
+        var str_exonsToDelete = _.map(exonsToDelete, function(exon) {
+            return JSON.stringify(exon);
+        });
 
         var exons = _.reject(this.filterExons(transcript), function (exon) {
-            return _.indexOf(exonsToDelete, exon) !== -1;
+            return _.indexOf(str_exonsToDelete, JSON.stringify(exon)) !== -1;
         });
         var newTranscript    = this.createTranscript(exons, transcript.get('name'));
         var translationStart = this.getTranslationStart(transcript);

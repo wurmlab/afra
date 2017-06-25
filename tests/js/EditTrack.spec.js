@@ -159,6 +159,13 @@ describe( "Edit Track", function() {
         expect(editTrack.getCDNACoordinates(transcript_data.input[0])[4]).toEqual([21298, 21389]);
     });
 
+    it('tests deleteExons', function() {
+        var exons = editTrack.filterExons(transcript_data.input[0]);
+        var delete_these = [exons[0],exons[1]];
+        var deleted = editTrack.deleteExons(refSeq_2, transcript_data.input[0], delete_these);
+        expect(editTrack.filterExons(deleted)[1].get('start')).toEqual(21002);
+    });
+
     it('tests transcriptToCDNA', function() {
         expect(editTrack.transcriptToCDNA(transcript_data.input[3], 4)).toEqual(0);
     });
