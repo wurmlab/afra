@@ -119,6 +119,21 @@ describe( "Edit Track", function() {
         expect(compareFeatures(transcript_data.orf[2], editTrack.setLongestORF(refSeq, transcript_data.input[1]))).toEqual(true);
     });
 
+    it('tests markNonCanonicalSpliceSites', function() {
+        expect(editTrack.markNonCanonicalSpliceSites(transcript_data.input[0], 
+            refSeq).get('subfeatures')[2].get('type')).toEqual('non_canonical_splice_site');
+    });
+
+    it('tests markNonCanonicalTranslationStartSite', function() {
+        expect(editTrack.markNonCanonicalTranslationStartSite(transcript_data.non_canonical[1], 
+            refSeq).get('subfeatures')[2].get('type')).toEqual('non_canonical_translation_start_site');
+    });
+
+    it('tests markNonCanonicalTranslationStopSite', function() {
+        expect(editTrack.markNonCanonicalTranslationStopSite(transcript_data.non_canonical[0], 
+            refSeq).get('subfeatures')[0].get('type')).toEqual('non_canonical_translation_stop_site');
+    });
+
     it('tests transcriptToCDNA', function() {
         expect(editTrack.transcriptToCDNA(transcript_data.input[3], 4)).toEqual(0);
     });

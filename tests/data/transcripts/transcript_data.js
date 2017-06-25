@@ -15,6 +15,8 @@ define([
         './orf_1',
         './orf_2',
         './orf_3',
+        './non_canonical_1',
+        './non_canonical_2',
         './cds_1',
         './merge_1',
         './normalize_1'
@@ -35,6 +37,8 @@ define([
             orf_1,
             orf_2,
             orf_3,
+            non_canonical_1,
+            non_canonical_2,
             cds_1,
             merge_1,
             normalize_1
@@ -44,6 +48,7 @@ var transcript_data = {
                 input_8],
     "resize": [resize_1, resize_2, resize_3, resize_4],
     "orf": [orf_1, orf_2, orf_3],
+    "non_canonical": [non_canonical_1, non_canonical_2],
     "cds": [cds_1],
     "merge": [merge_1],
     "normalize": [normalize_1]
