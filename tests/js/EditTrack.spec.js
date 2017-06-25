@@ -155,6 +155,10 @@ describe( "Edit Track", function() {
         expect(newTranscript.get('seq_id')).toBe('Si_gnF.scaffold02797');
     });
 
+    it('tests getCDNACoordinates', function() {
+        expect(editTrack.getCDNACoordinates(transcript_data.input[0])[4]).toEqual([21298, 21389]);
+    });
+
     it('tests transcriptToCDNA', function() {
         expect(editTrack.transcriptToCDNA(transcript_data.input[3], 4)).toEqual(0);
     });
