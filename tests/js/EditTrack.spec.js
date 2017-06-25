@@ -134,6 +134,10 @@ describe( "Edit Track", function() {
             refSeq).get('subfeatures')[0].get('type')).toEqual('non_canonical_translation_stop_site');
     });
 
+    it('tests filterFeatures', function() {
+        expect(editTrack.filterFeatures(transcript_data.input[0], 'exon')[0].get('start')).toEqual(16946);
+    });
+
     it('tests transcriptToCDNA', function() {
         expect(editTrack.transcriptToCDNA(transcript_data.input[3], 4)).toEqual(0);
     });
