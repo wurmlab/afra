@@ -686,12 +686,12 @@ var EditTrack = declare(DraggableFeatureTrack,
      * won't have any CDS features either.
      */
     mergeExons: function (refSeq, transcript, exonsToMerge) {
-        if (!this.areSiblings(exonsToMerge)) {
-            return;
-        }
+        var str_exonsToMerge = _.map(exonsToMerge, function (exon) {
+            return JSON.stringify(exon);
+        });
 
         var exons = _.reject(this.filterExons(transcript), function (exon) {
-            return _.indexOf(exonsToMerge, exon) !== -1;
+            return _.indexOf(str_exonsToMerge, JSON.stringify(exon)) !== -1;
         });
         var min = _.min(_.map(exonsToMerge, function (exonToMerge) {
             return exonToMerge.get('start');

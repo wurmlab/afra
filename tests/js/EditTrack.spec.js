@@ -142,6 +142,13 @@ describe( "Edit Track", function() {
         expect(editTrack.copyFeature(transcript_data.input[0], {start: 16949}).get('start')).toEqual(16949);
     });
 
+    it('tests mergeExons', function() {
+        var exons = editTrack.filterExons(transcript_data.input[0]);
+        var merge_these = [exons[0], exons[1]];
+        var merged = editTrack.mergeExons(refSeq_2, transcript_data.input[0], merge_these);
+        expect(merged.get('start')).toEqual(16946);
+    });
+
     it('tests transcriptToCDNA', function() {
         expect(editTrack.transcriptToCDNA(transcript_data.input[3], 4)).toEqual(0);
     });
