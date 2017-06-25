@@ -166,6 +166,12 @@ describe( "Edit Track", function() {
         expect(editTrack.filterExons(deleted)[1].get('start')).toEqual(21002);
     });
 
+    it('tests sortAnnotationsByLocation', function() {
+        var exons = editTrack.filterExons(transcript_data.input[0]);
+        var sorted = editTrack.sortAnnotationsByLocation(exons);
+        expect(sorted[0].get('start')).toEqual(16946);
+    });
+
     it('tests transcriptToCDNA', function() {
         expect(editTrack.transcriptToCDNA(transcript_data.input[3], 4)).toEqual(0);
     });
