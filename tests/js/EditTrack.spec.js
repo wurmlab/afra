@@ -217,6 +217,15 @@ describe( "Edit Track", function() {
         var left = exon.get('start');
         outTranscript = editTrack.resizeExon(refSeq, transcript_data["input"][1], exon, left, right);
         expect(compareFeatures(transcript_data["resize"][2], outTranscript)).toBe(true);
+
+        // check for the translation start changes
+        exon = editTrack.filterExons(transcript_data.input[1])[0];
+        var right = exon.get('end');
+        var left = exon.get('start') - 3;
+        outTranscript = editTrack.resizeExon(refSeq, transcript_data.input[1], exon, left, right);
+        // Verify if CDS is correct
+        expect(editTrack.getCDS(refSeq, outTranscript)).toEqual(transcript_data.cds[1]);
+        expect(outTranscript.get('start')).toEqual(18793);
     });
 
     it( 'tests areOnSameStrand', function() {
