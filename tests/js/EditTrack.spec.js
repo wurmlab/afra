@@ -244,6 +244,16 @@ describe( "Edit Track", function() {
                     [transcript_data.input[6], transcript_data.input[7]]),
                 transcript_data.input[6])).toBe(true);
 
+        // transcripts on different strands cannot be merged
+        expect(editTrack.mergeTranscripts(refSeq, [transcript_data.input[0], transcript_data.input[1]])).toEqual(undefined);
+
+        // With CDS
+        expect(compareFeatures(
+            editTrack.mergeTranscripts(refSeq_2,
+                [transcript_data.input[9], transcript_data.input[10]]),
+            transcript_data.merge[1])).toBe(true);
+
+            // Without CDS
             expect(compareFeatures(
                     editTrack.mergeTranscripts(refSeq_2,
                         [transcript_data.input[4], transcript_data.input[5]]),
