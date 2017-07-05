@@ -120,7 +120,6 @@ SimpleFeature.fromJSON = function (featureJSON) {
 
     // var data = JSON.parse(featureJSON);
     // return new SimpleFeature({data: data});
-    // return new SimpleFeature({data: featureJSON});
     return new SimpleFeature(featureJSON);
 };
 
