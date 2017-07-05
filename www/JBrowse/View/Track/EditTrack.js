@@ -640,7 +640,7 @@ var EditTrack = declare(DraggableFeatureTrack,
      * part of the given transcript, or if the given exon is not really an exon.
      */
     resizeExon: function (refSeq, transcript, exonToResize, left, right) {
-        if (exonToResize.parent() !== transcript ||
+        if (exonToResize.parent() !== transcript &&
             exonToResize.get('type') !== 'exon') {
             return;
         }
@@ -686,12 +686,12 @@ var EditTrack = declare(DraggableFeatureTrack,
      * won't have any CDS features either.
      */
     mergeExons: function (refSeq, transcript, exonsToMerge) {
-        if (!this.areSiblings(exonsToMerge)) {
-            return;
-        }
+        var str_exonsToMerge = _.map(exonsToMerge, function (exon) {
+            return JSON.stringify(exon);
+        });
 
         var exons = _.reject(this.filterExons(transcript), function (exon) {
-            return _.indexOf(exonsToMerge, exon) !== -1;
+            return _.indexOf(str_exonsToMerge, JSON.stringify(exon)) !== -1;
         });
         var min = _.min(_.map(exonsToMerge, function (exonToMerge) {
             return exonToMerge.get('start');
@@ -760,9 +760,12 @@ var EditTrack = declare(DraggableFeatureTrack,
         if (this.filterExons(transcript).length <= 1) {
             return;
         }
+        var str_exonsToDelete = _.map(exonsToDelete, function(exon) {
+            return JSON.stringify(exon);
+        });
 
         var exons = _.reject(this.filterExons(transcript), function (exon) {
-            return _.indexOf(exonsToDelete, exon) !== -1;
+            return _.indexOf(str_exonsToDelete, JSON.stringify(exon)) !== -1;
         });
         var newTranscript    = this.createTranscript(exons, transcript.get('name'));
         var translationStart = this.getTranslationStart(transcript);
@@ -1114,14 +1117,14 @@ var EditTrack = declare(DraggableFeatureTrack,
                 subfeatures: _.map(subfeatures, function (f) {
                     var type = f.get('type');
                     count[type] = count[type] || 1;
-                    return {
+                    return {'data': {
                         type:   type,
                         name:   name + ':' + type + count[type]++,
                         seq_id: f.get('seq_id'),
                         strand: f.get('strand'),
                         start:  f.get('start'),
                         end:    f.get('end'),
-                    };
+                    }};
                 })
             }
         });

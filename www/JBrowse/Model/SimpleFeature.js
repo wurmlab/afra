@@ -32,10 +32,7 @@ var SimpleFeature = Util.fastDeclare({
         if(( subfeatures = this.data.subfeatures )) {
             for( var i = 0; i < subfeatures.length; i++ ) {
                 if( typeof subfeatures[i].get != 'function' ) {
-                    subfeatures[i] = new SimpleFeature(
-                        { data: subfeatures[i],
-                          parent: this
-                        });
+                    subfeatures[i] = new SimpleFeature(subfeatures[i]);
                 }
             }
         }
@@ -115,8 +112,15 @@ SimpleFeature.toJSON = function (feature) {
  *   ids will differ from the original feature.
  */
 SimpleFeature.fromJSON = function (featureJSON) {
-    var data = JSON.parse(featureJSON);
-    return new SimpleFeature({data: data});
+    // Here parse function requires a string in input
+    // But featureJSON is complete JSON and therefore 
+    // we need to change JSON to string first and then 
+    // parse it to save in to data. and create new feature
+    // var data = JSON.parse(JSON.stringify(featureJSON));
+
+    // var data = JSON.parse(featureJSON);
+    // return new SimpleFeature({data: data});
+    return new SimpleFeature(featureJSON);
 };
 
 return SimpleFeature;

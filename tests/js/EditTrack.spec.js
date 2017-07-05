@@ -111,6 +111,67 @@ describe( "Edit Track", function() {
         expect(editTrack.getWholeCDSCoordinates(transcript_data.input[1])).toEqual([19977, 18796]);
     });
 
+    it('tests flipStrand', function() {
+        expect(editTrack.flipStrand(transcript_data.input[0]).get('strand')).toEqual(-1);
+    });
+
+    it('tests setLongestORF', function() {
+        expect(compareFeatures(transcript_data.orf[2], editTrack.setLongestORF(refSeq, transcript_data.input[1]))).toEqual(true);
+    });
+
+    it('tests markNonCanonicalSpliceSites', function() {
+        expect(editTrack.markNonCanonicalSpliceSites(transcript_data.input[0], 
+            refSeq).get('subfeatures')[2].get('type')).toEqual('non_canonical_splice_site');
+    });
+
+    it('tests markNonCanonicalTranslationStartSite', function() {
+        expect(editTrack.markNonCanonicalTranslationStartSite(transcript_data.non_canonical[1], 
+            refSeq).get('subfeatures')[2].get('type')).toEqual('non_canonical_translation_start_site');
+    });
+
+    it('tests markNonCanonicalTranslationStopSite', function() {
+        expect(editTrack.markNonCanonicalTranslationStopSite(transcript_data.non_canonical[0], 
+            refSeq).get('subfeatures')[0].get('type')).toEqual('non_canonical_translation_stop_site');
+    });
+
+    it('tests filterFeatures', function() {
+        expect(editTrack.filterFeatures(transcript_data.input[0], 'exon')[0].get('start')).toEqual(16946);
+    });
+
+    it('tests copyFeature', function() {
+        expect(editTrack.copyFeature(transcript_data.input[0], {start: 16949}).get('start')).toEqual(16949);
+    });
+
+    it('tests mergeExons', function() {
+        var exons = editTrack.filterExons(transcript_data.input[0]);
+        var merge_these = [exons[0], exons[1]];
+        var merged = editTrack.mergeExons(refSeq_2, transcript_data.input[0], merge_these);
+        expect(merged.get('start')).toEqual(16946);
+    });
+
+    it('tests createTranscript', function() {
+        var subfeatures = editTrack.filterFeatures(transcript_data.input[1], 'CDS');
+        var newTranscript = editTrack.createTranscript(subfeatures, 'test-transcript')
+        expect(newTranscript.get('seq_id')).toBe('Si_gnF.scaffold02797');
+    });
+
+    it('tests getCDNACoordinates', function() {
+        expect(editTrack.getCDNACoordinates(transcript_data.input[0])[4]).toEqual([21298, 21389]);
+    });
+
+    it('tests deleteExons', function() {
+        var exons = editTrack.filterExons(transcript_data.input[0]);
+        var delete_these = [exons[0],exons[1]];
+        var deleted = editTrack.deleteExons(refSeq_2, transcript_data.input[0], delete_these);
+        expect(editTrack.filterExons(deleted)[1].get('start')).toEqual(21002);
+    });
+
+    it('tests sortAnnotationsByLocation', function() {
+        var exons = editTrack.filterExons(transcript_data.input[0]);
+        var sorted = editTrack.sortAnnotationsByLocation(exons);
+        expect(sorted[0].get('start')).toEqual(16946);
+    });
+
     it('tests transcriptToCDNA', function() {
         expect(editTrack.transcriptToCDNA(transcript_data.input[3], 4)).toEqual(0);
     });
@@ -156,6 +217,15 @@ describe( "Edit Track", function() {
         var left = exon.get('start');
         outTranscript = editTrack.resizeExon(refSeq, transcript_data["input"][1], exon, left, right);
         expect(compareFeatures(transcript_data["resize"][2], outTranscript)).toBe(true);
+
+        // check for the translation start changes
+        exon = editTrack.filterExons(transcript_data.input[1])[0];
+        var right = exon.get('end');
+        var left = exon.get('start') - 3;
+        outTranscript = editTrack.resizeExon(refSeq, transcript_data.input[1], exon, left, right);
+        // Verify if CDS is correct
+        expect(editTrack.getCDS(refSeq, outTranscript)).toEqual(transcript_data.cds[1]);
+        expect(outTranscript.get('start')).toEqual(18793);
     });
 
     it( 'tests areOnSameStrand', function() {
@@ -174,6 +244,16 @@ describe( "Edit Track", function() {
                     [transcript_data.input[6], transcript_data.input[7]]),
                 transcript_data.input[6])).toBe(true);
 
+        // transcripts on different strands cannot be merged
+        expect(editTrack.mergeTranscripts(refSeq, [transcript_data.input[0], transcript_data.input[1]])).toEqual(undefined);
+
+        // With CDS
+        expect(compareFeatures(
+            editTrack.mergeTranscripts(refSeq_2,
+                [transcript_data.input[9], transcript_data.input[10]]),
+            transcript_data.merge[1])).toBe(true);
+
+            // Without CDS
             expect(compareFeatures(
                     editTrack.mergeTranscripts(refSeq_2,
                         [transcript_data.input[4], transcript_data.input[5]]),
