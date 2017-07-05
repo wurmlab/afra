@@ -230,15 +230,16 @@ require(['jasmine/jasmine']
             "BAM.spec.js",
             "RemoteBinaryFile.spec.js",
             "Util.spec.js",
-            "AddFiles.spec.js",
+            // "AddFiles.spec.js",
             "GBrowseParser.spec.js",
             "NestedFrequencyTable.spec.js",
             "TabixIndex.spec.js",
             "TabixIndexedFile.spec.js",
             "RESTStore.spec.js",
             "RegularizeRefSeqs.spec.js",
-            "EditTrack.spec.js",
-            "GFF3.spec.js"
+            "GFF3.spec.js",
+            "SPARQLStore.spec.js",
+            "EditTrack.spec.js"
         ]
         , function () {
             htmlReporter.initialize();

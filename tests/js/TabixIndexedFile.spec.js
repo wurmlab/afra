@@ -40,15 +40,12 @@ var VCFIndexedFile = declare( TabixIndexedFile, {
                      }
                    );
 
-            waitsFor( function(){ return items.done; } );
-            runs(function() {
-                     expect( items.length ).toEqual( 8 );
-                     array.forEach( items, function( item,i ) {
-                       expect( item.ref ).toEqual('contigA');
-                       expect( item.start ).toBeGreaterThan( 999 );
-                       expect( item.start ).toBeLessThan( 4001 );
-                     });
-                 });
+             expect( items.length ).toEqual( 8 );
+             array.forEach( items, function( item,i ) {
+               expect( item.ref ).toEqual('contigA');
+               expect( item.start ).toBeGreaterThan( 999 );
+               expect( item.start ).toBeLessThan( 4001 );
+             });
 
     });
 

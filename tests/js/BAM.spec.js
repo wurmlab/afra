@@ -43,10 +43,7 @@ describe( 'BAM with volvox-sorted.bam', function() {
                                      done = true;
                                  }
                                );
-                      waitsFor( function() { return done; }, 2000 );
-                      runs( function() {
-                                expect(features.length).toBeGreaterThan(1000);
-                            });
+                      expect(features.length).toBeGreaterThan(1000);
                   });
 });
 
@@ -80,11 +77,7 @@ describe( 'BAM with test_deletion_2_0.snps.bwa_align.sorted.grouped.bam', functi
                                      done = true;
                                  }
                                );
-                      waitsFor( function() { return done; }, 2000 );
-                      runs( function() {
-                                expect(features.length).toEqual(124);
-                                //console.log( distinctBins(features) );
-                            });
+                      expect(features.length).toEqual(124);
                   });
 });
 
@@ -118,10 +111,7 @@ describe( 'empty BAM', function() {
                                      done = true;
                                  }
                                );
-                      waitsFor( function() { return done; }, 2000 );
-                      runs( function() {
-                                expect(features.length).toEqual( 0 );
-                            });
+                      expect(features.length).toEqual( 0 );
                   });
 });
 
@@ -160,11 +150,7 @@ describe( 'BAM with tests/data/final.merged.sorted.rgid.mkdup.realign.recal.bam'
                                      done = true;
                                  }
                                );
-                      waitsFor( function() { return done; }, 2000 );
-                      runs( function() {
-                                expect(features.length).toEqual(281);
-                                //console.log( distinctBins(features) );
-                            });
+                      expect(features.length).toEqual(281);
                   });
 });
 
@@ -199,11 +185,7 @@ if( document.location.href.indexOf('extended_tests=1') > -1 ) {
                                          done = true;
                                      }
                                    );
-                          waitsFor( function() { return done; }, 2000 );
-                          runs( function() {
-                                    expect(features.length).toEqual(13);
-                                    //console.log( distinctBins(features) );
-                                });
+                          expect(features.length).toEqual(13);
                       });
     });
 
